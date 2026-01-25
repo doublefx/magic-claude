@@ -5,6 +5,13 @@
  */
 
 import { detectProjectType } from './detect-project-type.js';
+import {
+  commandExists,
+  safeExecSync,
+  safeExecAsync,
+  isValidFilePath,
+  hasValidExtension
+} from './safe-exec.js';
 import path from 'path';
 import { createInterface } from 'readline';
 import { stdin as input, stdout as output } from 'process';
@@ -185,9 +192,9 @@ export function logHook(message, level = 'INFO') {
 }
 
 /**
- * Re-export detectProjectType for convenience
+ * Re-export detectProjectType and safe-exec functions for convenience
  */
-export { detectProjectType };
+export { detectProjectType, commandExists, safeExecSync, safeExecAsync, isValidFilePath, hasValidExtension };
 
 /**
  * Default export for convenience
@@ -202,5 +209,10 @@ export default {
   getCommand,
   getToolName,
   logHook,
-  detectProjectType
+  detectProjectType,
+  commandExists,
+  safeExecSync,
+  safeExecAsync,
+  isValidFilePath,
+  hasValidExtension
 };

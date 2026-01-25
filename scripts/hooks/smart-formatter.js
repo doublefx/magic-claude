@@ -13,38 +13,31 @@
 
 import fs from 'fs';
 import path from 'path';
-import { execSync } from 'child_process';
 import {
   readHookInput,
   writeHookOutput,
   getFilePath,
   detectProjectType,
-  logHook
+  logHook,
+  commandExists,
+  safeExecSync,
+  isValidFilePath
 } from '../lib/hook-utils.js';
-
-/**
- * Check if a command exists in the system
- * @param {string} cmd - Command name to check
- * @returns {boolean} True if command exists
- */
-function commandExists(cmd) {
-  try {
-    execSync(`which ${cmd}`, { stdio: 'ignore' });
-    return true;
-  } catch {
-    return false;
-  }
-}
 
 /**
  * Format a Python file using ruff
  * @param {string} filePath - Path to Python file
  */
 function formatPython(filePath) {
+  if (!isValidFilePath(filePath)) {
+    logHook(`Invalid file path: ${filePath}`, 'WARNING');
+    return;
+  }
+
   if (commandExists('ruff')) {
     try {
-      // Use stdio: 'pipe' to prevent formatter output from mixing with hook JSON output
-      execSync(`ruff format "${filePath}"`, { stdio: 'pipe' });
+      // Safe execution with array arguments - prevents command injection
+      safeExecSync('ruff', ['format', filePath], { stdio: 'pipe' });
       logHook(`Formatted Python file: ${path.basename(filePath)}`);
     } catch (error) {
       logHook(`Failed to format Python file: ${error.message}`, 'WARNING');
@@ -57,9 +50,15 @@ function formatPython(filePath) {
  * @param {string} filePath - Path to Java file
  */
 function formatJava(filePath) {
+  if (!isValidFilePath(filePath)) {
+    logHook(`Invalid file path: ${filePath}`, 'WARNING');
+    return;
+  }
+
   if (commandExists('google-java-format')) {
     try {
-      execSync(`google-java-format -i "${filePath}"`, { stdio: 'pipe' });
+      // Safe execution with array arguments - prevents command injection
+      safeExecSync('google-java-format', ['-i', filePath], { stdio: 'pipe' });
       logHook(`Formatted Java file: ${path.basename(filePath)}`);
     } catch (error) {
       logHook(`Failed to format Java file: ${error.message}`, 'WARNING');
@@ -72,9 +71,15 @@ function formatJava(filePath) {
  * @param {string} filePath - Path to Kotlin file
  */
 function formatKotlin(filePath) {
+  if (!isValidFilePath(filePath)) {
+    logHook(`Invalid file path: ${filePath}`, 'WARNING');
+    return;
+  }
+
   if (commandExists('ktfmt')) {
     try {
-      execSync(`ktfmt "${filePath}"`, { stdio: 'pipe' });
+      // Safe execution with array arguments - prevents command injection
+      safeExecSync('ktfmt', [filePath], { stdio: 'pipe' });
       logHook(`Formatted Kotlin file: ${path.basename(filePath)}`);
       return;
     } catch (error) {
@@ -84,7 +89,8 @@ function formatKotlin(filePath) {
 
   if (commandExists('ktlint')) {
     try {
-      execSync(`ktlint -F "${filePath}"`, { stdio: 'pipe' });
+      // Safe execution with array arguments - prevents command injection
+      safeExecSync('ktlint', ['-F', filePath], { stdio: 'pipe' });
       logHook(`Formatted Kotlin file: ${path.basename(filePath)}`);
     } catch (error) {
       logHook(`Failed to format with ktlint: ${error.message}`, 'WARNING');
@@ -97,9 +103,15 @@ function formatKotlin(filePath) {
  * @param {string} filePath - Path to TS/JS file
  */
 function formatTypeScript(filePath) {
+  if (!isValidFilePath(filePath)) {
+    logHook(`Invalid file path: ${filePath}`, 'WARNING');
+    return;
+  }
+
   if (commandExists('prettier')) {
     try {
-      execSync(`npx prettier --write "${filePath}"`, { stdio: 'pipe' });
+      // Safe execution with array arguments - prevents command injection
+      safeExecSync('npx', ['prettier', '--write', filePath], { stdio: 'pipe' });
       logHook(`Formatted TypeScript/JavaScript file: ${path.basename(filePath)}`);
     } catch (error) {
       logHook(`Failed to format TypeScript/JavaScript file: ${error.message}`, 'WARNING');
@@ -159,8 +171,13 @@ async function main() {
 
   } catch (error) {
     logHook(`Unexpected error: ${error.message}`, 'ERROR');
-    // Even on error, try to pass through empty context
-    writeHookOutput({});
+    // CRITICAL: Always pass through context, even on catastrophic failure
+    try {
+      writeHookOutput(context || {});
+    } catch (writeError) {
+      // Last resort: output minimal valid context to maintain hook chain
+      console.log('{}');
+    }
     process.exit(0);
   }
 }
@@ -168,5 +185,11 @@ async function main() {
 // Run main function
 main().catch((err) => {
   logHook(`Fatal error: ${err.message}`, 'ERROR');
+  // Last resort: output empty context to maintain hook chain
+  try {
+    console.log('{}');
+  } catch {
+    // Can't do anything more
+  }
   process.exit(0);
 });

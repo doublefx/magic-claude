@@ -16,29 +16,17 @@
 
 import fs from 'fs';
 import path from 'path';
-import { execSync } from 'child_process';
 import {
   readHookInput,
   writeHookOutput,
   getFilePath,
   getToolName,
   detectProjectType,
-  logHook
+  logHook,
+  commandExists,
+  safeExecSync,
+  isValidFilePath
 } from '../lib/hook-utils.js';
-
-/**
- * Check if a command exists in the system
- * @param {string} cmd - Command name to check
- * @returns {boolean} True if command exists
- */
-function commandExists(cmd) {
-  try {
-    execSync(`which ${cmd}`, { stdio: 'ignore' });
-    return true;
-  } catch {
-    return false;
-  }
-}
 
 /**
  * Run Semgrep security scan on a Python file
@@ -46,6 +34,11 @@ function commandExists(cmd) {
  * @returns {boolean} True if issues found
  */
 function runSemgrepScan(filePath) {
+  if (!isValidFilePath(filePath)) {
+    logHook(`Invalid file path for security scan: ${filePath}`, 'WARNING');
+    return false;
+  }
+
   if (!commandExists('semgrep')) {
     return false;
   }
@@ -54,8 +47,10 @@ function runSemgrepScan(filePath) {
     // Run Semgrep with auto config (includes Python security rules)
     // --quiet: Suppress progress messages
     // --config auto: Use curated ruleset from Semgrep registry
-    const result = execSync(
-      `semgrep --config auto "${filePath}" --json --quiet`,
+    // Safe execution with array arguments - prevents command injection
+    const result = safeExecSync(
+      'semgrep',
+      ['--config', 'auto', filePath, '--json', '--quiet'],
       {
         encoding: 'utf8',
         stdio: ['pipe', 'pipe', 'pipe']
@@ -165,7 +160,8 @@ function runPipAudit(cwd) {
 
   try {
     // Run pip-audit with JSON output
-    const result = execSync('pip-audit --format json', {
+    // Safe execution with array arguments - prevents command injection
+    const result = safeExecSync('pip-audit', ['--format', 'json'], {
       cwd,
       encoding: 'utf8',
       stdio: ['pipe', 'pipe', 'pipe']
@@ -264,8 +260,13 @@ async function main() {
 
   } catch (error) {
     logHook(`Unexpected error: ${error.message}`, 'ERROR');
-    // Even on error, try to pass through empty context
-    writeHookOutput({});
+    // CRITICAL: Always pass through context, even on catastrophic failure
+    try {
+      writeHookOutput(context || {});
+    } catch (writeError) {
+      // Last resort: output minimal valid context to maintain hook chain
+      console.log('{}');
+    }
     process.exit(0);
   }
 }
@@ -273,5 +274,11 @@ async function main() {
 // Run main function
 main().catch((err) => {
   logHook(`Fatal error: ${err.message}`, 'ERROR');
+  // Last resort: output empty context to maintain hook chain
+  try {
+    console.log('{}');
+  } catch {
+    // Can't do anything more
+  }
   process.exit(0);
 });

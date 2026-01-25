@@ -281,8 +281,26 @@ export async function generateAdditionalFiles(fileTypes = [], cwd = process.cwd(
  * Command handler for Claude Code
  */
 export default async function ciCdCommand(args = []) {
+  const validPlatforms = Object.keys(PLATFORMS);
+  const validAdditionalFiles = ['docker', 'kubernetes', 'security', 'helm'];
+
+  // Validate platform argument
   const platform = args[0] || 'github-actions';
-  const additionalFiles = args.slice(1);
+  if (!validPlatforms.includes(platform)) {
+    console.error(`\n❌ Invalid platform: ${platform}`);
+    console.error(`\n✅ Valid platforms: ${validPlatforms.join(', ')}\n`);
+    return;
+  }
+
+  // Validate and filter additional file arguments
+  const requestedFiles = args.slice(1);
+  const additionalFiles = requestedFiles.filter(f => validAdditionalFiles.includes(f));
+
+  if (requestedFiles.length !== additionalFiles.length) {
+    const invalid = requestedFiles.filter(f => !validAdditionalFiles.includes(f));
+    console.warn(`\n⚠️  Invalid file types ignored: ${invalid.join(', ')}`);
+    console.error(`✅ Valid file types: ${validAdditionalFiles.join(', ')}\n`);
+  }
 
   console.log(`\n🔨 Generating ${PLATFORMS[platform]?.name || platform} pipeline...\n`);
 

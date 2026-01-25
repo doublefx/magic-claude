@@ -18,7 +18,8 @@
     "@vitest/ui": "^1.2.0",
     "@vitest/coverage-v8": "^1.2.0",
     "@types/node": "^20.11.0",
-    "vite": "^5.0.0"
+    "vite": "^5.0.0",
+    "js-yaml": "^4.1.0"
   },
   "keywords": [
     "claude-code",

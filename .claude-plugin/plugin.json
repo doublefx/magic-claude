@@ -1,5 +1,6 @@
 {
   "name": "everything-claude-code",
+  "version": "2.0.0",
   "description": "Complete collection of battle-tested Claude Code configs from an Anthropic hackathon winner - agents, skills, hooks, commands, and rules evolved over 10+ months of intensive daily use",
   "author": {
     "name": "Affaan Mustafa",
@@ -23,5 +24,8 @@
     "best-practices"
   ],
   "commands": "./commands",
-  "skills": "./skills"
+  "skills": "./skills",
+  "agents": "./agents",
+  "hooks": "./hooks/hooks.json",
+  "rules": "./rules"
 }

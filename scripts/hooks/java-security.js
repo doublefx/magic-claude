@@ -16,28 +16,16 @@
 
 import fs from 'fs';
 import path from 'path';
-import { execSync } from 'child_process';
 import {
   readHookInput,
   writeHookOutput,
   getFilePath,
   detectProjectType,
-  logHook
+  logHook,
+  commandExists,
+  safeExecSync,
+  isValidFilePath
 } from '../lib/hook-utils.js';
-
-/**
- * Check if a command exists in the system
- * @param {string} cmd - Command name to check
- * @returns {boolean} True if command exists
- */
-function commandExists(cmd) {
-  try {
-    execSync(`which ${cmd}`, { stdio: 'ignore' });
-    return true;
-  } catch {
-    return false;
-  }
-}
 
 /**
  * Find the build output directory for compiled classes
