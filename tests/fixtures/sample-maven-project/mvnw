@@ -1,0 +1,11 @@
+#!/bin/sh
+# Maven Wrapper script (stub for testing)
+# This is a simplified version for testing purposes only
+
+if [ "$1" = "--version" ]; then
+    echo "Apache Maven 3.9.5"
+    exit 0
+fi
+
+echo "[mvnw] Maven wrapper stub - would execute: mvn $@"
+exit 0

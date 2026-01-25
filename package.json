@@ -1,0 +1,35 @@
+{
+  "name": "everything-claude-code",
+  "version": "2.0.0",
+  "description": "Enterprise Stack Extension - Claude Code plugin for Python, Java, Kotlin, Gradle, Maven, and CI/CD pipelines",
+  "type": "module",
+  "scripts": {
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
+    "test:unit": "vitest tests/unit",
+    "test:integration": "vitest tests/integration",
+    "test:e2e": "vitest tests/e2e",
+    "test:harness": "vitest tests/harnesses"
+  },
+  "devDependencies": {
+    "vitest": "^1.2.0",
+    "@vitest/ui": "^1.2.0",
+    "@vitest/coverage-v8": "^1.2.0",
+    "@types/node": "^20.11.0",
+    "vite": "^5.0.0"
+  },
+  "keywords": [
+    "claude-code",
+    "plugin",
+    "python",
+    "java",
+    "kotlin",
+    "maven",
+    "gradle",
+    "ci-cd"
+  ],
+  "author": "doublefx",
+  "license": "MIT"
+}
