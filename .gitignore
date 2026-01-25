@@ -21,6 +21,9 @@ Thumbs.db
 # Node
 node_modules/
 
+# Test coverage
+coverage/
+
 # Personal configs (if any)
 personal/
 private/
