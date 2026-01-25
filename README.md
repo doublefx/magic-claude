@@ -4,11 +4,16 @@
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Shell](https://img.shields.io/badge/-Shell-4EAA25?logo=gnu-bash&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white)
+![Python](https://img.shields.io/badge/-Python-3776AB?logo=python&logoColor=white)
+![Java](https://img.shields.io/badge/-Java-007396?logo=openjdk&logoColor=white)
+![Kotlin](https://img.shields.io/badge/-Kotlin-7F52FF?logo=kotlin&logoColor=white)
 ![Markdown](https://img.shields.io/badge/-Markdown-000000?logo=markdown&logoColor=white)
 
 **The complete collection of Claude Code configs from an Anthropic hackathon winner.**
 
 Production-ready agents, skills, hooks, commands, rules, and MCP configurations evolved over 10+ months of intensive daily use building real products.
+
+**NEW in v2.0**: Enterprise polyglot support (Python, Java, Kotlin, Groovy), modern 2026 tooling (Ruff, uv, Semgrep), intelligent runtime hook filtering, and one-command CI/CD pipeline generation for GitHub/GitLab/Bitbucket.
 
 ---
 
@@ -43,6 +48,102 @@ This repo is the raw code only. The guides explain everything.
 | Verification Loops | Checkpoint vs continuous evals, grader types, pass@k metrics |
 | Parallelization | Git worktrees, cascade method, when to scale instances |
 | Subagent Orchestration | The context problem, iterative retrieval pattern |
+
+---
+
+## What's New in v2.0
+
+### Enterprise Polyglot Support
+
+Beyond JavaScript/TypeScript, this plugin now provides **production-grade support** for:
+
+- **Python**: Ruff formatting, uv package management, Pyright type checking, Semgrep security scanning
+- **Java**: google-java-format, SpotBugs, Maven/Gradle integration
+- **Kotlin**: ktfmt/ktlint formatting, Detekt static analysis, Gradle Kotlin DSL
+- **Groovy**: CodeNarc, Gradle scripting support
+
+**16 Specialized Agents** including `python-reviewer`, `java-reviewer`, `kotlin-reviewer`, `maven-expert`, `gradle-expert`, and `ci-cd-architect`.
+
+**16 Domain Skills** including language-specific patterns for Python, Kotlin, Maven, Gradle, and CI/CD best practices.
+
+### Modern 2026 Tooling
+
+All tools have been updated to use **2026 best practices**:
+
+- **Python**: Ruff (10-100x faster than black/flake8) + uv (10-100x faster than pip) + Pyright (3-5x faster than mypy)
+- **Java**: google-java-format + SpotBugs + Error Prone
+- **Kotlin**: ktfmt (official Google style) + Detekt
+- **Security**: Semgrep (2026 rules), Gitleaks, Trivy
+
+### Intelligent Runtime Hook Filtering
+
+Hooks now **automatically detect your project type** and only run relevant tools:
+
+- Python file in a Python project → Ruff formatting
+- Java file in a Maven project → google-java-format
+- TypeScript file in a Node.js project → Prettier
+- No cross-language interference in monorepos
+
+**Manifest hash-based caching** ensures detection is blazing fast (<50ms with cache).
+
+### One-Command CI/CD Pipeline Generation
+
+Generate complete, production-ready CI/CD pipelines with a single command:
+
+```bash
+# Generate GitHub Actions workflow
+/ci-cd github-actions python
+
+# Generate GitLab CI pipeline for Java Maven
+/ci-cd gitlab-ci java-maven
+
+# Generate Bitbucket Pipeline for Node.js
+/ci-cd bitbucket-pipelines nodejs
+```
+
+**44 Production Templates** including:
+- GitHub Actions workflows (5 languages + Docker + reusable workflows)
+- GitLab CI pipelines (5 languages + Docker + Kubernetes)
+- Bitbucket Pipelines (4 languages)
+- Docker multi-stage builds (4 Dockerfiles)
+- Kubernetes manifests (6 resources)
+- Helm charts (full application chart)
+- Security scanning configs (Semgrep, Gitleaks, Trivy)
+
+### Quick Start Examples
+
+**Python Development**:
+```bash
+# Review Python code with modern best practices
+/python-reviewer
+
+# Run security scan with Semgrep
+# (Automatic on file write if python-security hook enabled)
+```
+
+**Java/Kotlin Development**:
+```bash
+# Review Java code with Spring Boot patterns
+/java-reviewer
+
+# Get Maven best practices advice
+/maven-expert
+
+# Review Kotlin code with modern patterns
+/kotlin-reviewer
+
+# Get Gradle optimization tips
+/gradle-expert
+```
+
+**CI/CD Setup**:
+```bash
+# Generate complete GitHub Actions pipeline
+/ci-cd github-actions python
+
+# Get CI/CD best practices and deployment patterns
+/ci-cd-patterns
+```
 
 ---
 
@@ -91,7 +192,7 @@ everything-claude-code/
 |   |-- plugin.json         # Plugin metadata and component paths
 |   |-- marketplace.json    # Marketplace catalog for /plugin marketplace add
 |
-|-- agents/           # Specialized subagents for delegation
+|-- agents/           # Specialized subagents for delegation (16 total)
 |   |-- planner.md           # Feature implementation planning
 |   |-- architect.md         # System design decisions
 |   |-- tdd-guide.md         # Test-driven development
@@ -101,8 +202,15 @@ everything-claude-code/
 |   |-- e2e-runner.md        # Playwright E2E testing
 |   |-- refactor-cleaner.md  # Dead code cleanup
 |   |-- doc-updater.md       # Documentation sync
+|   |-- python-reviewer.md   # Python code review (NEW v2.0)
+|   |-- java-reviewer.md     # Java code review (NEW v2.0)
+|   |-- kotlin-reviewer.md   # Kotlin code review (NEW v2.0)
+|   |-- groovy-reviewer.md   # Groovy code review (NEW v2.0)
+|   |-- maven-expert.md      # Maven build optimization (NEW v2.0)
+|   |-- gradle-expert.md     # Gradle build optimization (NEW v2.0)
+|   |-- ci-cd-architect.md   # CI/CD pipeline generation (NEW v2.0)
 |
-|-- skills/           # Workflow definitions and domain knowledge
+|-- skills/           # Workflow definitions and domain knowledge (16 total)
 |   |-- coding-standards/           # Language best practices
 |   |-- backend-patterns/           # API, database, caching patterns
 |   |-- frontend-patterns/          # React, Next.js patterns
@@ -112,8 +220,15 @@ everything-claude-code/
 |   |-- security-review/            # Security checklist
 |   |-- eval-harness/               # Verification loop evaluation (Longform Guide)
 |   |-- verification-loop/          # Continuous verification (Longform Guide)
+|   |-- python-patterns/            # Python best practices and idioms (NEW v2.0)
+|   |-- kotlin-patterns/            # Kotlin modern patterns (NEW v2.0)
+|   |-- maven-patterns/             # Maven project management (NEW v2.0)
+|   |-- gradle-patterns/            # Gradle build optimization (NEW v2.0)
+|   |-- ci-cd-patterns/             # CI/CD and deployment patterns (NEW v2.0)
+|   |-- clickhouse-io/              # ClickHouse database patterns
+|   |-- project-guidelines-example/ # Template for project-specific guidelines
 |
-|-- commands/         # Slash commands for quick execution
+|-- commands/         # Slash commands for quick execution (15 total)
 |   |-- tdd.md              # /tdd - Test-driven development
 |   |-- plan.md             # /plan - Implementation planning
 |   |-- e2e.md              # /e2e - E2E test generation
@@ -123,7 +238,12 @@ everything-claude-code/
 |   |-- learn.md            # /learn - Extract patterns mid-session (Longform Guide)
 |   |-- checkpoint.md       # /checkpoint - Save verification state (Longform Guide)
 |   |-- verify.md           # /verify - Run verification loop (Longform Guide)
-|   |-- setup-pm.md         # /setup-pm - Configure package manager (NEW)
+|   |-- setup-pm.md         # /setup-pm - Configure package manager
+|   |-- eval.md             # /eval - Run evaluation harness
+|   |-- orchestrate.md      # /orchestrate - Multi-agent orchestration
+|   |-- test-coverage.md    # /test-coverage - Coverage reporting
+|   |-- update-codemaps.md  # /update-codemaps - Update code maps
+|   |-- update-docs.md      # /update-docs - Sync documentation
 |
 |-- rules/            # Always-follow guidelines (copy to ~/.claude/rules/)
 |   |-- security.md         # Mandatory security checks
@@ -138,21 +258,41 @@ everything-claude-code/
 |   |-- memory-persistence/       # Session lifecycle hooks (Longform Guide)
 |   |-- strategic-compact/        # Compaction suggestions (Longform Guide)
 |
-|-- scripts/          # Cross-platform Node.js scripts (NEW)
+|-- scripts/          # Cross-platform Node.js scripts
 |   |-- lib/                     # Shared utilities
 |   |   |-- utils.js             # Cross-platform file/path/system utilities
 |   |   |-- package-manager.js   # Package manager detection and selection
-|   |-- hooks/                   # Hook implementations
+|   |   |-- detect-project-type.js  # Polyglot project detection (NEW v2.0)
+|   |   |-- hook-utils.js           # Hook helper utilities (NEW v2.0)
+|   |-- hooks/                   # Hook implementations (9 total)
 |   |   |-- session-start.js     # Load context on session start
 |   |   |-- session-end.js       # Save state on session end
 |   |   |-- pre-compact.js       # Pre-compaction state saving
 |   |   |-- suggest-compact.js   # Strategic compaction suggestions
 |   |   |-- evaluate-session.js  # Extract patterns from sessions
+|   |   |-- smart-formatter.js   # Universal auto-formatter (NEW v2.0)
+|   |   |-- python-security.js   # Python security scanning (NEW v2.0)
+|   |   |-- java-security.js     # Java security scanning (NEW v2.0)
+|   |   |-- maven-advisor.js     # Maven/Gradle best practices (NEW v2.0)
 |   |-- setup-package-manager.js # Interactive PM setup
 |
-|-- tests/            # Test suite (NEW)
-|   |-- lib/                     # Library tests
-|   |-- hooks/                   # Hook tests
+|-- templates/        # CI/CD and deployment templates (NEW v2.0, 44 files)
+|   |-- github-actions/          # GitHub Actions workflows (6 files)
+|   |-- gitlab-ci/               # GitLab CI pipelines (6 files)
+|   |-- bitbucket-pipelines/     # Bitbucket Pipelines (4 files)
+|   |-- docker/                  # Docker multi-stage builds (5 files)
+|   |-- kubernetes/              # Kubernetes manifests (6 files)
+|   |-- helm/                    # Helm charts (full application chart)
+|   |-- security/                # Security scanning configs (6 files)
+|
+|-- tests/            # Test suite (156+ tests)
+|   |-- unit/                    # Unit tests
+|   |   |-- lib/                 # Library unit tests
+|   |   |-- hooks/               # Hook unit tests
+|   |-- integration/             # Integration tests (Python, Java, Kotlin, Build Tools)
+|   |-- e2e/                     # End-to-end tests (CI/CD generation)
+|   |-- harnesses/               # Test harnesses (Hook, Agent, Template)
+|   |-- fixtures/                # Test fixtures (sample projects)
 |   |-- run-all.js               # Run all tests
 |
 |-- contexts/         # Dynamic system prompt injection contexts (Longform Guide)
@@ -301,17 +441,77 @@ Rules are always-follow guidelines. Keep them modular:
 
 ## Running Tests
 
-The plugin includes a comprehensive test suite:
+The plugin includes a comprehensive test suite with 156+ tests:
 
 ```bash
-# Run all tests
-node tests/run-all.js
+# Run all tests (unit + integration + e2e)
+npm test
 
-# Run individual test files
-node tests/lib/utils.test.js
-node tests/lib/package-manager.test.js
-node tests/hooks/hooks.test.js
+# Run specific test categories
+npm test tests/unit/           # Unit tests only
+npm test tests/integration/    # Integration tests only
+npm test tests/e2e/            # E2E tests only
+
+# Run with coverage report
+npm test -- --coverage
+
+# Watch mode for development
+npm test -- --watch
 ```
+
+**Test Coverage**:
+- Unit tests: 80+ tests (lib functions, hooks, utilities)
+- Integration tests: 50+ tests (Python, Java, Kotlin, build tools)
+- E2E tests: 20+ tests (CI/CD generation, monorepo scenarios)
+- Test fixtures: Multiple sample projects for realistic testing
+
+---
+
+## Documentation
+
+### Core Documentation
+
+- **[MIGRATION-GUIDE.md](docs/MIGRATION-GUIDE.md)** - Upgrading from v1.0 to v2.0
+- **[FEATURES.md](docs/FEATURES.md)** - Complete feature documentation with examples
+- **[AGENT-CATALOG.md](docs/AGENT-CATALOG.md)** - All 16 agents with use cases
+- **[PERFORMANCE.md](docs/PERFORMANCE.md)** - Benchmarks and optimization tips
+
+### Language-Specific Guides
+
+**Python Development**:
+- Modern Python tooling (Ruff, uv, Pyright)
+- Security scanning with Semgrep
+- Best practices and patterns
+
+**Java/Kotlin Development**:
+- JVM tooling and formatting
+- Maven vs Gradle guidance
+- Spring Boot patterns
+
+**Build Tools**:
+- Maven optimization guide
+- Gradle best practices
+- Multi-module projects
+
+**CI/CD Pipelines**:
+- GitHub Actions setup
+- GitLab CI configuration
+- Bitbucket Pipelines
+- Docker and Kubernetes deployment
+
+### Tutorials
+
+Step-by-step walkthroughs for common scenarios:
+
+- **[Getting Started](docs/tutorials/01-getting-started.md)** - Installation and first project
+- **[Python Development](docs/tutorials/02-python-development.md)** - Complete Python workflow
+- **[Java Development](docs/tutorials/03-java-development.md)** - Complete Java workflow
+- **[CI/CD Generation](docs/tutorials/04-cicd-generation.md)** - Pipeline generation guide
+- **[Advanced Features](docs/tutorials/05-advanced-features.md)** - Monorepos and customization
+
+### Release Notes
+
+- **[RELEASE-NOTES.md](RELEASE-NOTES.md)** - What's new in v2.0
 
 ---
 
@@ -329,11 +529,35 @@ Please contribute! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ### Ideas for Contributions
 
-- Language-specific skills (Python, Go, Rust patterns)
-- Framework-specific configs (Django, Rails, Laravel)
-- DevOps agents (Kubernetes, Terraform, AWS)
-- Testing strategies (different frameworks)
-- Domain-specific knowledge (ML, data engineering, mobile)
+**New Language Support**:
+- Go patterns and tooling (gofmt, golangci-lint)
+- Rust patterns and tooling (rustfmt, clippy)
+- C#/.NET patterns and tooling
+- Ruby/Rails patterns
+
+**Framework-Specific Configs**:
+- Django, Flask, FastAPI (Python web frameworks)
+- Spring Cloud, Quarkus, Micronaut (Java microservices)
+- Rails, Sinatra (Ruby frameworks)
+- Phoenix, Elixir patterns
+
+**DevOps and Cloud**:
+- Terraform patterns and best practices
+- AWS CDK configurations
+- Azure DevOps pipelines
+- Pulumi configurations
+
+**Additional CI/CD Platforms**:
+- CircleCI configurations
+- Jenkins pipelines
+- Azure Pipelines
+- Travis CI
+
+**Domain-Specific**:
+- Machine learning workflows (MLflow, DVC)
+- Data engineering patterns (dbt, Airflow)
+- Mobile development (React Native, Flutter)
+- Game development patterns
 
 ---
 
