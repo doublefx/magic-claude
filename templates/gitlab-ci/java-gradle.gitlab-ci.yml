@@ -1,0 +1,192 @@
+stages:
+  - build
+  - test
+  - security
+  - quality
+
+variables:
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.configuration-cache=true"
+  GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
+
+.gradle-base:
+  cache:
+    key:
+      files:
+        - build.gradle
+        - build.gradle.kts
+        - gradle.properties
+        - settings.gradle
+        - settings.gradle.kts
+    paths:
+      - .gradle/caches/
+      - .gradle/wrapper/
+      - .gradle/configuration-cache/
+
+.detect-gradle-wrapper:
+  before_script:
+    - chmod +x gradlew || true
+    - export GRADLE_CMD="./gradlew"
+
+build:java-11:
+  extends:
+    - .gradle-base
+    - .detect-gradle-wrapper
+  stage: build
+  image: gradle:8.5-jdk11
+  script:
+    - $GRADLE_CMD assemble --build-cache --warning-mode=all
+  artifacts:
+    paths:
+      - build/
+    expire_in: 1 week
+
+build:java-17:
+  extends:
+    - .gradle-base
+    - .detect-gradle-wrapper
+  stage: build
+  image: gradle:8.5-jdk17
+  script:
+    - $GRADLE_CMD assemble --build-cache --warning-mode=all
+  artifacts:
+    paths:
+      - build/
+    expire_in: 1 week
+
+build:java-21:
+  extends:
+    - .gradle-base
+    - .detect-gradle-wrapper
+  stage: build
+  image: gradle:8.5-jdk21
+  script:
+    - $GRADLE_CMD assemble --build-cache --warning-mode=all
+  artifacts:
+    paths:
+      - build/
+    expire_in: 1 week
+
+test:java-11:
+  extends:
+    - .gradle-base
+    - .detect-gradle-wrapper
+  stage: test
+  image: gradle:8.5-jdk11
+  needs: ["build:java-11"]
+  script:
+    - $GRADLE_CMD test --build-cache
+  artifacts:
+    reports:
+      junit: build/test-results/test/**/TEST-*.xml
+    paths:
+      - build/test-results/
+      - build/reports/tests/
+    expire_in: 1 week
+
+test:java-17:
+  extends:
+    - .gradle-base
+    - .detect-gradle-wrapper
+  stage: test
+  image: gradle:8.5-jdk17
+  needs: ["build:java-17"]
+  script:
+    - $GRADLE_CMD test jacocoTestReport --build-cache
+  coverage: '/Total.*?([0-9]{1,3})%/'
+  artifacts:
+    reports:
+      junit: build/test-results/test/**/TEST-*.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: build/reports/jacoco/test/jacocoTestReport.xml
+    paths:
+      - build/test-results/
+      - build/reports/tests/
+      - build/reports/jacoco/
+    expire_in: 1 week
+
+test:java-21:
+  extends:
+    - .gradle-base
+    - .detect-gradle-wrapper
+  stage: test
+  image: gradle:8.5-jdk21
+  needs: ["build:java-21"]
+  script:
+    - $GRADLE_CMD test --build-cache
+  artifacts:
+    reports:
+      junit: build/test-results/test/**/TEST-*.xml
+    paths:
+      - build/test-results/
+      - build/reports/tests/
+    expire_in: 1 week
+
+security:dependency-check:
+  extends:
+    - .gradle-base
+    - .detect-gradle-wrapper
+  stage: security
+  image: gradle:8.5-jdk17
+  needs: []
+  script:
+    - $GRADLE_CMD dependencyCheckAnalyze || true
+  artifacts:
+    paths:
+      - build/reports/dependency-check-report.html
+    expire_in: 1 week
+  allow_failure: true
+
+security:dependency-locks:
+  extends:
+    - .gradle-base
+    - .detect-gradle-wrapper
+  stage: security
+  image: gradle:8.5-jdk17
+  needs: []
+  script:
+    - |
+      if [ -f "gradle.lockfile" ]; then
+        $GRADLE_CMD dependencies --write-locks
+        git diff --exit-code gradle.lockfile || (echo "Dependency lock file is out of date" && exit 1)
+      else
+        echo "No gradle.lockfile found, skipping lock verification"
+      fi
+  allow_failure: true
+
+security:gitleaks:
+  stage: security
+  image:
+    name: zricethezav/gitleaks:latest
+    entrypoint: [""]
+  needs: []
+  script:
+    - gitleaks detect --source . --verbose
+  allow_failure: true
+
+quality:sonarqube:
+  extends:
+    - .gradle-base
+    - .detect-gradle-wrapper
+  stage: quality
+  image: gradle:8.5-jdk17
+  needs: ["test:java-17"]
+  script:
+    - |
+      if [ -n "$SONAR_TOKEN" ]; then
+        $GRADLE_CMD sonar \
+          -Dsonar.projectKey=$CI_PROJECT_NAME \
+          -Dsonar.host.url=$SONAR_HOST_URL \
+          -Dsonar.token=$SONAR_TOKEN
+      else
+        echo "SONAR_TOKEN not set, skipping SonarQube analysis"
+      fi
+  only:
+    - main
+    - develop
+  allow_failure: true
+
+# GitLab SAST (only if using GitLab Ultimate/Gold)
+include:
+  - template: Security/SAST.gitlab-ci.yml
+  - template: Security/Dependency-Scanning.gitlab-ci.yml

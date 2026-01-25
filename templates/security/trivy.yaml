@@ -1,0 +1,84 @@
+# Trivy configuration file
+# Used for container image and filesystem scanning
+
+# Scan settings
+scan:
+  # Security checks to enable
+  security-checks:
+    - vuln      # Vulnerabilities
+    - config    # Misconfigurations
+    - secret    # Secrets
+
+  # Severity levels to report
+  severity:
+    - CRITICAL
+    - HIGH
+    - MEDIUM
+
+  # Exit code
+  # 0: No vulnerabilities found
+  # 1: Vulnerabilities found (use for CI/CD pipelines)
+  exit-code: 1
+
+# Vulnerability settings
+vulnerability:
+  # Vulnerability type
+  type:
+    - os      # OS packages
+    - library # Language-specific packages
+
+  # Ignore unfixed vulnerabilities
+  ignore-unfixed: false
+
+# Output format
+format: table
+# Available formats: table, json, sarif, template, cyclonedx, spdx, spdx-json, github, cosign-vuln
+
+# Report settings
+report:
+  # Output file
+  # output: trivy-report.sarif
+
+  # Summary
+  summary: true
+
+# Cache settings
+cache:
+  # Cache directory
+  dir: .trivycache/
+
+# Database settings
+db:
+  # Skip database update
+  skip-update: false
+
+# Ignore policies (create .trivyignore file for specific CVEs)
+# Example .trivyignore:
+# CVE-2021-12345  # Reason for ignoring
+# CVE-2021-67890  # Another reason
+
+# Kubernetes-specific settings (for Kubernetes manifest scanning)
+kubernetes:
+  # Kubernetes version
+  # version: 1.28
+
+# Misconfiguration settings
+misconfiguration:
+  # Include built-in checks
+  include:
+    - kubernetes
+    - docker
+    - terraform
+
+# Secret scanning settings
+secret:
+  # Secret config file
+  # config: trivy-secret.yaml
+
+# Timeout
+timeout: 5m0s
+
+# Skip directories
+# skip-dirs:
+#   - node_modules/
+#   - vendor/

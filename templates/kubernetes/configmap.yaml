@@ -1,0 +1,145 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: myapp-config
+  labels:
+    app: myapp
+data:
+  # Application configuration
+  NODE_ENV: "production"
+  PORT: "8080"
+  LOG_LEVEL: "info"
+  LOG_FORMAT: "json"
+
+  # Database configuration (non-sensitive)
+  DB_HOST: "postgres.database.svc.cluster.local"
+  DB_PORT: "5432"
+  DB_NAME: "myapp"
+  DB_SSL: "true"
+
+  # Redis configuration
+  REDIS_HOST: "redis.cache.svc.cluster.local"
+  REDIS_PORT: "6379"
+
+  # Feature flags
+  FEATURE_NEW_UI: "true"
+  FEATURE_ANALYTICS: "true"
+
+  # API configuration
+  API_TIMEOUT: "30000"
+  API_RETRY_ATTEMPTS: "3"
+
+  # Application settings
+  MAX_UPLOAD_SIZE: "10485760"
+  SESSION_TIMEOUT: "3600"
+
+  # External service URLs
+  API_BASE_URL: "https://api.example.com"
+  AUTH_SERVICE_URL: "https://auth.example.com"
+
+  # Configuration file (multi-line)
+  app.properties: |
+    server.port=8080
+    server.compression.enabled=true
+    server.compression.mime-types=application/json,application/xml,text/html,text/xml,text/plain
+
+    spring.datasource.url=jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    spring.datasource.driver-class-name=org.postgresql.Driver
+
+    spring.jpa.hibernate.ddl-auto=validate
+    spring.jpa.show-sql=false
+    spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+    spring.jpa.properties.hibernate.format_sql=true
+
+    logging.level.root=INFO
+    logging.level.com.example=DEBUG
+    logging.pattern.console=%d{yyyy-MM-dd HH:mm:ss} - %msg%n
+
+  nginx.conf: |
+    worker_processes auto;
+    events {
+      worker_connections 1024;
+    }
+    http {
+      include mime.types;
+      default_type application/octet-stream;
+
+      sendfile on;
+      keepalive_timeout 65;
+
+      server {
+        listen 8080;
+        server_name localhost;
+
+        location / {
+          root /usr/share/nginx/html;
+          index index.html;
+          try_files $uri $uri/ /index.html;
+        }
+
+        location /health {
+          access_log off;
+          return 200 "healthy\n";
+          add_header Content-Type text/plain;
+        }
+      }
+    }
+
+---
+# ConfigMap for application configuration file
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: myapp-app-config
+  labels:
+    app: myapp
+data:
+  config.json: |
+    {
+      "server": {
+        "port": 8080,
+        "host": "0.0.0.0"
+      },
+      "database": {
+        "host": "postgres.database.svc.cluster.local",
+        "port": 5432,
+        "name": "myapp",
+        "ssl": true,
+        "pool": {
+          "min": 2,
+          "max": 10
+        }
+      },
+      "cache": {
+        "host": "redis.cache.svc.cluster.local",
+        "port": 6379,
+        "ttl": 3600
+      },
+      "logging": {
+        "level": "info",
+        "format": "json"
+      }
+    }
+
+  config.yaml: |
+    server:
+      port: 8080
+      host: 0.0.0.0
+
+    database:
+      host: postgres.database.svc.cluster.local
+      port: 5432
+      name: myapp
+      ssl: true
+      pool:
+        min: 2
+        max: 10
+
+    cache:
+      host: redis.cache.svc.cluster.local
+      port: 6379
+      ttl: 3600
+
+    logging:
+      level: info
+      format: json

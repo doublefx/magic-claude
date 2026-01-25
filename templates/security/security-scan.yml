@@ -1,0 +1,163 @@
+# Reusable GitHub Actions security scanning workflow
+
+name: Security Scanning
+
+on:
+  workflow_call:
+    inputs:
+      scan-type:
+        description: 'Type of scan (all, container, secrets, sast, dependencies)'
+        required: false
+        type: string
+        default: 'all'
+
+jobs:
+  trivy-container-scan:
+    if: inputs.scan-type == 'all' || inputs.scan-type == 'container'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Run Trivy in table mode
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'table'
+          exit-code: '0'
+          severity: 'CRITICAL,HIGH'
+
+  gitleaks-scan:
+    if: inputs.scan-type == 'all' || inputs.scan-type == 'secrets'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run GitLeaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  semgrep-scan:
+    if: inputs.scan-type == 'all' || inputs.scan-type == 'sast'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Semgrep
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: >-
+            p/security-audit
+            p/secrets
+            p/owasp-top-ten
+            p/javascript
+            p/typescript
+            p/python
+            p/java
+            p/golang
+
+  dependency-check:
+    if: inputs.scan-type == 'all' || inputs.scan-type == 'dependencies'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Detect project type
+        id: detect
+        run: |
+          if [ -f "package.json" ]; then
+            echo "type=nodejs" >> $GITHUB_OUTPUT
+          elif [ -f "requirements.txt" ] || [ -f "pyproject.toml" ]; then
+            echo "type=python" >> $GITHUB_OUTPUT
+          elif [ -f "pom.xml" ]; then
+            echo "type=maven" >> $GITHUB_OUTPUT
+          elif [ -f "build.gradle" ] || [ -f "build.gradle.kts" ]; then
+            echo "type=gradle" >> $GITHUB_OUTPUT
+          else
+            echo "type=unknown" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Node.js dependency audit
+        if: steps.detect.outputs.type == 'nodejs'
+        run: |
+          npm audit --audit-level=moderate || true
+
+      - name: Python dependency check (Safety)
+        if: steps.detect.outputs.type == 'python'
+        run: |
+          pip install safety
+          safety check || true
+
+      - name: Java dependency check (OWASP)
+        if: steps.detect.outputs.type == 'maven' || steps.detect.outputs.type == 'gradle'
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: 'project'
+          path: '.'
+          format: 'HTML'
+          out: 'reports'
+
+  codeql-analysis:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'javascript', 'python', 'java' ]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{matrix.language}}"

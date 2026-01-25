@@ -1,0 +1,174 @@
+image: maven:3.9-eclipse-temurin-17
+
+definitions:
+  caches:
+    maven: ~/.m2/repository
+
+  steps:
+    - step: &detect-maven-wrapper
+        name: Detect Maven Wrapper
+        script:
+          - |
+            if [ -f "mvnw" ]; then
+              chmod +x mvnw
+              echo "export MVN_CMD=./mvnw" >> mvn-config.env
+            else
+              echo "export MVN_CMD=mvn" >> mvn-config.env
+            fi
+        artifacts:
+          - mvn-config.env
+
+    - step: &build-java-11
+        name: Build (Java 11)
+        image: maven:3.9-eclipse-temurin-11
+        caches:
+          - maven
+        script:
+          - source mvn-config.env || true
+          - ${MVN_CMD:-mvn} clean compile --batch-mode --errors --fail-at-end --show-version
+        artifacts:
+          - target/**
+
+    - step: &build-java-17
+        name: Build (Java 17)
+        image: maven:3.9-eclipse-temurin-17
+        caches:
+          - maven
+        script:
+          - source mvn-config.env || true
+          - ${MVN_CMD:-mvn} clean compile --batch-mode --errors --fail-at-end --show-version
+        artifacts:
+          - target/**
+
+    - step: &build-java-21
+        name: Build (Java 21)
+        image: maven:3.9-eclipse-temurin-21
+        caches:
+          - maven
+        script:
+          - source mvn-config.env || true
+          - ${MVN_CMD:-mvn} clean compile --batch-mode --errors --fail-at-end --show-version
+        artifacts:
+          - target/**
+
+    - step: &test-java-11
+        name: Test (Java 11)
+        image: maven:3.9-eclipse-temurin-11
+        caches:
+          - maven
+        script:
+          - source mvn-config.env || true
+          - ${MVN_CMD:-mvn} verify --batch-mode
+
+    - step: &test-java-17
+        name: Test (Java 17)
+        image: maven:3.9-eclipse-temurin-17
+        caches:
+          - maven
+        script:
+          - source mvn-config.env || true
+          - ${MVN_CMD:-mvn} verify --batch-mode
+          - ${MVN_CMD:-mvn} jacoco:report --batch-mode
+        artifacts:
+          - target/site/jacoco/**
+          - target/surefire-reports/**
+
+    - step: &test-java-21
+        name: Test (Java 21)
+        image: maven:3.9-eclipse-temurin-21
+        caches:
+          - maven
+        script:
+          - source mvn-config.env || true
+          - ${MVN_CMD:-mvn} verify --batch-mode
+
+    - step: &security-owasp
+        name: OWASP Dependency Check
+        image: maven:3.9-eclipse-temurin-17
+        caches:
+          - maven
+        script:
+          - source mvn-config.env || true
+          - ${MVN_CMD:-mvn} org.owasp:dependency-check-maven:check --batch-mode || true
+        artifacts:
+          - target/dependency-check-report.html
+
+    - step: &security-spotbugs
+        name: SpotBugs Analysis
+        image: maven:3.9-eclipse-temurin-17
+        caches:
+          - maven
+        script:
+          - source mvn-config.env || true
+          - ${MVN_CMD:-mvn} compile spotbugs:check --batch-mode || true
+        artifacts:
+          - target/spotbugsXml.xml
+
+pipelines:
+  default:
+    - step: *detect-maven-wrapper
+    - parallel:
+        - step: *build-java-11
+        - step: *build-java-17
+        - step: *build-java-21
+    - parallel:
+        - step: *test-java-11
+        - step: *test-java-17
+        - step: *test-java-21
+        - step: *security-owasp
+        - step: *security-spotbugs
+
+  branches:
+    main:
+      - step: *detect-maven-wrapper
+      - step: *build-java-17
+      - parallel:
+          - step: *test-java-17
+          - step: *security-owasp
+          - step: *security-spotbugs
+      - step:
+          name: Deploy to Production
+          deployment: production
+          script:
+            - source mvn-config.env || true
+            - echo "Deploying to production..."
+            # Add deployment commands here
+          trigger: manual
+
+    develop:
+      - step: *detect-maven-wrapper
+      - step: *build-java-17
+      - step: *test-java-17
+      - step:
+          name: Deploy to Staging
+          deployment: staging
+          script:
+            - source mvn-config.env || true
+            - echo "Deploying to staging..."
+            # Add deployment commands here
+
+  pull-requests:
+    '**':
+      - step: *detect-maven-wrapper
+      - step: *build-java-17
+      - step: *test-java-17
+
+  tags:
+    'v*':
+      - step: *detect-maven-wrapper
+      - step: *build-java-17
+      - parallel:
+          - step: *test-java-17
+          - step: *security-owasp
+      - step:
+          name: Create Release
+          script:
+            - source mvn-config.env || true
+            - ${MVN_CMD:-mvn} deploy --batch-mode
+            - echo "Creating release for $BITBUCKET_TAG"
+
+# Jira integration (optional - requires Bitbucket Pipelines + Jira)
+# Add this to steps to update Jira tickets automatically:
+# - pipe: atlassian/jira-build-info-pipe:latest
+#   variables:
+#     ENVIRONMENT: 'production'

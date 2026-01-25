@@ -1,0 +1,174 @@
+image: python:3.12
+
+definitions:
+  caches:
+    pip-cache: ~/.cache/pip
+
+  steps:
+    - step: &detect-package-manager
+        name: Detect Package Manager
+        script:
+          - |
+            if [ -f "uv.lock" ]; then
+              echo "export PACKAGE_MANAGER=uv" >> package-manager.env
+            elif [ -f "poetry.lock" ]; then
+              echo "export PACKAGE_MANAGER=poetry" >> package-manager.env
+            elif [ -f "Pipfile" ]; then
+              echo "export PACKAGE_MANAGER=pipenv" >> package-manager.env
+            else
+              echo "export PACKAGE_MANAGER=pip" >> package-manager.env
+            fi
+        artifacts:
+          - package-manager.env
+
+    - step: &install-dependencies
+        name: Install Dependencies
+        caches:
+          - pip-cache
+        script:
+          - source package-manager.env || true
+          - python -m pip install --upgrade pip
+          - |
+            if [ "$PACKAGE_MANAGER" = "uv" ]; then
+              pip install uv
+              uv sync
+            elif [ "$PACKAGE_MANAGER" = "poetry" ]; then
+              pip install poetry
+              poetry install
+            elif [ "$PACKAGE_MANAGER" = "pipenv" ]; then
+              pip install pipenv
+              pipenv install --dev
+            else
+              [ -f "requirements.txt" ] && pip install -r requirements.txt
+              [ -f "requirements-dev.txt" ] && pip install -r requirements-dev.txt
+            fi
+
+    - step: &ruff-format
+        name: Ruff Format Check
+        script:
+          - pip install ruff
+          - ruff format --check .
+
+    - step: &ruff-lint
+        name: Ruff Lint
+        script:
+          - pip install ruff
+          - ruff check .
+
+    - step: &mypy
+        name: Type Check (mypy)
+        script:
+          - pip install mypy
+          - mypy . || echo "Mypy check failed, continuing..."
+
+    - step: &test-python-310
+        name: Test Python 3.10
+        image: python:3.10
+        caches:
+          - pip-cache
+        script:
+          - python -m pip install --upgrade pip
+          - pip install pytest pytest-cov
+          - [ -f "requirements.txt" ] && pip install -r requirements.txt
+          - pytest --cov=. --cov-report=xml --cov-report=term
+        artifacts:
+          - coverage.xml
+
+    - step: &test-python-311
+        name: Test Python 3.11
+        image: python:3.11
+        caches:
+          - pip-cache
+        script:
+          - python -m pip install --upgrade pip
+          - pip install pytest pytest-cov
+          - [ -f "requirements.txt" ] && pip install -r requirements.txt
+          - pytest --cov=. --cov-report=xml --cov-report=term
+        artifacts:
+          - coverage.xml
+
+    - step: &test-python-312
+        name: Test Python 3.12
+        image: python:3.12
+        caches:
+          - pip-cache
+        script:
+          - python -m pip install --upgrade pip
+          - pip install pytest pytest-cov
+          - [ -f "requirements.txt" ] && pip install -r requirements.txt
+          - pytest --cov=. --cov-report=xml --cov-report=term
+        artifacts:
+          - coverage.xml
+
+    - step: &security-safety
+        name: Security Check (Safety)
+        script:
+          - pip install safety
+          - safety check --json || echo "Safety check found vulnerabilities"
+
+pipelines:
+  default:
+    - step: *detect-package-manager
+    - step: *install-dependencies
+    - parallel:
+        - step: *ruff-format
+        - step: *ruff-lint
+        - step: *mypy
+        - step: *test-python-310
+        - step: *test-python-311
+        - step: *test-python-312
+        - step: *security-safety
+
+  branches:
+    main:
+      - step: *detect-package-manager
+      - step: *install-dependencies
+      - parallel:
+          - step: *ruff-format
+          - step: *ruff-lint
+          - step: *test-python-312
+          - step: *security-safety
+      - step:
+          name: Deploy to Production
+          deployment: production
+          script:
+            - echo "Deploying to production..."
+            # Add deployment commands here
+
+    develop:
+      - step: *detect-package-manager
+      - step: *install-dependencies
+      - parallel:
+          - step: *ruff-format
+          - step: *ruff-lint
+          - step: *test-python-312
+      - step:
+          name: Deploy to Staging
+          deployment: staging
+          script:
+            - echo "Deploying to staging..."
+            # Add deployment commands here
+
+  pull-requests:
+    '**':
+      - step: *detect-package-manager
+      - step: *install-dependencies
+      - parallel:
+          - step: *ruff-format
+          - step: *ruff-lint
+          - step: *test-python-312
+
+  tags:
+    'v*':
+      - step: *detect-package-manager
+      - step: *install-dependencies
+      - parallel:
+          - step: *ruff-format
+          - step: *ruff-lint
+          - step: *test-python-312
+          - step: *security-safety
+      - step:
+          name: Create Release
+          script:
+            - echo "Creating release for $BITBUCKET_TAG"
+            # Add release creation commands here

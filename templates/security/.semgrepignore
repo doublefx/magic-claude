@@ -1,0 +1,50 @@
+# Semgrep ignore file
+# Files and directories to exclude from Semgrep scans
+
+# Dependencies
+node_modules/
+vendor/
+venv/
+.venv/
+__pycache__/
+.pytest_cache/
+target/
+build/
+dist/
+.gradle/
+.m2/
+
+# Build artifacts
+*.min.js
+*.bundle.js
+*.compiled.js
+
+# Test files (optional - uncomment if you want to skip tests)
+# **/*test.js
+# **/*spec.js
+# **/*test.py
+# **/*_test.go
+
+# Generated files
+coverage/
+.nyc_output/
+
+# Documentation
+docs/
+*.md
+
+# Configuration files
+*.json
+*.yaml
+*.yml
+!semgrep.yaml
+!semgrep.yml
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Git
+.git/

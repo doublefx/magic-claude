@@ -1,0 +1,103 @@
+# GitLeaks configuration file
+# Scans for secrets in git repositories
+
+title = "GitLeaks Configuration"
+
+[extend]
+# useDefault will extend the base configuration with the default gitleaks config:
+# https://github.com/gitleaks/gitleaks/blob/master/config/gitleaks.toml
+useDefault = true
+
+[allowlist]
+description = "Allowlisted files and patterns"
+
+# Allowlist files
+paths = [
+    '''\.trivyignore$''',
+    '''\.gitleaks\.toml$''',
+    '''\.semgrepignore$''',
+    '''package-lock\.json$''',
+    '''yarn\.lock$''',
+    '''pnpm-lock\.yaml$''',
+    '''go\.sum$''',
+    '''Gemfile\.lock$''',
+]
+
+# Allowlist commit SHAs
+commits = [
+    # "commit-sha-here",
+]
+
+# Allowlist specific regex patterns
+regexes = [
+    # Example: Ignore test API keys
+    '''test_api_key_[a-zA-Z0-9]{32}''',
+]
+
+# Custom rules (in addition to default rules)
+[[rules]]
+id = "hardcoded-password"
+description = "Hardcoded password in code"
+regex = '''(?i)(password|passwd|pwd)\s*[:=]\s*['"]?[^'"\s]{8,}['"]?'''
+tags = ["password", "security"]
+[rules.allowlist]
+regexes = [
+    '''(?i)(password|passwd|pwd)\s*[:=]\s*['"]?(changeme|password|example|sample|test|demo)['"]?''',
+    '''(?i)(password|passwd|pwd)\s*[:=]\s*['"]\$\{.*\}['"]''',  # Environment variables
+]
+
+[[rules]]
+id = "aws-access-key"
+description = "AWS Access Key ID"
+regex = '''(?i)(A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}'''
+tags = ["aws", "key"]
+
+[[rules]]
+id = "aws-secret-key"
+description = "AWS Secret Access Key"
+regex = '''(?i)aws_secret_access_key\s*[:=]\s*['"]?[A-Za-z0-9/+=]{40}['"]?'''
+tags = ["aws", "secret"]
+
+[[rules]]
+id = "github-token"
+description = "GitHub Personal Access Token"
+regex = '''ghp_[0-9a-zA-Z]{36}'''
+tags = ["github", "token"]
+
+[[rules]]
+id = "github-oauth"
+description = "GitHub OAuth Token"
+regex = '''gho_[0-9a-zA-Z]{36}'''
+tags = ["github", "oauth"]
+
+[[rules]]
+id = "slack-token"
+description = "Slack Token"
+regex = '''xox[baprs]-([0-9a-zA-Z]{10,48})'''
+tags = ["slack", "token"]
+
+[[rules]]
+id = "private-key"
+description = "Private Key"
+regex = '''-----BEGIN (RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----'''
+tags = ["key", "private"]
+
+[[rules]]
+id = "jwt-token"
+description = "JSON Web Token"
+regex = '''eyJ[A-Za-z0-9-_=]+\.eyJ[A-Za-z0-9-_=]+\.[A-Za-z0-9-_.+/=]*'''
+tags = ["jwt", "token"]
+[rules.allowlist]
+regexes = [
+    '''eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ''',  # Example JWT from jwt.io
+]
+
+[[rules]]
+id = "database-url"
+description = "Database Connection String"
+regex = '''(?i)(postgres|mysql|mongodb|redis)://[a-zA-Z0-9:@.-]+(/[a-zA-Z0-9_-]+)?'''
+tags = ["database", "connection"]
+[rules.allowlist]
+regexes = [
+    '''(?i)(postgres|mysql|mongodb|redis)://(localhost|127\.0\.0\.1|example\.com)''',  # Local/example connections
+]

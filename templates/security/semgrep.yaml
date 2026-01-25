@@ -1,0 +1,147 @@
+# Semgrep configuration file
+# Static Application Security Testing (SAST) rules
+
+rules:
+  # SQL Injection
+  - id: sql-injection-risk
+    patterns:
+      - pattern: $DB.query($SQL)
+      - pattern-not: $DB.query("...")
+    message: Potential SQL injection vulnerability. Use parameterized queries.
+    languages: [javascript, typescript, python, java]
+    severity: ERROR
+    metadata:
+      cwe: "CWE-89: SQL Injection"
+      owasp: "A03:2021 - Injection"
+
+  # Command Injection
+  - id: command-injection
+    patterns:
+      - pattern-either:
+          - pattern: exec($CMD)
+          - pattern: execSync($CMD)
+          - pattern: spawn($CMD, ...)
+          - pattern: subprocess.call($CMD, shell=True)
+          - pattern: os.system($CMD)
+      - pattern-not: exec("...")
+    message: Potential command injection vulnerability. Avoid dynamic command execution.
+    languages: [javascript, typescript, python]
+    severity: ERROR
+    metadata:
+      cwe: "CWE-78: OS Command Injection"
+      owasp: "A03:2021 - Injection"
+
+  # Path Traversal
+  - id: path-traversal
+    patterns:
+      - pattern-either:
+          - pattern: fs.readFile($PATH, ...)
+          - pattern: fs.readFileSync($PATH, ...)
+          - pattern: open($PATH, ...)
+      - pattern-not-inside: |
+          $PATH = path.join(...)
+    message: Potential path traversal vulnerability. Validate and sanitize file paths.
+    languages: [javascript, typescript, python]
+    severity: WARNING
+    metadata:
+      cwe: "CWE-22: Path Traversal"
+      owasp: "A01:2021 - Broken Access Control"
+
+  # Hardcoded Secrets
+  - id: hardcoded-password
+    patterns:
+      - pattern-either:
+          - pattern: |
+              $VAR = { password: "..." }
+          - pattern: |
+              password = "..."
+          - pattern: |
+              PASSWORD = "..."
+      - pattern-not: |
+          $VAR = { password: "" }
+      - pattern-not: |
+          password = process.env.$ENV
+    message: Hardcoded password detected. Use environment variables or secret management.
+    languages: [javascript, typescript, python, java]
+    severity: ERROR
+    metadata:
+      cwe: "CWE-798: Use of Hard-coded Credentials"
+      owasp: "A07:2021 - Identification and Authentication Failures"
+
+  # Insecure Random
+  - id: insecure-random
+    patterns:
+      - pattern-either:
+          - pattern: Math.random()
+          - pattern: random.random()
+      - pattern-inside: |
+          $CRYPTO
+    message: Using insecure random number generator for cryptographic purposes. Use crypto.randomBytes() instead.
+    languages: [javascript, typescript, python]
+    severity: WARNING
+    metadata:
+      cwe: "CWE-338: Use of Cryptographically Weak PRNG"
+
+  # Cross-Site Scripting (XSS)
+  - id: xss-dom-injection
+    patterns:
+      - pattern-either:
+          - pattern: $EL.innerHTML = $VAR
+          - pattern: $EL.outerHTML = $VAR
+      - pattern-not: $EL.innerHTML = "..."
+    message: Potential XSS vulnerability. Sanitize user input before injecting into DOM.
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      cwe: "CWE-79: Cross-site Scripting"
+      owasp: "A03:2021 - Injection"
+
+  # Insecure Deserialization
+  - id: insecure-deserialization
+    patterns:
+      - pattern-either:
+          - pattern: pickle.loads($DATA)
+          - pattern: yaml.load($DATA)
+          - pattern: eval($DATA)
+      - pattern-not: yaml.safe_load($DATA)
+    message: Insecure deserialization detected. Use safe alternatives.
+    languages: [python, javascript, typescript]
+    severity: ERROR
+    metadata:
+      cwe: "CWE-502: Deserialization of Untrusted Data"
+      owasp: "A08:2021 - Software and Data Integrity Failures"
+
+  # Missing Authentication
+  - id: missing-authentication
+    patterns:
+      - pattern: |
+          @app.route($ROUTE)
+          def $FUNC(...):
+            ...
+      - pattern-not: |
+          @app.route($ROUTE)
+          @login_required
+          def $FUNC(...):
+            ...
+    message: Endpoint missing authentication decorator. Add @login_required or equivalent.
+    languages: [python]
+    severity: WARNING
+    metadata:
+      owasp: "A01:2021 - Broken Access Control"
+
+  # Regex DoS
+  - id: regex-dos
+    patterns:
+      - pattern: |
+          new RegExp($PATTERN)
+      - metavariable-regex:
+          metavariable: $PATTERN
+          regex: .*((\w\+)+|\w\*\+|\w+\*).*
+    message: Potential ReDoS vulnerability. Avoid nested quantifiers in regex.
+    languages: [javascript, typescript]
+    severity: WARNING
+    metadata:
+      cwe: "CWE-1333: Inefficient Regular Expression Complexity"
+
+# Custom rules for your specific application
+# Add project-specific security rules below

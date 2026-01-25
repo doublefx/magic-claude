@@ -1,0 +1,235 @@
+stages:
+  - validate
+  - deploy-dev
+  - deploy-staging
+  - deploy-production
+
+variables:
+  KUBECTL_VERSION: "1.28.0"
+  HELM_VERSION: "3.13.0"
+  KUBECONFIG: /tmp/kubeconfig
+
+.kubectl-base:
+  image: bitnami/kubectl:$KUBECTL_VERSION
+  before_script:
+    - kubectl version --client
+    - echo "$KUBE_CONFIG" | base64 -d > $KUBECONFIG
+    - export KUBECONFIG=$KUBECONFIG
+
+.helm-base:
+  image: alpine/helm:$HELM_VERSION
+  before_script:
+    - helm version
+    - echo "$KUBE_CONFIG" | base64 -d > $KUBECONFIG
+    - export KUBECONFIG=$KUBECONFIG
+
+validate:kubernetes-manifests:
+  extends: .kubectl-base
+  stage: validate
+  script:
+    # Dry-run validation of Kubernetes manifests
+    - |
+      for manifest in k8s/*.yaml; do
+        echo "Validating $manifest..."
+        kubectl apply --dry-run=client -f $manifest
+      done
+  only:
+    - merge_requests
+    - branches
+
+validate:helm-chart:
+  extends: .helm-base
+  stage: validate
+  script:
+    - |
+      if [ -d "helm" ]; then
+        echo "Linting Helm chart..."
+        helm lint helm/
+
+        echo "Validating Helm template..."
+        helm template test-release helm/ --debug --dry-run
+      else
+        echo "No helm directory found, skipping"
+      fi
+  only:
+    - merge_requests
+    - branches
+
+deploy:dev-kubectl:
+  extends: .kubectl-base
+  stage: deploy-dev
+  environment:
+    name: development
+    url: https://dev.example.com
+    on_stop: cleanup:dev
+  script:
+    # Apply Kubernetes manifests to dev namespace
+    - kubectl config set-context --current --namespace=dev
+    - kubectl apply -f k8s/
+    - kubectl rollout status deployment/$CI_PROJECT_NAME -n dev --timeout=5m
+    - kubectl get all -n dev
+  only:
+    - develop
+  when: manual
+
+deploy:dev-helm:
+  extends: .helm-base
+  stage: deploy-dev
+  environment:
+    name: development
+    url: https://dev.example.com
+    on_stop: cleanup:dev
+  script:
+    # Deploy with Helm to dev environment
+    - |
+      if [ -d "helm" ]; then
+        helm upgrade --install $CI_PROJECT_NAME helm/ \
+          --namespace dev \
+          --create-namespace \
+          --set image.repository=$CI_REGISTRY_IMAGE \
+          --set image.tag=$CI_COMMIT_REF_SLUG \
+          --set environment=development \
+          --values helm/values-dev.yaml \
+          --wait \
+          --timeout 5m
+
+        kubectl get all -n dev
+      else
+        echo "No helm directory found, skipping"
+        exit 1
+      fi
+  only:
+    - develop
+  when: manual
+
+deploy:staging-kubectl:
+  extends: .kubectl-base
+  stage: deploy-staging
+  environment:
+    name: staging
+    url: https://staging.example.com
+    on_stop: cleanup:staging
+  script:
+    - kubectl config set-context --current --namespace=staging
+    - kubectl apply -f k8s/
+    - kubectl rollout status deployment/$CI_PROJECT_NAME -n staging --timeout=10m
+    - kubectl get all -n staging
+  only:
+    - main
+  when: manual
+
+deploy:staging-helm:
+  extends: .helm-base
+  stage: deploy-staging
+  environment:
+    name: staging
+    url: https://staging.example.com
+    on_stop: cleanup:staging
+  script:
+    - |
+      if [ -d "helm" ]; then
+        helm upgrade --install $CI_PROJECT_NAME helm/ \
+          --namespace staging \
+          --create-namespace \
+          --set image.repository=$CI_REGISTRY_IMAGE \
+          --set image.tag=$CI_COMMIT_SHA \
+          --set environment=staging \
+          --values helm/values-staging.yaml \
+          --wait \
+          --timeout 10m
+
+        kubectl get all -n staging
+      else
+        echo "No helm directory found, skipping"
+        exit 1
+      fi
+  only:
+    - main
+  when: manual
+
+deploy:production-helm:
+  extends: .helm-base
+  stage: deploy-production
+  environment:
+    name: production
+    url: https://example.com
+  script:
+    - |
+      if [ -d "helm" ]; then
+        # Production deployment with blue/green or canary strategy
+        helm upgrade --install $CI_PROJECT_NAME helm/ \
+          --namespace production \
+          --create-namespace \
+          --set image.repository=$CI_REGISTRY_IMAGE \
+          --set image.tag=$CI_COMMIT_TAG \
+          --set environment=production \
+          --set replicaCount=3 \
+          --values helm/values-production.yaml \
+          --wait \
+          --timeout 15m
+
+        # Wait for rollout
+        kubectl rollout status deployment/$CI_PROJECT_NAME -n production --timeout=15m
+
+        # Verify deployment
+        kubectl get all -n production
+      else
+        echo "No helm directory found, skipping"
+        exit 1
+      fi
+  only:
+    - tags
+  when: manual
+
+deploy:production-canary:
+  extends: .helm-base
+  stage: deploy-production
+  environment:
+    name: production-canary
+    url: https://example.com
+  script:
+    - |
+      # Deploy canary release (10% traffic)
+      helm upgrade --install $CI_PROJECT_NAME-canary helm/ \
+        --namespace production \
+        --set image.repository=$CI_REGISTRY_IMAGE \
+        --set image.tag=$CI_COMMIT_TAG \
+        --set environment=production \
+        --set canary.enabled=true \
+        --set canary.weight=10 \
+        --values helm/values-production.yaml \
+        --wait \
+        --timeout 10m
+  only:
+    - tags
+  when: manual
+
+cleanup:dev:
+  extends: .helm-base
+  stage: deploy-dev
+  environment:
+    name: development
+    action: stop
+  script:
+    - helm uninstall $CI_PROJECT_NAME --namespace dev || true
+    - kubectl delete namespace dev || true
+  when: manual
+  only:
+    - develop
+
+cleanup:staging:
+  extends: .helm-base
+  stage: deploy-staging
+  environment:
+    name: staging
+    action: stop
+  script:
+    - helm uninstall $CI_PROJECT_NAME --namespace staging || true
+    - kubectl delete namespace staging || true
+  when: manual
+  only:
+    - main
+
+# GitLab Auto DevOps (optional - requires GitLab Ultimate/Gold)
+# include:
+#   - template: Auto-DevOps.gitlab-ci.yml

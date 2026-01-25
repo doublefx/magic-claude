@@ -1,0 +1,143 @@
+name: Reusable Test Workflow
+
+on:
+  workflow_call:
+    inputs:
+      language:
+        description: 'Programming language (nodejs, python, java)'
+        required: true
+        type: string
+
+      version:
+        description: 'Language version (e.g., 20, 3.12, 17)'
+        required: true
+        type: string
+
+      test-command:
+        description: 'Command to run tests'
+        required: true
+        type: string
+
+      coverage-enabled:
+        description: 'Enable coverage reporting'
+        required: false
+        type: boolean
+        default: true
+
+      coverage-path:
+        description: 'Path to coverage report'
+        required: false
+        type: string
+        default: './coverage'
+
+      build-command:
+        description: 'Command to build project (optional)'
+        required: false
+        type: string
+        default: ''
+
+      setup-command:
+        description: 'Command to setup/install dependencies'
+        required: false
+        type: string
+        default: ''
+
+    secrets:
+      CODECOV_TOKEN:
+        description: 'Codecov token for coverage upload'
+        required: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Node.js setup
+      - name: Setup Node.js
+        if: inputs.language == 'nodejs'
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.version }}
+          cache: 'npm'
+
+      # Python setup
+      - name: Setup Python
+        if: inputs.language == 'python'
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.version }}
+
+      # Java setup
+      - name: Setup Java
+        if: inputs.language == 'java'
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ inputs.version }}
+          distribution: 'temurin'
+
+      # Cache dependencies
+      - name: Cache dependencies (Node.js)
+        if: inputs.language == 'nodejs'
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Cache dependencies (Python)
+        if: inputs.language == 'python'
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Cache dependencies (Java/Maven)
+        if: inputs.language == 'java'
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      # Install dependencies
+      - name: Install dependencies
+        if: inputs.setup-command != ''
+        run: ${{ inputs.setup-command }}
+
+      # Build project (if needed)
+      - name: Build project
+        if: inputs.build-command != ''
+        run: ${{ inputs.build-command }}
+
+      # Run tests
+      - name: Run tests
+        run: ${{ inputs.test-command }}
+
+      # Upload coverage
+      - name: Upload coverage to Codecov
+        if: inputs.coverage-enabled
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ${{ inputs.coverage-path }}
+          flags: unittests
+          name: ${{ inputs.language }}-${{ inputs.version }}
+
+      # Upload test results
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ inputs.language }}-${{ inputs.version }}
+          path: |
+            test-results/
+            **/TEST-*.xml
+            **/*test-results*.xml
+          retention-days: 7

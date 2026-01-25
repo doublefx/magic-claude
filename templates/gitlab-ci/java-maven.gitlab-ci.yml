@@ -1,0 +1,201 @@
+stages:
+  - build
+  - test
+  - security
+  - quality
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+  MAVEN_CLI_OPTS: "--batch-mode --errors --fail-at-end --show-version"
+
+.maven-base:
+  cache:
+    key:
+      files:
+        - pom.xml
+    paths:
+      - .m2/repository/
+
+.detect-maven-wrapper:
+  before_script:
+    - |
+      if [ -f "mvnw" ]; then
+        chmod +x mvnw
+        export MVN_CMD="./mvnw"
+      else
+        export MVN_CMD="mvn"
+      fi
+
+build:java-11:
+  extends:
+    - .maven-base
+    - .detect-maven-wrapper
+  stage: build
+  image: maven:3.9-eclipse-temurin-11
+  script:
+    - $MVN_CMD clean compile $MAVEN_CLI_OPTS
+  artifacts:
+    paths:
+      - target/
+    expire_in: 1 week
+
+build:java-17:
+  extends:
+    - .maven-base
+    - .detect-maven-wrapper
+  stage: build
+  image: maven:3.9-eclipse-temurin-17
+  script:
+    - $MVN_CMD clean compile $MAVEN_CLI_OPTS
+  artifacts:
+    paths:
+      - target/
+    expire_in: 1 week
+
+build:java-21:
+  extends:
+    - .maven-base
+    - .detect-maven-wrapper
+  stage: build
+  image: maven:3.9-eclipse-temurin-21
+  script:
+    - $MVN_CMD clean compile $MAVEN_CLI_OPTS
+  artifacts:
+    paths:
+      - target/
+    expire_in: 1 week
+
+test:java-11:
+  extends:
+    - .maven-base
+    - .detect-maven-wrapper
+  stage: test
+  image: maven:3.9-eclipse-temurin-11
+  needs: ["build:java-11"]
+  script:
+    - $MVN_CMD verify $MAVEN_CLI_OPTS
+  artifacts:
+    reports:
+      junit:
+        - target/surefire-reports/TEST-*.xml
+        - target/failsafe-reports/TEST-*.xml
+    paths:
+      - target/surefire-reports/
+      - target/failsafe-reports/
+    expire_in: 1 week
+
+test:java-17:
+  extends:
+    - .maven-base
+    - .detect-maven-wrapper
+  stage: test
+  image: maven:3.9-eclipse-temurin-17
+  needs: ["build:java-17"]
+  script:
+    - $MVN_CMD verify $MAVEN_CLI_OPTS
+    - $MVN_CMD jacoco:report $MAVEN_CLI_OPTS
+  coverage: '/Total.*?([0-9]{1,3})%/'
+  artifacts:
+    reports:
+      junit:
+        - target/surefire-reports/TEST-*.xml
+        - target/failsafe-reports/TEST-*.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: target/site/jacoco/jacoco.xml
+    paths:
+      - target/surefire-reports/
+      - target/failsafe-reports/
+      - target/site/jacoco/
+    expire_in: 1 week
+
+test:java-21:
+  extends:
+    - .maven-base
+    - .detect-maven-wrapper
+  stage: test
+  image: maven:3.9-eclipse-temurin-21
+  needs: ["build:java-21"]
+  script:
+    - $MVN_CMD verify $MAVEN_CLI_OPTS
+  artifacts:
+    reports:
+      junit:
+        - target/surefire-reports/TEST-*.xml
+        - target/failsafe-reports/TEST-*.xml
+    paths:
+      - target/surefire-reports/
+      - target/failsafe-reports/
+    expire_in: 1 week
+
+security:owasp-dependency-check:
+  extends:
+    - .maven-base
+    - .detect-maven-wrapper
+  stage: security
+  image: maven:3.9-eclipse-temurin-17
+  needs: []
+  script:
+    - $MVN_CMD org.owasp:dependency-check-maven:check $MAVEN_CLI_OPTS || true
+  artifacts:
+    reports:
+      dependency_scanning: target/dependency-check-report.json
+    paths:
+      - target/dependency-check-report.html
+    expire_in: 1 week
+  allow_failure: true
+
+security:spotbugs:
+  extends:
+    - .maven-base
+    - .detect-maven-wrapper
+  stage: security
+  image: maven:3.9-eclipse-temurin-17
+  needs: ["build:java-17"]
+  script:
+    - $MVN_CMD compile spotbugs:check $MAVEN_CLI_OPTS || true
+  artifacts:
+    reports:
+      sast: target/spotbugsXml.xml
+    paths:
+      - target/spotbugsXml.xml
+    expire_in: 1 week
+  allow_failure: true
+
+security:gitleaks:
+  stage: security
+  image:
+    name: zricethezav/gitleaks:latest
+    entrypoint: [""]
+  needs: []
+  script:
+    - gitleaks detect --source . --verbose
+  allow_failure: true
+
+quality:sonarqube:
+  extends:
+    - .maven-base
+    - .detect-maven-wrapper
+  stage: quality
+  image: maven:3.9-eclipse-temurin-17
+  needs: ["test:java-17"]
+  script:
+    - |
+      if [ -n "$SONAR_TOKEN" ]; then
+        $MVN_CMD verify sonar:sonar \
+          -Dsonar.projectKey=$CI_PROJECT_NAME \
+          -Dsonar.host.url=$SONAR_HOST_URL \
+          -Dsonar.token=$SONAR_TOKEN \
+          $MAVEN_CLI_OPTS
+      else
+        echo "SONAR_TOKEN not set, skipping SonarQube analysis"
+      fi
+  only:
+    - main
+    - develop
+  allow_failure: true
+
+# GitLab SAST (only if using GitLab Ultimate/Gold)
+include:
+  - template: Security/SAST.gitlab-ci.yml
+  - template: Security/Dependency-Scanning.gitlab-ci.yml

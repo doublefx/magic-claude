@@ -1,0 +1,185 @@
+image: gradle:8.5-jdk17
+
+definitions:
+  caches:
+    gradle: ~/.gradle/caches
+    gradle-wrapper: ~/.gradle/wrapper
+
+  steps:
+    - step: &validate-wrapper
+        name: Validate Gradle Wrapper
+        script:
+          - chmod +x gradlew || true
+          - echo "Gradle wrapper validated"
+
+    - step: &build-java-11
+        name: Build (Java 11)
+        image: gradle:8.5-jdk11
+        caches:
+          - gradle
+          - gradle-wrapper
+        script:
+          - ./gradlew assemble --build-cache --warning-mode=all --no-daemon
+        artifacts:
+          - build/**
+
+    - step: &build-java-17
+        name: Build (Java 17)
+        image: gradle:8.5-jdk17
+        caches:
+          - gradle
+          - gradle-wrapper
+        script:
+          - ./gradlew assemble --build-cache --warning-mode=all --no-daemon
+        artifacts:
+          - build/**
+
+    - step: &build-java-21
+        name: Build (Java 21)
+        image: gradle:8.5-jdk21
+        caches:
+          - gradle
+          - gradle-wrapper
+        script:
+          - ./gradlew assemble --build-cache --warning-mode=all --no-daemon
+        artifacts:
+          - build/**
+
+    - step: &test-java-11
+        name: Test (Java 11)
+        image: gradle:8.5-jdk11
+        caches:
+          - gradle
+          - gradle-wrapper
+        script:
+          - ./gradlew test --build-cache --no-daemon
+        artifacts:
+          - build/test-results/**
+          - build/reports/tests/**
+
+    - step: &test-java-17
+        name: Test (Java 17)
+        image: gradle:8.5-jdk17
+        caches:
+          - gradle
+          - gradle-wrapper
+        script:
+          - ./gradlew test jacocoTestReport --build-cache --no-daemon
+        artifacts:
+          - build/test-results/**
+          - build/reports/tests/**
+          - build/reports/jacoco/**
+
+    - step: &test-java-21
+        name: Test (Java 21)
+        image: gradle:8.5-jdk21
+        caches:
+          - gradle
+          - gradle-wrapper
+        script:
+          - ./gradlew test --build-cache --no-daemon
+        artifacts:
+          - build/test-results/**
+          - build/reports/tests/**
+
+    - step: &security-dependency-check
+        name: OWASP Dependency Check
+        image: gradle:8.5-jdk17
+        caches:
+          - gradle
+          - gradle-wrapper
+        script:
+          - ./gradlew dependencyCheckAnalyze --no-daemon || true
+        artifacts:
+          - build/reports/dependency-check-report.html
+
+    - step: &verify-dependency-locks
+        name: Verify Dependency Locks
+        image: gradle:8.5-jdk17
+        caches:
+          - gradle
+          - gradle-wrapper
+        script:
+          - |
+            if [ -f "gradle.lockfile" ]; then
+              ./gradlew dependencies --write-locks --no-daemon
+              git diff --exit-code gradle.lockfile || (echo "Dependency lock file is out of date" && exit 1)
+            else
+              echo "No gradle.lockfile found, skipping lock verification"
+            fi
+
+pipelines:
+  default:
+    - step: *validate-wrapper
+    - parallel:
+        - step: *build-java-11
+        - step: *build-java-17
+        - step: *build-java-21
+    - parallel:
+        - step: *test-java-11
+        - step: *test-java-17
+        - step: *test-java-21
+        - step: *security-dependency-check
+        - step: *verify-dependency-locks
+
+  branches:
+    main:
+      - step: *validate-wrapper
+      - step: *build-java-17
+      - parallel:
+          - step: *test-java-17
+          - step: *security-dependency-check
+          - step: *verify-dependency-locks
+      - step:
+          name: Deploy to Production
+          deployment: production
+          script:
+            - ./gradlew publish --no-daemon
+            - echo "Deploying to production..."
+            # Add deployment commands here
+          trigger: manual
+
+    develop:
+      - step: *validate-wrapper
+      - step: *build-java-17
+      - step: *test-java-17
+      - step:
+          name: Deploy to Staging
+          deployment: staging
+          script:
+            - ./gradlew publish --no-daemon
+            - echo "Deploying to staging..."
+            # Add deployment commands here
+
+  pull-requests:
+    '**':
+      - step: *validate-wrapper
+      - step: *build-java-17
+      - step: *test-java-17
+
+  tags:
+    'v*':
+      - step: *validate-wrapper
+      - step: *build-java-17
+      - parallel:
+          - step: *test-java-17
+          - step: *security-dependency-check
+      - step:
+          name: Create Release
+          script:
+            - ./gradlew publish --no-daemon
+            - echo "Creating release for $BITBUCKET_TAG"
+            # Add release creation commands here
+
+# Bitbucket Pipes integration examples:
+# - pipe: atlassian/aws-s3-deploy:1.1.0
+#   variables:
+#     AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+#     AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+#     AWS_DEFAULT_REGION: 'us-east-1'
+#     S3_BUCKET: 'my-bucket'
+#     LOCAL_PATH: 'build/libs'
+
+# - pipe: atlassian/jira-build-info-pipe:latest
+#   variables:
+#     ENVIRONMENT: 'production'

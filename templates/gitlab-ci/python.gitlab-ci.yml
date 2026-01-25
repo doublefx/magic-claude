@@ -1,0 +1,230 @@
+stages:
+  - detect
+  - build
+  - lint
+  - test
+  - security
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+detect-package-manager:
+  stage: detect
+  image: python:3.12-slim
+  script:
+    - |
+      if [ -f "uv.lock" ]; then
+        echo "PACKAGE_MANAGER=uv" >> package-manager.env
+      elif [ -f "poetry.lock" ]; then
+        echo "PACKAGE_MANAGER=poetry" >> package-manager.env
+      elif [ -f "Pipfile" ]; then
+        echo "PACKAGE_MANAGER=pipenv" >> package-manager.env
+      else
+        echo "PACKAGE_MANAGER=pip" >> package-manager.env
+      fi
+  artifacts:
+    reports:
+      dotenv: package-manager.env
+
+.python-base:
+  cache:
+    key:
+      files:
+        - requirements.txt
+        - requirements-dev.txt
+        - pyproject.toml
+        - uv.lock
+        - poetry.lock
+        - Pipfile.lock
+    paths:
+      - .cache/pip
+      - .venv/
+
+build:python-3.10:
+  extends: .python-base
+  stage: build
+  image: python:3.10-slim
+  needs: ["detect-package-manager"]
+  script:
+    - python -m pip install --upgrade pip
+    - |
+      if [ "$PACKAGE_MANAGER" = "uv" ]; then
+        pip install uv
+        uv sync
+      elif [ "$PACKAGE_MANAGER" = "poetry" ]; then
+        pip install poetry
+        poetry install
+      elif [ "$PACKAGE_MANAGER" = "pipenv" ]; then
+        pip install pipenv
+        pipenv install --dev
+      else
+        [ -f "requirements.txt" ] && pip install -r requirements.txt
+        [ -f "requirements-dev.txt" ] && pip install -r requirements-dev.txt
+      fi
+
+build:python-3.11:
+  extends: .python-base
+  stage: build
+  image: python:3.11-slim
+  needs: ["detect-package-manager"]
+  script:
+    - python -m pip install --upgrade pip
+    - |
+      if [ "$PACKAGE_MANAGER" = "uv" ]; then
+        pip install uv
+        uv sync
+      elif [ "$PACKAGE_MANAGER" = "poetry" ]; then
+        pip install poetry
+        poetry install
+      elif [ "$PACKAGE_MANAGER" = "pipenv" ]; then
+        pip install pipenv
+        pipenv install --dev
+      else
+        [ -f "requirements.txt" ] && pip install -r requirements.txt
+        [ -f "requirements-dev.txt" ] && pip install -r requirements-dev.txt
+      fi
+
+build:python-3.12:
+  extends: .python-base
+  stage: build
+  image: python:3.12-slim
+  needs: ["detect-package-manager"]
+  script:
+    - python -m pip install --upgrade pip
+    - |
+      if [ "$PACKAGE_MANAGER" = "uv" ]; then
+        pip install uv
+        uv sync
+      elif [ "$PACKAGE_MANAGER" = "poetry" ]; then
+        pip install poetry
+        poetry install
+      elif [ "$PACKAGE_MANAGER" = "pipenv" ]; then
+        pip install pipenv
+        pipenv install --dev
+      else
+        [ -f "requirements.txt" ] && pip install -r requirements.txt
+        [ -f "requirements-dev.txt" ] && pip install -r requirements-dev.txt
+      fi
+
+ruff-format:
+  extends: .python-base
+  stage: lint
+  image: python:3.12-slim
+  needs: ["build:python-3.12"]
+  script:
+    - pip install ruff
+    - ruff format --check .
+
+ruff-lint:
+  extends: .python-base
+  stage: lint
+  image: python:3.12-slim
+  needs: ["build:python-3.12"]
+  script:
+    - pip install ruff
+    - ruff check .
+
+mypy:
+  extends: .python-base
+  stage: lint
+  image: python:3.12-slim
+  needs: ["build:python-3.12"]
+  script:
+    - pip install mypy
+    - mypy . || echo "Mypy check failed, continuing..."
+  allow_failure: true
+
+test:python-3.10:
+  extends: .python-base
+  stage: test
+  image: python:3.10-slim
+  needs: ["build:python-3.10"]
+  script:
+    - python -m pip install --upgrade pip
+    - pip install pytest pytest-cov
+    - [ -f "requirements.txt" ] && pip install -r requirements.txt
+    - pytest --cov=. --cov-report=xml --cov-report=term
+  coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+    paths:
+      - coverage.xml
+    expire_in: 1 week
+
+test:python-3.11:
+  extends: .python-base
+  stage: test
+  image: python:3.11-slim
+  needs: ["build:python-3.11"]
+  script:
+    - python -m pip install --upgrade pip
+    - pip install pytest pytest-cov
+    - [ -f "requirements.txt" ] && pip install -r requirements.txt
+    - pytest --cov=. --cov-report=xml --cov-report=term
+  coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+    paths:
+      - coverage.xml
+    expire_in: 1 week
+
+test:python-3.12:
+  extends: .python-base
+  stage: test
+  image: python:3.12-slim
+  needs: ["build:python-3.12"]
+  script:
+    - python -m pip install --upgrade pip
+    - pip install pytest pytest-cov
+    - [ -f "requirements.txt" ] && pip install -r requirements.txt
+    - pytest --cov=. --cov-report=xml --cov-report=term
+  coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+    paths:
+      - coverage.xml
+    expire_in: 1 week
+
+security:semgrep:
+  stage: security
+  image: returntocorp/semgrep:latest
+  needs: []
+  script:
+    - semgrep --config=p/security-audit --config=p/python --config=p/bandit --sarif > semgrep.sarif || true
+  artifacts:
+    reports:
+      sast: semgrep.sarif
+    expire_in: 1 week
+  allow_failure: true
+
+security:safety:
+  stage: security
+  image: python:3.12-slim
+  needs: []
+  script:
+    - pip install safety
+    - safety check --json || echo "Safety check found vulnerabilities"
+  allow_failure: true
+
+security:gitleaks:
+  stage: security
+  image:
+    name: zricethezav/gitleaks:latest
+    entrypoint: [""]
+  needs: []
+  script:
+    - gitleaks detect --source . --verbose
+  allow_failure: true
+
+# GitLab SAST (only if using GitLab Ultimate/Gold)
+include:
+  - template: Security/SAST.gitlab-ci.yml

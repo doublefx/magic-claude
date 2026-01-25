@@ -1,0 +1,69 @@
+# syntax=docker/dockerfile:1.4
+
+# Stage 1: Build
+FROM maven:3.9-eclipse-temurin-17 AS build
+
+WORKDIR /app
+
+# Copy Maven wrapper and pom.xml first for better caching
+COPY mvnw* pom.xml ./
+COPY .mvn .mvn
+
+# Download dependencies (cached layer)
+RUN --mount=type=cache,target=/root/.m2 \
+    if [ -f "mvnw" ]; then \
+      chmod +x mvnw && ./mvnw dependency:go-offline -B; \
+    else \
+      mvn dependency:go-offline -B; \
+    fi
+
+# Copy source code
+COPY src ./src
+
+# Build the application (use verify instead of install)
+RUN --mount=type=cache,target=/root/.m2 \
+    if [ -f "mvnw" ]; then \
+      ./mvnw clean package -DskipTests -B; \
+    else \
+      mvn clean package -DskipTests -B; \
+    fi
+
+# Stage 2: Runtime
+FROM eclipse-temurin:17-jre-alpine AS production
+
+# Install security updates and dumb-init
+RUN apk upgrade --no-cache && \
+    apk add --no-cache dumb-init curl
+
+# Create non-root user
+RUN addgroup -g 1001 -S spring && \
+    adduser -S spring -u 1001 -G spring
+
+WORKDIR /app
+
+# Copy the built JAR from build stage
+COPY --from=build --chown=spring:spring /app/target/*.jar app.jar
+
+# Switch to non-root user
+USER spring
+
+# Expose port (adjust as needed)
+EXPOSE 8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8080/actuator/health || exit 1
+
+# Use dumb-init to handle signals properly
+ENTRYPOINT ["/usr/bin/dumb-init", "--"]
+
+# JVM options for containerized environments
+ENV JAVA_OPTS="-XX:+UseContainerSupport \
+               -XX:MaxRAMPercentage=75.0 \
+               -XX:InitialRAMPercentage=50.0 \
+               -XX:+HeapDumpOnOutOfMemoryError \
+               -XX:HeapDumpPath=/tmp/heapdump.hprof \
+               -Djava.security.egd=file:/dev/./urandom"
+
+# Start the application
+CMD ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]

@@ -1,0 +1,194 @@
+image: node:20
+
+definitions:
+  caches:
+    npm-cache: ~/.npm
+    node-modules: node_modules
+
+  steps:
+    - step: &detect-package-manager
+        name: Detect Package Manager
+        script:
+          - |
+            if [ -f "pnpm-lock.yaml" ]; then
+              echo "export PACKAGE_MANAGER=pnpm" >> package-manager.env
+            elif [ -f "yarn.lock" ]; then
+              echo "export PACKAGE_MANAGER=yarn" >> package-manager.env
+            elif [ -f "bun.lockb" ]; then
+              echo "export PACKAGE_MANAGER=bun" >> package-manager.env
+            else
+              echo "export PACKAGE_MANAGER=npm" >> package-manager.env
+            fi
+        artifacts:
+          - package-manager.env
+
+    - step: &install-dependencies
+        name: Install Dependencies
+        caches:
+          - npm-cache
+          - node-modules
+        script:
+          - source package-manager.env || true
+          - |
+            if [ "$PACKAGE_MANAGER" = "pnpm" ]; then
+              npm install -g pnpm
+              pnpm install --frozen-lockfile
+            elif [ "$PACKAGE_MANAGER" = "yarn" ]; then
+              yarn install --frozen-lockfile
+            elif [ "$PACKAGE_MANAGER" = "bun" ]; then
+              npm install -g bun
+              bun install --frozen-lockfile
+            else
+              npm ci
+            fi
+        artifacts:
+          - node_modules/**
+
+    - step: &lint
+        name: Lint
+        script:
+          - source package-manager.env || true
+          - |
+            if grep -q '"lint"' package.json; then
+              ${PACKAGE_MANAGER:-npm} run lint
+            else
+              echo "No lint script found, skipping"
+            fi
+
+    - step: &test-node-18
+        name: Test Node.js 18
+        image: node:18
+        caches:
+          - node-modules
+        script:
+          - source package-manager.env || true
+          - |
+            if grep -q '"test"' package.json; then
+              ${PACKAGE_MANAGER:-npm} run test -- --coverage
+            fi
+        artifacts:
+          - coverage/**
+
+    - step: &test-node-20
+        name: Test Node.js 20
+        image: node:20
+        caches:
+          - node-modules
+        script:
+          - source package-manager.env || true
+          - |
+            if grep -q '"test"' package.json; then
+              ${PACKAGE_MANAGER:-npm} run test -- --coverage
+            fi
+        artifacts:
+          - coverage/**
+
+    - step: &test-node-22
+        name: Test Node.js 22
+        image: node:22
+        caches:
+          - node-modules
+        script:
+          - source package-manager.env || true
+          - |
+            if grep -q '"test"' package.json; then
+              ${PACKAGE_MANAGER:-npm} run test -- --coverage
+            fi
+        artifacts:
+          - coverage/**
+
+    - step: &build
+        name: Build
+        caches:
+          - node-modules
+        script:
+          - source package-manager.env || true
+          - |
+            if grep -q '"build"' package.json; then
+              ${PACKAGE_MANAGER:-npm} run build
+            else
+              echo "No build script found, skipping"
+            fi
+        artifacts:
+          - dist/**
+          - build/**
+          - .next/**
+
+    - step: &security-audit
+        name: Security Audit
+        script:
+          - source package-manager.env || true
+          - |
+            if [ "$PACKAGE_MANAGER" = "yarn" ]; then
+              yarn audit --level moderate || true
+            elif [ "$PACKAGE_MANAGER" = "pnpm" ]; then
+              pnpm audit --audit-level moderate || true
+            else
+              npm audit --audit-level=moderate || true
+            fi
+
+pipelines:
+  default:
+    - step: *detect-package-manager
+    - step: *install-dependencies
+    - parallel:
+        - step: *lint
+        - step: *test-node-18
+        - step: *test-node-20
+        - step: *test-node-22
+        - step: *security-audit
+    - step: *build
+
+  branches:
+    main:
+      - step: *detect-package-manager
+      - step: *install-dependencies
+      - parallel:
+          - step: *lint
+          - step: *test-node-20
+          - step: *security-audit
+      - step: *build
+      - step:
+          name: Deploy to Production
+          deployment: production
+          script:
+            - echo "Deploying to production..."
+            # Add deployment commands here
+
+    develop:
+      - step: *detect-package-manager
+      - step: *install-dependencies
+      - parallel:
+          - step: *lint
+          - step: *test-node-20
+      - step: *build
+      - step:
+          name: Deploy to Staging
+          deployment: staging
+          script:
+            - echo "Deploying to staging..."
+            # Add deployment commands here
+
+  pull-requests:
+    '**':
+      - step: *detect-package-manager
+      - step: *install-dependencies
+      - parallel:
+          - step: *lint
+          - step: *test-node-20
+      - step: *build
+
+  tags:
+    'v*':
+      - step: *detect-package-manager
+      - step: *install-dependencies
+      - parallel:
+          - step: *lint
+          - step: *test-node-20
+          - step: *security-audit
+      - step: *build
+      - step:
+          name: Create Release
+          script:
+            - echo "Creating release for $BITBUCKET_TAG"
+            # Add release creation commands here

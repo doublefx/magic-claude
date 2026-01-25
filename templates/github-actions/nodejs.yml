@@ -1,0 +1,143 @@
+name: Node.js CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  detect-package-manager:
+    runs-on: ubuntu-latest
+    outputs:
+      package-manager: ${{ steps.detect.outputs.package-manager }}
+      lockfile: ${{ steps.detect.outputs.lockfile }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Detect package manager
+        id: detect
+        run: |
+          if [ -f "pnpm-lock.yaml" ]; then
+            echo "package-manager=pnpm" >> $GITHUB_OUTPUT
+            echo "lockfile=pnpm-lock.yaml" >> $GITHUB_OUTPUT
+          elif [ -f "yarn.lock" ]; then
+            echo "package-manager=yarn" >> $GITHUB_OUTPUT
+            echo "lockfile=yarn.lock" >> $GITHUB_OUTPUT
+          elif [ -f "bun.lockb" ]; then
+            echo "package-manager=bun" >> $GITHUB_OUTPUT
+            echo "lockfile=bun.lockb" >> $GITHUB_OUTPUT
+          else
+            echo "package-manager=npm" >> $GITHUB_OUTPUT
+            echo "lockfile=package-lock.json" >> $GITHUB_OUTPUT
+          fi
+
+  build-and-test:
+    needs: detect-package-manager
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18, 20, 22]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: ${{ needs.detect-package-manager.outputs.package-manager }}
+
+      - name: Setup pnpm
+        if: needs.detect-package-manager.outputs.package-manager == 'pnpm'
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+
+      - name: Setup Bun
+        if: needs.detect-package-manager.outputs.package-manager == 'bun'
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies (npm)
+        if: needs.detect-package-manager.outputs.package-manager == 'npm'
+        run: npm ci
+
+      - name: Install dependencies (yarn)
+        if: needs.detect-package-manager.outputs.package-manager == 'yarn'
+        run: yarn install --frozen-lockfile
+
+      - name: Install dependencies (pnpm)
+        if: needs.detect-package-manager.outputs.package-manager == 'pnpm'
+        run: pnpm install --frozen-lockfile
+
+      - name: Install dependencies (bun)
+        if: needs.detect-package-manager.outputs.package-manager == 'bun'
+        run: bun install --frozen-lockfile
+
+      - name: Run linter
+        run: |
+          if [ -f "package.json" ] && grep -q '"lint"' package.json; then
+            ${{ needs.detect-package-manager.outputs.package-manager }} run lint
+          fi
+
+      - name: Run tests
+        run: |
+          if [ -f "package.json" ] && grep -q '"test"' package.json; then
+            ${{ needs.detect-package-manager.outputs.package-manager }} run test -- --coverage
+          fi
+
+      - name: Upload coverage reports to Codecov
+        if: matrix.node-version == 20
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/coverage-final.json
+          flags: unittests
+          name: node-${{ matrix.node-version }}
+
+      - name: Build
+        run: |
+          if [ -f "package.json" ] && grep -q '"build"' package.json; then
+            ${{ needs.detect-package-manager.outputs.package-manager }} run build
+          fi
+
+      - name: Upload build artifacts
+        if: matrix.node-version == 20
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            dist/
+            build/
+            .next/
+          retention-days: 7
+
+  security-scan:
+    runs-on: ubuntu-latest
+    needs: detect-package-manager
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run npm audit
+        if: needs.detect-package-manager.outputs.package-manager == 'npm'
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+
+      - name: Run yarn audit
+        if: needs.detect-package-manager.outputs.package-manager == 'yarn'
+        run: yarn audit --level moderate
+        continue-on-error: true
+
+      - name: Run pnpm audit
+        if: needs.detect-package-manager.outputs.package-manager == 'pnpm'
+        run: pnpm audit --audit-level moderate
+        continue-on-error: true
+
+      - name: GitLeaks scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

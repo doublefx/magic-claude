@@ -1,0 +1,13 @@
+# Trivy ignore file
+# Add CVE IDs to ignore with justification
+
+# Example format:
+# CVE-YYYY-NNNNN  # Justification for ignoring this vulnerability
+
+# Common reasons to ignore:
+# - False positive
+# - Not applicable to our use case
+# - Waiting for upstream fix
+# - Accepted risk (with proper documentation)
+
+# Add your ignored CVEs below with justification:

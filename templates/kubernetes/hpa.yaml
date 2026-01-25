@@ -1,0 +1,122 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: myapp-hpa
+  labels:
+    app: myapp
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: myapp
+
+  minReplicas: 2
+  maxReplicas: 10
+
+  metrics:
+  # CPU-based scaling
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+
+  # Memory-based scaling
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+
+  # Custom metrics (requires metrics server and custom metrics API)
+  # - type: Pods
+  #   pods:
+  #     metric:
+  #       name: http_requests_per_second
+  #     target:
+  #       type: AverageValue
+  #       averageValue: "1000"
+
+  # External metrics (e.g., from Prometheus)
+  # - type: External
+  #   external:
+  #     metric:
+  #       name: queue_depth
+  #       selector:
+  #         matchLabels:
+  #           queue_name: myapp-queue
+  #     target:
+  #       type: Value
+  #       value: "100"
+
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+      - type: Pods
+        value: 2
+        periodSeconds: 60
+      selectPolicy: Min
+
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 30
+      - type: Pods
+        value: 4
+        periodSeconds: 30
+      selectPolicy: Max
+
+---
+# Vertical Pod Autoscaler (VPA)
+# Requires VPA controller to be installed in the cluster
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: myapp-vpa
+  labels:
+    app: myapp
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: myapp
+
+  updatePolicy:
+    updateMode: "Auto"  # or "Recreate", "Initial", "Off"
+
+  resourcePolicy:
+    containerPolicies:
+    - containerName: myapp
+      minAllowed:
+        cpu: 100m
+        memory: 128Mi
+      maxAllowed:
+        cpu: 1000m
+        memory: 1Gi
+      controlledResources:
+      - cpu
+      - memory
+
+---
+# Pod Disruption Budget
+# Ensures minimum availability during voluntary disruptions
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: myapp-pdb
+  labels:
+    app: myapp
+spec:
+  minAvailable: 1
+  # or use maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: myapp

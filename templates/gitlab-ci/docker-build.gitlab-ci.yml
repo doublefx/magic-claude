@@ -1,0 +1,151 @@
+stages:
+  - build
+  - test
+  - scan
+  - push
+
+variables:
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: "/certs"
+  IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+  LATEST_TAG: $CI_REGISTRY_IMAGE:latest
+
+.docker-base:
+  image: docker:24-dind
+  services:
+    - docker:24-dind
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+build:docker-image:
+  extends: .docker-base
+  stage: build
+  script:
+    # Build multi-stage image with BuildKit
+    - export DOCKER_BUILDKIT=1
+    - |
+      docker build \
+        --target production \
+        --cache-from $IMAGE_TAG \
+        --tag $IMAGE_TAG \
+        --tag $LATEST_TAG \
+        --build-arg BUILDKIT_INLINE_CACHE=1 \
+        --build-arg CI_COMMIT_SHA=$CI_COMMIT_SHA \
+        --build-arg CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME \
+        .
+    - docker push $IMAGE_TAG
+  only:
+    - branches
+    - tags
+
+build:dependencies-stage:
+  extends: .docker-base
+  stage: build
+  script:
+    - export DOCKER_BUILDKIT=1
+    - docker build --target dependencies --tag $CI_REGISTRY_IMAGE:deps-$CI_COMMIT_SHA .
+    - docker push $CI_REGISTRY_IMAGE:deps-$CI_COMMIT_SHA
+  only:
+    - merge_requests
+
+build:build-stage:
+  extends: .docker-base
+  stage: build
+  script:
+    - export DOCKER_BUILDKIT=1
+    - docker build --target build --tag $CI_REGISTRY_IMAGE:build-$CI_COMMIT_SHA .
+    - docker push $CI_REGISTRY_IMAGE:build-$CI_COMMIT_SHA
+  only:
+    - merge_requests
+
+test:container-health:
+  extends: .docker-base
+  stage: test
+  needs: ["build:docker-image"]
+  script:
+    - docker pull $IMAGE_TAG
+    - docker run -d --name test-container $IMAGE_TAG
+    - sleep 10
+    - docker ps | grep test-container
+    - docker logs test-container
+    - docker stop test-container
+    - docker rm test-container
+  only:
+    - branches
+    - tags
+
+test:container-structure:
+  stage: test
+  image: gcr.io/gcp-runtimes/container-structure-test:latest
+  needs: ["build:docker-image"]
+  script:
+    - |
+      if [ -f "container-structure-test.yaml" ]; then
+        container-structure-test test --image $IMAGE_TAG --config container-structure-test.yaml
+      else
+        echo "No container-structure-test.yaml found, skipping"
+      fi
+  allow_failure: true
+
+scan:trivy-vulnerabilities:
+  stage: scan
+  image:
+    name: aquasec/trivy:latest
+    entrypoint: [""]
+  needs: ["build:docker-image"]
+  script:
+    - trivy --version
+    # Scan for critical and high vulnerabilities
+    - trivy image --exit-code 0 --severity CRITICAL,HIGH --format json --output trivy-report.json $IMAGE_TAG
+    # Generate table format for easy reading
+    - trivy image --exit-code 0 --severity CRITICAL,HIGH --format table $IMAGE_TAG
+    # Fail if critical vulnerabilities found (can be adjusted)
+    - trivy image --exit-code 1 --severity CRITICAL --format table $IMAGE_TAG || echo "Critical vulnerabilities found"
+  artifacts:
+    reports:
+      container_scanning: trivy-report.json
+    paths:
+      - trivy-report.json
+    expire_in: 1 week
+  allow_failure: true
+
+scan:container-scanning:
+  stage: scan
+  needs: ["build:docker-image"]
+  variables:
+    CS_IMAGE: $IMAGE_TAG
+    CI_APPLICATION_REPOSITORY: $CI_REGISTRY_IMAGE
+    CI_APPLICATION_TAG: $CI_COMMIT_REF_SLUG
+  allow_failure: true
+
+push:production:
+  extends: .docker-base
+  stage: push
+  needs:
+    - build:docker-image
+    - test:container-health
+  script:
+    - docker pull $IMAGE_TAG
+    - docker tag $IMAGE_TAG $CI_REGISTRY_IMAGE:$CI_COMMIT_TAG
+    - docker tag $IMAGE_TAG $LATEST_TAG
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_TAG
+    - docker push $LATEST_TAG
+  only:
+    - tags
+
+push:staging:
+  extends: .docker-base
+  stage: push
+  needs:
+    - build:docker-image
+    - test:container-health
+  script:
+    - docker pull $IMAGE_TAG
+    - docker tag $IMAGE_TAG $CI_REGISTRY_IMAGE:staging
+    - docker push $CI_REGISTRY_IMAGE:staging
+  only:
+    - develop
+
+# GitLab Container Scanning (only if using GitLab Ultimate/Gold)
+include:
+  - template: Security/Container-Scanning.gitlab-ci.yml

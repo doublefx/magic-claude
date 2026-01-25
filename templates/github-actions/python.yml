@@ -1,0 +1,165 @@
+name: Python CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  detect-package-manager:
+    runs-on: ubuntu-latest
+    outputs:
+      package-manager: ${{ steps.detect.outputs.package-manager }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Detect package manager
+        id: detect
+        run: |
+          if [ -f "uv.lock" ]; then
+            echo "package-manager=uv" >> $GITHUB_OUTPUT
+          elif [ -f "poetry.lock" ]; then
+            echo "package-manager=poetry" >> $GITHUB_OUTPUT
+          elif [ -f "Pipfile" ]; then
+            echo "package-manager=pipenv" >> $GITHUB_OUTPUT
+          else
+            echo "package-manager=pip" >> $GITHUB_OUTPUT
+          fi
+
+  build-and-test:
+    needs: detect-package-manager
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11', '3.12']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install uv
+        if: needs.detect-package-manager.outputs.package-manager == 'uv'
+        run: pip install uv
+
+      - name: Install Poetry
+        if: needs.detect-package-manager.outputs.package-manager == 'poetry'
+        run: pip install poetry
+
+      - name: Install Pipenv
+        if: needs.detect-package-manager.outputs.package-manager == 'pipenv'
+        run: pip install pipenv
+
+      - name: Cache dependencies (pip)
+        if: needs.detect-package-manager.outputs.package-manager == 'pip'
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Cache dependencies (uv)
+        if: needs.detect-package-manager.outputs.package-manager == 'uv'
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('**/uv.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-
+
+      - name: Cache dependencies (poetry)
+        if: needs.detect-package-manager.outputs.package-manager == 'poetry'
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pypoetry
+          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
+
+      - name: Install dependencies (pip)
+        if: needs.detect-package-manager.outputs.package-manager == 'pip'
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f "requirements.txt" ]; then pip install -r requirements.txt; fi
+          if [ -f "requirements-dev.txt" ]; then pip install -r requirements-dev.txt; fi
+
+      - name: Install dependencies (uv)
+        if: needs.detect-package-manager.outputs.package-manager == 'uv'
+        run: uv sync
+
+      - name: Install dependencies (poetry)
+        if: needs.detect-package-manager.outputs.package-manager == 'poetry'
+        run: poetry install
+
+      - name: Install dependencies (pipenv)
+        if: needs.detect-package-manager.outputs.package-manager == 'pipenv'
+        run: pipenv install --dev
+
+      - name: Ruff format check
+        run: |
+          pip install ruff
+          ruff format --check .
+
+      - name: Ruff lint
+        run: ruff check .
+
+      - name: Type check with mypy
+        run: |
+          pip install mypy
+          mypy . || echo "Mypy check failed, continuing..."
+        continue-on-error: true
+
+      - name: Run pytest
+        run: |
+          pip install pytest pytest-cov
+          pytest --cov=. --cov-report=xml --cov-report=term
+
+      - name: Upload coverage to Codecov
+        if: matrix.python-version == '3.12'
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.xml
+          flags: unittests
+          name: python-${{ matrix.python-version }}
+
+  security-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f "requirements.txt" ]; then pip install -r requirements.txt; fi
+
+      - name: Semgrep security scan
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: >-
+            p/security-audit
+            p/python
+            p/bandit
+
+      - name: Safety check (dependency vulnerabilities)
+        run: |
+          pip install safety
+          safety check --json || echo "Safety check found vulnerabilities"
+        continue-on-error: true
+
+      - name: GitLeaks scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
