@@ -89,14 +89,24 @@
         "description": "Log PR URL and provide review command after PR creation"
       },
       {
-        "matcher": "tool == \"Edit\" && tool_input.file_path matches \"\\\\.(ts|tsx|js|jsx)$\"",
+        "matcher": "tool == \"Edit\" || tool == \"Write\"",
         "hooks": [
           {
             "type": "command",
-            "command": "node -e \"const{execSync}=require('child_process');const fs=require('fs');let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const i=JSON.parse(d);const p=i.tool_input?.file_path;if(p&&fs.existsSync(p)){try{execSync('npx prettier --write \"'+p+'\"',{stdio:['pipe','pipe','pipe']})}catch(e){}}console.log(d)})\""
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/smart-formatter.js\""
           }
         ],
-        "description": "Auto-format JS/TS files with Prettier after edits"
+        "description": "Auto-format files based on project type (Python: ruff, Java: google-java-format, Kotlin: ktfmt, JS/TS: prettier)"
+      },
+      {
+        "matcher": "(tool == \"Edit\" || tool == \"Write\") && tool_input.file_path matches \"\\\\.java$\"",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/java-security.js\""
+          }
+        ],
+        "description": "Run security checks on Java files (SQL injection, hardcoded credentials, etc.)"
       },
       {
         "matcher": "tool == \"Edit\" && tool_input.file_path matches \"\\\\.(ts|tsx)$\"",
