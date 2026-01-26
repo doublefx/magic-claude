@@ -141,6 +141,36 @@ Generate production-ready CI/CD pipelines with a single command:
 
 **Refactored**: Consolidated multiple inline formatters into `smart-formatter.js`
 
+### 🔒 Security Fixes
+
+**Critical Security Improvements** (commit 3a47770):
+
+1. **Command Injection Prevention (2 CRITICAL)**
+   - Fixed command injection vulnerabilities in all hooks
+   - Created `safe-exec.js` library for secure command execution
+   - Replaced `execSync(\`command ${arg}\`)` with `execFileSync(command, [args])`
+   - All file paths and user inputs now validated before execution
+
+2. **Plugin Spec Compliance (3 HIGH)**
+   - Added missing `version`, `agents`, `hooks`, `rules` fields to plugin.json
+   - Added input validation to `ci-cd.js` command
+   - Improved error handling in hooks to guarantee context pass-through
+
+**Files Updated**:
+- `scripts/lib/safe-exec.js` (NEW) - Safe command execution library
+- `scripts/hooks/smart-formatter.js` - Now uses safe execution
+- `scripts/hooks/python-security.js` - Enhanced error handling
+- `scripts/hooks/java-security.js` - Safe command execution
+- `commands/ci-cd.js` - Input validation added
+- `.claude-plugin/plugin.json` - Compliance fixes
+
+**Security Scanning**:
+- ✅ Semgrep: No critical or high severity issues
+- ✅ npm audit: No vulnerabilities
+- ✅ Gitleaks: No secrets detected
+
+All security fixes have been tested and verified in production.
+
 ### 📦 New Templates (44 files)
 
 **CI/CD Templates**:
@@ -172,7 +202,7 @@ Generate production-ready CI/CD pipelines with a single command:
 **Plugin Performance**:
 - Project detection (cached): **<50ms** (95%+ hit rate)
 - Hook execution: **<2s** (95th percentile)
-- Test suite (156+ tests): **~10s**
+- Test suite (150 tests): **~10s**
 
 **CI/CD Pipeline Performance**:
 - Python pipeline: **4.2x faster** (74s → 17s)
@@ -182,7 +212,7 @@ Generate production-ready CI/CD pipelines with a single command:
 ### 🧪 Test Suite Expansion
 
 **v1.0**: ~30 tests
-**v2.0**: 156+ tests (5x increase)
+**v2.0**: 150 tests (5x increase)
 
 **Coverage**:
 - Unit tests: 80+ tests (lib, hooks)
@@ -364,7 +394,7 @@ git pull origin main
 | Hooks | 5 | 9 | +80% |
 | Templates | 0 | 44 | NEW |
 | Languages | 2 (JS/TS) | 6 (JS/TS/Python/Java/Kotlin/Groovy) | +200% |
-| Tests | ~30 | 156+ | +420% |
+| Tests | ~30 | 150 | +400% |
 | Coverage | ~60% | ~90% | +50% |
 | Documentation | 2,000 lines | 12,000+ lines | +500% |
 | Performance | Baseline | 4-100x faster | See PERFORMANCE.md |

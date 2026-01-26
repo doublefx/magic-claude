@@ -22,7 +22,7 @@
 **Key Metrics**:
 - Project detection: **<50ms** (with cache), **<200ms** (without cache)
 - Hook execution: **<2s** (95th percentile)
-- Test suite: **~10s** for 156+ tests
+- Test suite: **~10s** for 150 tests
 - Tool speedups: **10-100x** improvement with 2026 tooling
 
 **Performance Goals** (all met ✅):
@@ -159,7 +159,7 @@ Edit file.py
 | Integration tests (Build tools) | 22 | 1.1s | 87% |
 | E2E tests (CI/CD generation) | 15+ | 3.0s | 92% |
 | Harness tests | 18 | 1.2s | 100% |
-| **Total** | **156+** | **~10s** | **90%** |
+| **Total** | **150** | **~10s** | **90%** |
 
 **Performance Target**: <15s ✅ (achieved ~10s)
 

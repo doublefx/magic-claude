@@ -285,7 +285,7 @@ everything-claude-code/
 |   |-- helm/                    # Helm charts (full application chart)
 |   |-- security/                # Security scanning configs (6 files)
 |
-|-- tests/            # Test suite (156+ tests)
+|-- tests/            # Test suite (150 tests)
 |   |-- unit/                    # Unit tests
 |   |   |-- lib/                 # Library unit tests
 |   |   |-- hooks/               # Hook unit tests
@@ -441,7 +441,7 @@ Rules are always-follow guidelines. Keep them modular:
 
 ## Running Tests
 
-The plugin includes a comprehensive test suite with 156+ tests:
+The plugin includes a comprehensive test suite with 150 tests:
 
 ```bash
 # Run all tests (unit + integration + e2e)

@@ -24,8 +24,8 @@ node_modules/
 # Test coverage
 coverage/
 
-# Project type detection cache
-.claude/project-type.json
+# Project type detection cache (runtime generated)
+**/.claude/
 
 # Personal configs (if any)
 personal/
