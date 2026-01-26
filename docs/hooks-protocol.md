@@ -67,7 +67,7 @@ Since matchers cannot evaluate complex conditions, **hook scripts perform runtim
   "hooks": [
     {
       "type": "command",
-      "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/smart-formatter.js\""
+      "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/smart-formatter.cjs\""
     }
   ],
   "description": "Auto-format files based on project type"
@@ -76,7 +76,7 @@ Since matchers cannot evaluate complex conditions, **hook scripts perform runtim
 
 **Hook Script** (Runtime Filtering):
 ```javascript
-// scripts/hooks/smart-formatter.js
+// scripts/hooks/smart-formatter.cjs
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');

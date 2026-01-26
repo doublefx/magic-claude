@@ -51,7 +51,7 @@
 ### Deliverables
 - `scripts/detect-project-type.js`
 - `scripts/cache-manager.js` (NEW)
-- `scripts/hooks/session-start.js` (enhanced)
+- `scripts/hooks/session-start.cjs` (enhanced)
 - `hooks/hooks.json` (refactored with project_type matchers)
 - `tests/unit/detect-project-type.test.js` (NEW)
 - `tests/integration/hook-matchers.test.js` (NEW)
@@ -93,8 +93,8 @@
 - `agents/python-reviewer.md`
 - `skills/python-patterns/skill.md`
 - `rules/python-style.md`
-- `scripts/hooks/python-format.js`
-- `scripts/hooks/python-security.js`
+- `scripts/hooks/python-format.cjs`
+- `scripts/hooks/python-security.cjs`
 - `tests/unit/python-hooks.test.js` (NEW)
 - `tests/integration/python-project.test.js` (NEW)
 - `tests/fixtures/python-flask-api/` (NEW - test project)
@@ -136,7 +136,7 @@
 - `agents/java-reviewer.md`
 - `agents/groovy-reviewer.md`
 - `rules/java-style.md`
-- `scripts/hooks/java-format.js`
+- `scripts/hooks/java-format.cjs`
 - `tests/unit/java-hooks.test.js` (NEW)
 - `tests/integration/spring-boot-app.test.js` (NEW)
 - `tests/fixtures/spring-boot-app/` (NEW - test project)
@@ -179,8 +179,8 @@
 - `agents/gradle-expert.md`
 - `skills/maven-patterns/skill.md`
 - `skills/gradle-patterns/skill.md`
-- `scripts/hooks/maven-suggestions.js`
-- `scripts/hooks/gradle-wrapper.js`
+- `scripts/hooks/maven-suggestions.cjs`
+- `scripts/hooks/gradle-wrapper.cjs`
 - `tests/unit/build-tools.test.js` (NEW)
 - `tests/integration/multi-module-maven.test.js` (NEW)
 - `tests/fixtures/multi-module-maven/` (NEW - test project)
@@ -228,7 +228,7 @@
 - `skills/ci-cd-templates/bitbucket-pipelines/*.yml` (4 templates)
 - `commands/ci-cd.md`
 - `skills/ci-cd-patterns/skill.md`
-- `scripts/hooks/validate-pipeline.js`
+- `scripts/hooks/validate-pipeline.cjs`
 - `tests/unit/template-generation.test.js` (NEW)
 - `tests/integration/ci-cd-generation.test.js` (NEW)
 - `tests/snapshots/` (NEW - template snapshots)

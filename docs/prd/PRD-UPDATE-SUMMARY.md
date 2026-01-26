@@ -228,7 +228,7 @@ Updated: **Layered approach**
 ### Scripts
 - ✅ `scripts/lib/expression-evaluator.js` (NEW - Phase 1 blocker)
 - ✅ Enhanced `scripts/detect-project-type.js` (monorepo support, more indicators)
-- ✅ `scripts/hooks/kotlin-format.js` (NEW)
+- ✅ `scripts/hooks/kotlin-format.cjs` (NEW)
 
 ### CI/CD Templates (Massively Expanded)
 **Original**: 12 templates (3 platforms × 4 languages)

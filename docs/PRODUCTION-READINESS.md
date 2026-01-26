@@ -95,7 +95,7 @@ npm run lint
 **Verification**:
 ```bash
 # Test each hook manually
-echo '{"tool":"Edit","tool_input":{"file_path":"test.py"}}' | node scripts/hooks/smart-formatter.js
+echo '{"tool":"Edit","tool_input":{"file_path":"test.py"}}' | node scripts/hooks/smart-formatter.cjs
 ```
 
 **Result**: ✅ All hooks working

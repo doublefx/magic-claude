@@ -158,9 +158,9 @@ Generate production-ready CI/CD pipelines with a single command:
 
 **Files Updated**:
 - `scripts/lib/safe-exec.js` (NEW) - Safe command execution library
-- `scripts/hooks/smart-formatter.js` - Now uses safe execution
-- `scripts/hooks/python-security.js` - Enhanced error handling
-- `scripts/hooks/java-security.js` - Safe command execution
+- `scripts/hooks/smart-formatter.cjs` - Now uses safe execution
+- `scripts/hooks/python-security.cjs` - Enhanced error handling
+- `scripts/hooks/java-security.cjs` - Safe command execution
 - `commands/ci-cd.js` - Input validation added
 - `.claude-plugin/plugin.json` - Compliance fixes
 

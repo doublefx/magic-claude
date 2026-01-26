@@ -305,7 +305,7 @@ cp agents/python-reviewer.md ~/.claude/agents/
 
 **Fix**:
 1. Check `hooks.json` has correct paths
-2. Verify scripts exist: `ls scripts/hooks/smart-formatter.js`
+2. Verify scripts exist: `ls scripts/hooks/smart-formatter.cjs`
 3. Hooks should reference `${CLAUDE_PLUGIN_ROOT}/scripts/hooks/...`
 
 ### Issue 3: Project Type Not Detected

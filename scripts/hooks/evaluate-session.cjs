@@ -14,12 +14,13 @@
 const path = require('path');
 const fs = require('fs');
 const {
-  getLearnedSkillsDir,
+  getUserLearnedSkillsDir,
+  getProjectLearnedSkillsDir,
   ensureDir,
   readFile,
   countInFile,
   log
-} = require('../lib/utils');
+} = require('../lib/utils.cjs');
 
 async function main() {
   // Get script directory to find config
@@ -28,7 +29,8 @@ async function main() {
 
   // Default configuration
   let minSessionLength = 10;
-  let learnedSkillsPath = getLearnedSkillsDir();
+  const userLearnedSkillsPath = getUserLearnedSkillsDir();
+  const projectLearnedSkillsPath = getProjectLearnedSkillsDir();
 
   // Load config if exists
   const configContent = readFile(configFile);
@@ -36,18 +38,16 @@ async function main() {
     try {
       const config = JSON.parse(configContent);
       minSessionLength = config.min_session_length || 10;
-
-      if (config.learned_skills_path) {
-        // Handle ~ in path
-        learnedSkillsPath = config.learned_skills_path.replace(/^~/, require('os').homedir());
-      }
     } catch {
       // Invalid config, use defaults
     }
   }
 
-  // Ensure learned skills directory exists
-  ensureDir(learnedSkillsPath);
+  // Ensure both learned skills directories exist
+  ensureDir(userLearnedSkillsPath);
+  if (projectLearnedSkillsPath) {
+    ensureDir(projectLearnedSkillsPath);
+  }
 
   // Get transcript path from environment (set by Claude Code)
   const transcriptPath = process.env.CLAUDE_TRANSCRIPT_PATH;
@@ -67,7 +67,11 @@ async function main() {
 
   // Signal to Claude that session should be evaluated for extractable patterns
   log(`[ContinuousLearning] Session has ${messageCount} messages - evaluate for extractable patterns`);
-  log(`[ContinuousLearning] Save learned skills to: ${learnedSkillsPath}`);
+  log(`[ContinuousLearning] Universal patterns → ${userLearnedSkillsPath}`);
+  if (projectLearnedSkillsPath) {
+    log(`[ContinuousLearning] Project-specific patterns → ${projectLearnedSkillsPath}`);
+  }
+  log(`[ContinuousLearning] Tip: Use /learn command to extract patterns manually`);
 
   process.exit(0);
 }

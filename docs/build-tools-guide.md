@@ -455,7 +455,7 @@ If you want to disable the hook advice, you can modify `hooks/hooks.json`:
   "matcher": "tool == \"Bash\"",
   "hooks": [{
     "type": "command",
-    "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/maven-advisor.js\"",
+    "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/maven-advisor.cjs\"",
     "enabled": false  // Add this
   }]
 }

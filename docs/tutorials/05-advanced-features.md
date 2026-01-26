@@ -178,7 +178,7 @@ jobs:
 
 ```bash
 # Create custom hook script
-cat > scripts/hooks/check-todos.js << 'EOF'
+cat > scripts/hooks/check-todos.cjs << 'EOF'
 const { readHookInput, writeHookOutput } = require('../lib/hook-utils');
 const fs = require('fs');
 
@@ -219,7 +219,7 @@ EOF
   "matcher": "tool == \"Edit\" || tool == \"Write\"",
   "hooks": [{
     "type": "command",
-    "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/check-todos.js\""
+    "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/check-todos.cjs\""
   }],
   "description": "Check for TODO comments"
 }
@@ -331,7 +331,7 @@ For local development, disable slow security scans:
       "matcher": "false",  // Disable hook
       "hooks": [{
         "type": "command",
-        "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/python-security.js\""
+        "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/python-security.cjs\""
       }],
       "description": "Disabled locally - run in CI only"
     }
@@ -556,7 +556,7 @@ If incorrect, verify manifest files exist.
 2. Verify `${CLAUDE_PLUGIN_ROOT}` is set
 3. Test hook manually:
 ```bash
-echo '{"tool":"Edit","tool_input":{"file_path":"test.py"}}' | node scripts/hooks/your-hook.js
+echo '{"tool":"Edit","tool_input":{"file_path":"test.py"}}' | node scripts/hooks/your-hook.cjs
 ```
 
 ### Issue: Memory Persistence Not Working

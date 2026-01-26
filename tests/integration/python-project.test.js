@@ -51,13 +51,13 @@ describe('Python project integration', () => {
 
   describe('Smart formatter integration', () => {
     it('should have smart-formatter.js hook', async () => {
-      const hookPath = path.join(__dirname, '../../scripts/hooks/smart-formatter.js');
+      const hookPath = path.join(__dirname, '../../scripts/hooks/smart-formatter.cjs');
       const exists = await fs.access(hookPath).then(() => true).catch(() => false);
       expect(exists).toBe(true);
     });
 
     it('should handle Python files', async () => {
-      const hookPath = path.join(__dirname, '../../scripts/hooks/smart-formatter.js');
+      const hookPath = path.join(__dirname, '../../scripts/hooks/smart-formatter.cjs');
       const content = await fs.readFile(hookPath, 'utf8');
       expect(content).toContain('.py');
       expect(content).toContain('python');
@@ -66,13 +66,13 @@ describe('Python project integration', () => {
 
   describe('Security hook integration', () => {
     it('should have python-security.js hook', async () => {
-      const hookPath = path.join(__dirname, '../../scripts/hooks/python-security.js');
+      const hookPath = path.join(__dirname, '../../scripts/hooks/python-security.cjs');
       const exists = await fs.access(hookPath).then(() => true).catch(() => false);
       expect(exists).toBe(true);
     });
 
     it('should be executable', async () => {
-      const hookPath = path.join(__dirname, '../../scripts/hooks/python-security.js');
+      const hookPath = path.join(__dirname, '../../scripts/hooks/python-security.cjs');
       const stats = await fs.stat(hookPath);
       const isExecutable = (stats.mode & 0o111) !== 0;
       expect(isExecutable).toBe(true);
@@ -136,8 +136,8 @@ describe('Python project integration', () => {
         'agents/python-reviewer.md',
         'skills/python-patterns/SKILL.md',
         'rules/python-style.md',
-        'scripts/hooks/python-security.js',
-        'scripts/hooks/smart-formatter.js',
+        'scripts/hooks/python-security.cjs',
+        'scripts/hooks/smart-formatter.cjs',
       ];
 
       for (const deliverable of deliverables) {

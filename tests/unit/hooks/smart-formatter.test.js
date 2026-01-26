@@ -10,7 +10,7 @@ const __dirname = path.dirname(__filename);
 
 describe('smart-formatter hook', () => {
   const harness = new HookTestHarness();
-  const hookPath = path.join(__dirname, '../../../scripts/hooks/smart-formatter.js');
+  const hookPath = path.join(__dirname, '../../../scripts/hooks/smart-formatter.cjs');
   const fixturesDir = path.join(__dirname, '../../fixtures');
 
   // Helper to create a temporary test file

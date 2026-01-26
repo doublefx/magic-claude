@@ -38,7 +38,7 @@ After comprehensive research, architectural validation, and planning, the Enterp
 - **Status**: ✅ VERIFIED
 - **Evidence**:
   - hooks/hooks.json lines 86-90 show stdin/stdout usage
-  - scripts/hooks/session-start.js shows SessionStart pattern
+  - scripts/hooks/session-start.cjs shows SessionStart pattern
 
 #### 3. Existing Codebase Structure
 - **Issue**: Unknown starting point for implementation

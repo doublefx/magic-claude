@@ -141,7 +141,7 @@ Instead of using complex hook matchers, v2.0 uses **runtime filtering** inside h
   "matcher": "tool == \"Edit\" || tool == \"Write\"",
   "hooks": [{
     "type": "command",
-    "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/smart-formatter.js\""
+    "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/smart-formatter.cjs\""
   }]
 }
 ```

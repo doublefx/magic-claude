@@ -11,7 +11,7 @@ describe('Build Tools Integration', () => {
   const fixturesDir = path.join(__dirname, '../fixtures');
   const mavenProject = path.join(fixturesDir, 'sample-maven-project');
   const harness = new HookTestHarness();
-  const mavenAdvisorHook = path.join(__dirname, '../../scripts/hooks/maven-advisor.js');
+  const mavenAdvisorHook = path.join(__dirname, '../../scripts/hooks/maven-advisor.cjs');
 
   describe('Maven Project Detection', () => {
     beforeEach(() => {

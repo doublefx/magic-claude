@@ -136,7 +136,7 @@ hooks/
 
 **Implementation:**
 ```javascript
-// scripts/hooks/session-start.js
+// scripts/hooks/session-start.cjs
 const { detectProjectType } = require('../detect-project-type');
 
 function loadHooksForProject() {
@@ -164,13 +164,13 @@ Keep single `hooks.json`, but hooks check project type at runtime:
   "matcher": "tool == 'Edit'",
   "hooks": [{
     "type": "command",
-    "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/conditional-python-format.js\""
+    "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/conditional-python-format.cjs\""
   }]
 }
 ```
 
 ```javascript
-// scripts/hooks/conditional-python-format.js
+// scripts/hooks/conditional-python-format.cjs
 const { detectProjectType } = require('../detect-project-type');
 
 const types = detectProjectType(process.cwd());

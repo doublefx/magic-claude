@@ -228,7 +228,7 @@ Example:
   "matcher": "tool == \"Edit\" && tool_input.file_path matches \"\\\\.(ts|tsx)$\"",
   "hooks": [{
     "type": "command",
-    "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/some-hook.js\""
+    "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/some-hook.cjs\""
   }],
   "description": "What this hook does"
 }

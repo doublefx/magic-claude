@@ -248,7 +248,7 @@ ls ~/.claude/agents/python-reviewer.md
 cat ~/.claude/settings.json | grep hooks
 
 # 2. Verify hook scripts exist
-ls scripts/hooks/smart-formatter.js
+ls scripts/hooks/smart-formatter.cjs
 
 # 3. Install formatters
 pip install ruff  # Python

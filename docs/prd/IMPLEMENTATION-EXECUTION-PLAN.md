@@ -605,7 +605,7 @@ module.exports = {
 **Dependencies**: P1-03
 **Tests Required**: Format logic for each language
 
-**Create**: `scripts/hooks/smart-formatter.js`
+**Create**: `scripts/hooks/smart-formatter.cjs`
 
 **Implementation** (from PRD Section 2):
 ```javascript
@@ -708,7 +708,7 @@ main().catch(err => {
 **Dependencies**: P1-03
 **Tests Required**: Maven command detection
 
-**Create**: `scripts/hooks/maven-advisor.js`
+**Create**: `scripts/hooks/maven-advisor.cjs`
 
 **Implementation** (from PRD Section 2):
 ```javascript
@@ -785,7 +785,7 @@ main().catch(err => {
   "matcher": "tool == \"Edit\" || tool == \"Write\"",
   "hooks": [{
     "type": "command",
-    "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/smart-formatter.js\""
+    "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/smart-formatter.cjs\""
   }],
   "description": "Auto-format files based on project type"
 }
@@ -814,7 +814,7 @@ main().catch(err => {
 **Dependencies**: P1-01
 **Tests Required**: Detection runs on session start
 
-**Update**: `scripts/hooks/session-start.js`
+**Update**: `scripts/hooks/session-start.cjs`
 
 **Add** (after line 46):
 ```javascript
@@ -885,10 +885,10 @@ if (projectTypes.length > 0) {
 **Deliverables**:
 - `scripts/lib/detect-project-type.js`
 - `scripts/lib/hook-utils.js`
-- `scripts/hooks/smart-formatter.js`
-- `scripts/hooks/maven-advisor.js`
+- `scripts/hooks/smart-formatter.cjs`
+- `scripts/hooks/maven-advisor.cjs`
 - `hooks/hooks.json` (refactored)
-- `scripts/hooks/session-start.js` (enhanced)
+- `scripts/hooks/session-start.cjs` (enhanced)
 - `tests/unit/lib/detect-project-type.test.js`
 - `tests/unit/lib/hook-utils.test.js`
 - `tests/unit/hooks/smart-formatter.test.js`
@@ -917,7 +917,7 @@ if (projectTypes.length > 0) {
 - `agents/python-reviewer.md`
 - `skills/python-patterns/skill.md`
 - `rules/python-style.md`
-- `scripts/hooks/python-security.js` (Semgrep + pip-audit)
+- `scripts/hooks/python-security.cjs` (Semgrep + pip-audit)
 
 ---
 

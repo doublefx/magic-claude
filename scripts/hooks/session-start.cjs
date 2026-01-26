@@ -15,8 +15,8 @@ const {
   findFiles,
   ensureDir,
   log
-} = require('../lib/utils');
-const { getPackageManager, getSelectionPrompt } = require('../lib/package-manager');
+} = require('../lib/utils.cjs');
+const { getPackageManager, getSelectionPrompt } = require('../lib/package-manager.cjs');
 
 async function main() {
   const sessionsDir = getSessionsDir();

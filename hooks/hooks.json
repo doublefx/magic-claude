@@ -47,7 +47,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/suggest-compact.js\""
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/suggest-compact.cjs\""
           }
         ],
         "description": "Suggest manual compaction at logical intervals"
@@ -59,10 +59,14 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/pre-compact.js\""
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/pre-compact.cjs\""
+          },
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/evaluate-session.cjs\""
           }
         ],
-        "description": "Save state before context compaction"
+        "description": "Save state and evaluate patterns before compaction"
       }
     ],
     "SessionStart": [
@@ -71,7 +75,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/session-start.js\""
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/session-start.cjs\""
           }
         ],
         "description": "Load previous context and detect package manager on new session"
@@ -93,7 +97,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/smart-formatter.js\""
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/smart-formatter.cjs\""
           }
         ],
         "description": "Auto-format files based on project type (Python: ruff, Java: google-java-format, Kotlin: ktfmt, JS/TS: prettier)"
@@ -103,7 +107,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/java-security.js\""
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/java-security.cjs\""
           }
         ],
         "description": "Run security checks on Java files (SQL injection, hardcoded credentials, etc.)"
@@ -147,7 +151,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/session-end.js\""
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/session-end.cjs\""
           }
         ],
         "description": "Persist session state on end"
@@ -157,7 +161,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/evaluate-session.js\""
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/evaluate-session.cjs\""
           }
         ],
         "description": "Evaluate session for extractable patterns"

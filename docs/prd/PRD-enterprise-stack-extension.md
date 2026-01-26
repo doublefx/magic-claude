@@ -332,7 +332,7 @@ Research confirms that Claude Code's hook matchers support **only basic string/r
 Since matchers cannot evaluate complex conditions, **hook scripts perform runtime filtering**:
 
 ```javascript
-// scripts/hooks/smart-formatter.js
+// scripts/hooks/smart-formatter.cjs
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
@@ -410,7 +410,7 @@ process.stdin.on('end', () => {
   "hooks": [
     {
       "type": "command",
-      "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/smart-formatter.js\""
+      "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/smart-formatter.cjs\""
     }
   ],
   "description": "Auto-format files based on project type"
@@ -423,7 +423,7 @@ process.stdin.on('end', () => {
   "hooks": [
     {
       "type": "command",
-      "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/maven-advisor.js\""
+      "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/maven-advisor.cjs\""
     }
   ],
   "description": "Maven command recommendations"
@@ -433,7 +433,7 @@ process.stdin.on('end', () => {
 **maven-advisor.js Example** (Runtime Command Filtering):
 
 ```javascript
-// scripts/hooks/maven-advisor.js
+// scripts/hooks/maven-advisor.cjs
 const { detectProjectType } = require('../detect-project-type');
 
 let input = '';
@@ -908,9 +908,9 @@ jobs:
 
 **Deliverables**:
 - `scripts/detect-project-type.js` (enhanced with monorepo support)
-- `scripts/hooks/smart-formatter.js` (NEW - universal formatter)
-- `scripts/hooks/maven-advisor.js` (NEW - Maven recommendations)
-- `scripts/hooks/session-start.js` (enhanced)
+- `scripts/hooks/smart-formatter.cjs` (NEW - universal formatter)
+- `scripts/hooks/maven-advisor.cjs` (NEW - Maven recommendations)
+- `scripts/hooks/session-start.cjs` (enhanced)
 - `hooks/hooks.json` (simple matchers: "Edit|Write", "Bash")
 - `tests/lib/detect-project-type.test.js` (60+ scenarios)
 - `tests/hooks/smart-formatter.test.js` (runtime filtering tests)
@@ -937,8 +937,8 @@ jobs:
 - `agents/python-reviewer.md` (updated with Ruff, Semgrep, pip-audit)
 - `skills/python-patterns/skill.md` (includes uv, poetry)
 - `rules/python-style.md`
-- `scripts/hooks/python-format.js` (Ruff-based)
-- `scripts/hooks/python-security.js` (Semgrep + pip-audit)
+- `scripts/hooks/python-format.cjs` (Ruff-based)
+- `scripts/hooks/python-security.cjs` (Semgrep + pip-audit)
 - `tests/integration/python-project.test.js`
 
 **Effort**: 7 days (was 5)
@@ -967,8 +967,8 @@ jobs:
 - `agents/groovy-reviewer.md`
 - `skills/kotlin-patterns/skill.md` (NEW)
 - `rules/java-style.md`
-- `scripts/hooks/java-format.js`
-- `scripts/hooks/kotlin-format.js` (NEW)
+- `scripts/hooks/java-format.cjs`
+- `scripts/hooks/kotlin-format.cjs` (NEW)
 - `tests/integration/jvm-polyglot.test.js` (NEW)
 
 **Effort**: 8 days (was 5)
@@ -997,8 +997,8 @@ jobs:
 - `agents/gradle-expert.md` (version catalogs, dependency locking)
 - `skills/maven-patterns/skill.md`
 - `skills/gradle-patterns/skill.md` (includes version catalogs, Gradle 9 features)
-- `scripts/hooks/maven-suggestions.js`
-- `scripts/hooks/gradle-wrapper.js`
+- `scripts/hooks/maven-suggestions.cjs`
+- `scripts/hooks/gradle-wrapper.cjs`
 - `tests/integration/maven-multi-module.test.js` (NEW)
 - `tests/integration/gradle-version-catalog.test.js` (NEW)
 
@@ -1052,7 +1052,7 @@ jobs:
 - `skills/deployment-patterns/` (blue-green.md, canary.md, gitops.md)
 - `commands/ci-cd.md`
 - `skills/ci-cd-patterns/skill.md` (enhanced with container/K8s patterns)
-- `scripts/hooks/validate-pipeline.js`
+- `scripts/hooks/validate-pipeline.cjs`
 - `tests/integration/ci-cd-templates.test.js`
 
 **Effort**: 22 days (was 10 days)
