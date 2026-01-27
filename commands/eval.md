@@ -1,3 +1,7 @@
+---
+description: Manage eval-driven development workflow - define capability/regression evals before coding, then verify implementation meets criteria
+---
+
 # Eval Command
 
 Manage eval-driven development workflow.

@@ -1,3 +1,8 @@
+---
+name: ci-cd-patterns
+description: Comprehensive CI/CD patterns, best practices, and implementation strategies for GitHub Actions, GitLab CI, and Bitbucket Pipelines. Use when implementing deployment pipelines, caching strategies, matrix builds, security scanning, or deployment strategies.
+---
+
 # CI/CD Patterns Skill
 
 This skill provides comprehensive knowledge of modern CI/CD patterns, best practices, and implementation strategies for building robust deployment pipelines.

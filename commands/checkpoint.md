@@ -1,3 +1,7 @@
+---
+description: Create verification checkpoints in your workflow to track progress and compare state changes over time
+---
+
 # Checkpoint Command
 
 Create or verify a checkpoint in your workflow.

@@ -1,3 +1,7 @@
+---
+description: Analyze codebase structure and update token-lean architecture documentation in codemaps/ directory
+---
+
 # Update Codemaps
 
 Analyze the codebase structure and update architecture documentation:

@@ -1,3 +1,7 @@
+---
+description: Sequential agent workflow for complex tasks - orchestrates multiple specialized agents with structured handoffs
+---
+
 # Orchestrate Command
 
 Sequential agent workflow for complex tasks.
