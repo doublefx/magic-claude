@@ -15,21 +15,27 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Development Commands
 
 ```bash
-# Run all tests
-node tests/run-all.js
+# Run all tests (development)
+node tests/run-all.cjs
 
-# Run individual test suites
-node tests/lib/utils.test.js
-node tests/lib/package-manager.test.js
-node tests/hooks/hooks.test.js
+# Run individual test suites (development)
+node tests/lib/utils.test.cjs
+node tests/lib/package-manager.test.cjs
+node tests/hooks/hooks.test.cjs
 
-# Package manager setup (interactive)
+# Direct script execution (development/testing)
 node scripts/setup-package-manager.cjs --detect
 node scripts/setup-package-manager.cjs --global pnpm
 node scripts/setup-package-manager.cjs --project bun
+```
 
-# Available via /commands when installed as plugin
+## Plugin Commands (Slash Commands)
+
+When installed as a plugin, use these slash commands:
+
+```bash
 /setup-pm          # Configure package manager
+/setup-ecosystem   # Check development tools
 /tdd               # Test-driven development workflow
 /plan              # Implementation planning
 /code-review       # Quality and security review

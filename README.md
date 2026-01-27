@@ -207,17 +207,16 @@ To set your preferred package manager:
 # Via environment variable
 export CLAUDE_PACKAGE_MANAGER=pnpm
 
-# Via global config
+# Via slash command (when installed as plugin)
+/setup-pm --global pnpm
+/setup-pm --project bun
+/setup-pm --detect
+
+# Or via direct script execution
 node scripts/setup-package-manager.cjs --global pnpm
-
-# Via project config
 node scripts/setup-package-manager.cjs --project bun
-
-# Detect current setting
 node scripts/setup-package-manager.cjs --detect
 ```
-
-Or use the `/setup-pm` command in Claude Code.
 
 ---
 
