@@ -97,7 +97,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/smart-formatter.cjs\""
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/smart-formatter.js\""
           }
         ],
         "description": "Auto-format files based on project type (Python: ruff, Java: google-java-format, Kotlin: ktfmt, JS/TS: prettier)"
@@ -107,7 +107,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/java-security.cjs\""
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/java-security.js\""
           }
         ],
         "description": "Run security checks on Java files (SQL injection, hardcoded credentials, etc.)"
