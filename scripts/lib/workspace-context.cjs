@@ -2,14 +2,19 @@
  * Workspace Context - Central abstraction for monorepo/workspace operations
  * Used by hooks, commands, skills, configuration
  *
- * This is Phase 0 implementation - provides foundation for workspace awareness.
- * Full workspace detection (pnpm, nx, lerna, etc.) will be added in Phases 1-7.
+ * Phases 0-3 Complete:
+ * - Phase 0: Foundation and basic API
+ * - Phase 1: Ecosystem modules (nodejs, jvm, python, rust)
+ * - Phase 2: Workspace detection (pnpm, nx, lerna, yarn, npm, turborepo)
+ * - Phase 3: Multi-ecosystem support (mixed-language monorepos)
  */
 
 const fs = require('fs');
 const path = require('path');
 const { getClaudeDir, getUserLearnedSkillsDir, getProjectLearnedSkillsDir, readFile } = require('./utils.cjs');
 const { getPackageManager } = require('./package-manager.cjs');
+const { detectWorkspace } = require('./workspace/detection.cjs');
+const { enrichPackagesWithEcosystems, detectPackageEcosystem } = require('./workspace/ecosystems.cjs');
 
 /**
  * WorkspaceContext class - Central abstraction for workspace operations
@@ -24,14 +29,23 @@ class WorkspaceContext {
   }
 
   /**
-   * Detect workspace (Phase 0: minimal implementation)
-   * Phase 2 will add full detection for pnpm, nx, lerna, etc.
+   * Detect workspace
+   * Uses Phase 2 workspace detection with Phase 3 ecosystem enrichment
    * @private
    */
   _detectWorkspace(startDir) {
-    // Phase 0: Return null (single-project mode)
-    // Phase 2 will implement full workspace detection by walking up directory tree
-    return null;
+    const workspace = detectWorkspace(startDir);
+
+    if (!workspace) {
+      return null;
+    }
+
+    // Enrich packages with ecosystem information (Phase 3)
+    if (workspace.packages) {
+      workspace.packages = enrichPackagesWithEcosystems(workspace.packages);
+    }
+
+    return workspace;
   }
 
   /**
@@ -72,10 +86,23 @@ class WorkspaceContext {
    * @returns {object|null} - Package object or null
    */
   findPackageForFile(filePath) {
-    if (!this._workspace) return null;
+    if (!this._workspace || !this._workspace.packages) {
+      return null;
+    }
 
-    // Phase 0: Not implemented yet
-    // Phase 2 will implement package resolution
+    const absolutePath = path.resolve(filePath);
+
+    // Find package whose path is a prefix of the file path
+    // Sort by path length descending to match most specific package first
+    const packages = [...this._workspace.packages].sort((a, b) => b.path.length - a.path.length);
+
+    for (const pkg of packages) {
+      const pkgPath = path.resolve(pkg.path);
+      if (absolutePath.startsWith(pkgPath + path.sep) || absolutePath === pkgPath) {
+        return pkg;
+      }
+    }
+
     return null;
   }
 
@@ -85,10 +112,22 @@ class WorkspaceContext {
    * @returns {object|null} - Package object or null
    */
   findPackageForDir(dirPath) {
-    if (!this._workspace) return null;
+    if (!this._workspace || !this._workspace.packages) {
+      return null;
+    }
 
-    // Phase 0: Not implemented yet
-    // Phase 2 will implement package resolution
+    const absolutePath = path.resolve(dirPath);
+
+    // Find exact match or parent match
+    const packages = [...this._workspace.packages].sort((a, b) => b.path.length - a.path.length);
+
+    for (const pkg of packages) {
+      const pkgPath = path.resolve(pkg.path);
+      if (absolutePath === pkgPath || absolutePath.startsWith(pkgPath + path.sep)) {
+        return pkg;
+      }
+    }
+
     return null;
   }
 
@@ -136,23 +175,21 @@ class WorkspaceContext {
    * @returns {object} - { name, ecosystem }
    */
   getPackageManager(packageName) {
-    const pm = getPackageManager({ projectDir: this.startDir });
-
-    // Determine ecosystem based on package manager
-    let ecosystem = 'nodejs';
-
-    // Check for other ecosystem indicators
-    if (fs.existsSync(path.join(this.startDir, 'pom.xml')) ||
-        fs.existsSync(path.join(this.startDir, 'build.gradle')) ||
-        fs.existsSync(path.join(this.startDir, 'build.gradle.kts'))) {
-      ecosystem = 'jvm';
-    } else if (fs.existsSync(path.join(this.startDir, 'requirements.txt')) ||
-               fs.existsSync(path.join(this.startDir, 'pyproject.toml')) ||
-               fs.existsSync(path.join(this.startDir, 'setup.py'))) {
-      ecosystem = 'python';
-    } else if (fs.existsSync(path.join(this.startDir, 'Cargo.toml'))) {
-      ecosystem = 'rust';
+    // If packageName provided and in workspace, find that package
+    if (packageName && this._workspace) {
+      const pkg = this._workspace.packages?.find(p => p.name === packageName);
+      if (pkg) {
+        const pm = getPackageManager({ projectDir: pkg.path });
+        return {
+          name: pm.name,
+          ecosystem: pkg.ecosystem || detectPackageEcosystem(pkg.path)
+        };
+      }
     }
+
+    // Use current directory
+    const pm = getPackageManager({ projectDir: this.startDir });
+    const ecosystem = detectPackageEcosystem(this.startDir);
 
     return {
       name: pm.name,
@@ -166,14 +203,24 @@ class WorkspaceContext {
    * @returns {object} - { name, ecosystem }
    */
   getPackageManagerForFile(filePath) {
-    // Phase 0: Use directory of file
-    // Phase 2 will resolve to package first
+    // Find package that contains this file
+    const pkg = this.findPackageForFile(filePath);
+
+    if (pkg) {
+      const pm = getPackageManager({ projectDir: pkg.path });
+      return {
+        name: pm.name,
+        ecosystem: pkg.ecosystem || detectPackageEcosystem(pkg.path)
+      };
+    }
+
+    // Not in workspace package, use file directory
     const fileDir = path.dirname(filePath);
     const pm = getPackageManager({ projectDir: fileDir });
 
     return {
       name: pm.name,
-      ecosystem: this.getEcosystem()
+      ecosystem: detectPackageEcosystem(fileDir)
     };
   }
 
@@ -183,37 +230,16 @@ class WorkspaceContext {
    * @returns {string} - 'nodejs', 'jvm', 'python', 'rust', 'unknown'
    */
   getEcosystem(packageName) {
-    // Phase 0: Detect from current directory
-    // Phase 3 will support per-package ecosystem detection
-
-    const dir = this.startDir;
-
-    // Check for JVM project files
-    if (fs.existsSync(path.join(dir, 'pom.xml')) ||
-        fs.existsSync(path.join(dir, 'build.gradle')) ||
-        fs.existsSync(path.join(dir, 'build.gradle.kts'))) {
-      return 'jvm';
+    // If packageName provided and in workspace, find that package
+    if (packageName && this._workspace) {
+      const pkg = this._workspace.packages?.find(p => p.name === packageName);
+      if (pkg) {
+        return pkg.ecosystem || detectPackageEcosystem(pkg.path);
+      }
     }
 
-    // Check for Python project files
-    if (fs.existsSync(path.join(dir, 'requirements.txt')) ||
-        fs.existsSync(path.join(dir, 'pyproject.toml')) ||
-        fs.existsSync(path.join(dir, 'setup.py')) ||
-        fs.existsSync(path.join(dir, 'Pipfile'))) {
-      return 'python';
-    }
-
-    // Check for Rust project files
-    if (fs.existsSync(path.join(dir, 'Cargo.toml'))) {
-      return 'rust';
-    }
-
-    // Check for Node.js project files
-    if (fs.existsSync(path.join(dir, 'package.json'))) {
-      return 'nodejs';
-    }
-
-    return 'nodejs'; // Default fallback
+    // Use current directory
+    return detectPackageEcosystem(this.startDir);
   }
 
   /**
