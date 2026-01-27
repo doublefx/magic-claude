@@ -35,9 +35,9 @@ When installed as a plugin, use these slash commands:
 
 ```bash
 # Setup & Configuration
-/setup             # Complete automated setup (workspace + tools + dependencies)
-/setup-pm          # Configure package manager only
-/setup-ecosystem   # Check development tools only
+/setup             # Complete automated setup (RECOMMENDED for first-time)
+/setup-pm          # Package manager only (when switching npm→pnpm, etc.)
+/setup-ecosystem   # Workspace & tools only (for monorepo initialization)
 
 # Development Workflow
 /tdd               # Test-driven development workflow
@@ -52,6 +52,18 @@ When installed as a plugin, use these slash commands:
 /checkpoint        # Save verification state
 /verify            # Run verification loop
 ```
+
+### Setup Command Decision Guide
+
+**First-time setup?** → Use `/setup` or ask "setup everything for this project"
+
+**Specific needs?** → Use granular commands:
+- Switching package managers (npm → pnpm) → `/setup-pm --global pnpm`
+- Checking package manager detection → `/setup-pm --detect`
+- Initialize monorepo workspace → `/setup-ecosystem --detect`
+- Check installed dev tools → `/setup-ecosystem --check nodejs`
+
+**Think:** `/setup` = convenience (does everything), others = granular control (specific tasks)
 
 ## Architecture Overview
 

@@ -8,6 +8,8 @@ command: node "${CLAUDE_PLUGIN_ROOT}/scripts/setup-package-manager.cjs"
 
 Configure your preferred package manager for this project or globally.
 
+> **💡 First time here?** Use `/setup` for complete project setup. This command is for **granular control** over package manager configuration only.
+
 ## Usage
 
 ```bash
@@ -79,3 +81,9 @@ To see current package manager detection results, run:
 ```bash
 /setup-pm --detect
 ```
+
+## See Also
+
+- `/setup` - Complete automated setup (package manager + workspace + tools)
+- `/setup-ecosystem` - Workspace initialization and tool checking
+- This command focuses **only** on package manager configuration

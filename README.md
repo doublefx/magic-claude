@@ -408,9 +408,10 @@ The `/setup` command will:
 - ✓ Install dependencies
 - ✓ Create Claude Code configuration
 
-For granular control, use individual commands:
-- `/setup-pm` - Package manager only
-- `/setup-ecosystem` - Tools and dependencies only
+**Which command to use:**
+- **`/setup`** - First-time setup, complete automation (recommended)
+- **`/setup-pm`** - Only configure package manager (when switching npm→pnpm, etc.)
+- **`/setup-ecosystem`** - Only workspace initialization and tool checking (for monorepos)
 
 ---
 

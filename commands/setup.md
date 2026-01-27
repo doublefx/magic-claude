@@ -139,13 +139,44 @@ workspace-root/
     └── web/
 ```
 
-## Integration with Other Commands
+## Which Command Should I Use?
 
-This command orchestrates:
-- `/setup-pm` - Package manager configuration
-- `/setup-ecosystem` - Tool detection and installation
+### Choose `/setup` when:
+- ✓ First-time project setup
+- ✓ You want everything configured automatically
+- ✓ New team member onboarding
+- ✓ "Just make it work" scenarios
 
-You can run those individually for specific tasks, or use `/setup` for everything.
+### Choose `/setup-pm` when:
+- ✓ Switching package managers (npm → pnpm)
+- ✓ Checking current package manager detection
+- ✓ Fixing package manager config only
+- ✓ **WITHOUT** touching workspace structure or dependencies
+
+### Choose `/setup-ecosystem` when:
+- ✓ Initializing workspace root for monorepo
+- ✓ Checking which development tools are installed
+- ✓ Installing dependencies after adding packages
+- ✓ **WITHOUT** changing package manager settings
+
+## Command Hierarchy
+
+```
+/setup (Convenience - Does Everything)
+├── /setup-pm (Granular - Package Manager Only)
+│   ├── Detect current package manager
+│   ├── Set global/project preference
+│   └── Show detection priority
+└── /setup-ecosystem (Granular - Workspace & Tools)
+    ├── Detect workspace structure
+    ├── Initialize workspace root
+    ├── Check development tools
+    └── Install dependencies
+```
+
+**Think of it like Git:**
+- `/setup` = `git pull` (convenience)
+- `/setup-pm` + `/setup-ecosystem` = `git fetch` + `git merge` (granular control)
 
 ## Troubleshooting
 
@@ -165,3 +196,9 @@ You can run those individually for specific tasks, or use `/setup` for everythin
 **"Unknown ecosystem"**
 - Currently supports: nodejs, python, jvm, rust
 - For other ecosystems, tools must be installed manually
+
+## See Also
+
+- `/setup-pm` - Configure package manager only (granular control)
+- `/setup-ecosystem` - Workspace and tools only (granular control)
+- Both commands are orchestrated by `/setup` for convenience
