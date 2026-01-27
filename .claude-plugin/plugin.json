@@ -1,13 +1,13 @@
 {
   "name": "everything-claude-code",
-  "version": "2.0.0",
-  "description": "Complete collection of battle-tested Claude Code configs from an Anthropic hackathon winner - agents, skills, hooks, commands, and rules evolved over 10+ months of intensive daily use",
+  "version": "2.0.0-enterprise",
+  "description": "Enterprise Stack Extension - Complete collection of battle-tested Claude Code configs with Python, Java, Kotlin, Maven, Gradle, and CI/CD pipeline support",
   "author": {
-    "name": "Affaan Mustafa",
-    "url": "https://x.com/affaanmustafa"
+    "name": "Affaan Mustafa (Original) + doublefx (Enterprise Extension)",
+    "url": "https://github.com/doublefx"
   },
-  "homepage": "https://github.com/affaan-m/everything-claude-code",
-  "repository": "https://github.com/affaan-m/everything-claude-code",
+  "homepage": "https://github.com/doublefx/everything-claude-code",
+  "repository": "https://github.com/doublefx/everything-claude-code",
   "license": "MIT",
   "keywords": [
     "claude-code",
@@ -21,11 +21,14 @@
     "security",
     "workflow",
     "automation",
-    "best-practices"
+    "best-practices",
+    "python",
+    "java",
+    "kotlin",
+    "gradle",
+    "maven",
+    "ci-cd"
   ],
   "commands": "./commands",
-  "skills": "./skills",
-  "agents": "./agents",
-  "hooks": "./hooks/hooks.json",
-  "rules": "./rules"
+  "skills": "./skills"
 }

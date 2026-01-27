@@ -3,13 +3,9 @@
  * Generates CI/CD pipeline configuration based on project type and platform
  */
 
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { detectProjectType } from '../scripts/lib/detect-project-type.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const fs = require('fs');
+const path = require('path');
+const { detectProjectType } = require('../scripts/lib/detect-project-type.cjs');
 
 // Platform configurations
 const PLATFORMS = {
@@ -82,7 +78,7 @@ function selectTemplate(projectTypes, platform) {
  * @param {string} cwd - Current working directory
  * @returns {object} Result object with success status and message
  */
-export async function generatePipeline(platform = 'github-actions', cwd = process.cwd()) {
+async function generatePipeline(platform = 'github-actions', cwd = process.cwd()) {
   // Validate platform
   if (!PLATFORMS[platform]) {
     return {
@@ -164,7 +160,7 @@ export async function generatePipeline(platform = 'github-actions', cwd = proces
  * @param {string} cwd - Current working directory
  * @returns {object} Result object
  */
-export async function generateAdditionalFiles(fileTypes = [], cwd = process.cwd()) {
+async function generateAdditionalFiles(fileTypes = [], cwd = process.cwd()) {
   const results = [];
 
   for (const fileType of fileTypes) {
@@ -280,7 +276,7 @@ export async function generateAdditionalFiles(fileTypes = [], cwd = process.cwd(
 /**
  * Command handler for Claude Code
  */
-export default async function ciCdCommand(args = []) {
+async function ciCdCommand(args = []) {
   const validPlatforms = Object.keys(PLATFORMS);
   const validAdditionalFiles = ['docker', 'kubernetes', 'security', 'helm'];
 
@@ -342,7 +338,12 @@ export default async function ciCdCommand(args = []) {
 }
 
 // Allow direct execution for testing
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (require.main === module) {
   const args = process.argv.slice(2);
   ciCdCommand(args);
 }
+
+// CommonJS exports
+module.exports = ciCdCommand;
+module.exports.generatePipeline = generatePipeline;
+module.exports.generateAdditionalFiles = generateAdditionalFiles;
