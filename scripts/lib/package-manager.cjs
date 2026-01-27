@@ -3,11 +3,30 @@
  * Automatically detects the preferred package manager or lets user choose
  *
  * Supports: npm, pnpm, yarn, bun
+ *
+ * NOTE: This module is workspace-aware. When operating in a monorepo,
+ * it can detect package managers per-package. Use WorkspaceContext
+ * for advanced workspace operations.
  */
 
 const fs = require('fs');
 const path = require('path');
 const { commandExists, getClaudeDir, readFile, writeFile, log, runCommand } = require('./utils.cjs');
+
+// Lazy-load WorkspaceContext to avoid circular dependencies
+let _workspaceContext = null;
+function getWorkspaceContextSafe() {
+  if (!_workspaceContext) {
+    try {
+      const { getWorkspaceContext } = require('./workspace-context.cjs');
+      _workspaceContext = getWorkspaceContext();
+    } catch {
+      // WorkspaceContext not available, graceful degradation
+      _workspaceContext = null;
+    }
+  }
+  return _workspaceContext;
+}
 
 // Package manager definitions
 const PACKAGE_MANAGERS = {
@@ -374,6 +393,108 @@ function getCommandPattern(action) {
   return `(${patterns.join('|')})`;
 }
 
+/**
+ * Get package manager for a specific file in a workspace
+ * Workspace-aware: Detects which package owns the file and returns its package manager
+ *
+ * @param {string} filePath - Absolute file path
+ * @returns {object} - { name, config, source, package }
+ */
+function getPackageManagerForFile(filePath) {
+  const workspace = getWorkspaceContextSafe();
+
+  if (workspace && workspace.isWorkspace()) {
+    const pkg = workspace.findPackageForFile(filePath);
+
+    if (pkg) {
+      // Get package manager for this specific package
+      const pm = getPackageManager({ projectDir: pkg.path });
+      return {
+        ...pm,
+        package: pkg.name,
+        packagePath: pkg.path
+      };
+    }
+  }
+
+  // Not in workspace or file not in any package
+  const fileDir = path.dirname(filePath);
+  return getPackageManager({ projectDir: fileDir });
+}
+
+/**
+ * Get package manager for a specific package in a workspace
+ * Workspace-aware: Finds the package by name and returns its package manager
+ *
+ * @param {string} packageName - Package name
+ * @returns {object|null} - { name, config, source, package } or null if not found
+ */
+function getPackageManagerForPackage(packageName) {
+  const workspace = getWorkspaceContextSafe();
+
+  if (!workspace || !workspace.isWorkspace()) {
+    return null;
+  }
+
+  const packages = workspace.getAllPackages();
+  const pkg = packages.find(p => p.name === packageName);
+
+  if (!pkg) {
+    return null;
+  }
+
+  const pm = getPackageManager({ projectDir: pkg.path });
+  return {
+    ...pm,
+    package: pkg.name,
+    packagePath: pkg.path
+  };
+}
+
+/**
+ * Get all package managers used in a workspace
+ * Workspace-aware: Detects package manager for each package in workspace
+ *
+ * @returns {Array} - Array of { packageName, packagePath, name, config, source }
+ */
+function getAllWorkspacePackageManagers() {
+  const workspace = getWorkspaceContextSafe();
+
+  if (!workspace || !workspace.isWorkspace()) {
+    // Not in workspace, return current package manager
+    const pm = getPackageManager();
+    return [{
+      packageName: null,
+      packagePath: process.cwd(),
+      ...pm
+    }];
+  }
+
+  const packages = workspace.getAllPackages();
+  const results = [];
+
+  for (const pkg of packages) {
+    const pm = getPackageManager({ projectDir: pkg.path });
+    results.push({
+      packageName: pkg.name,
+      packagePath: pkg.path,
+      ecosystem: pkg.ecosystem,
+      ...pm
+    });
+  }
+
+  return results;
+}
+
+/**
+ * Check if we're in a workspace/monorepo
+ * @returns {boolean}
+ */
+function isInWorkspace() {
+  const workspace = getWorkspaceContextSafe();
+  return workspace ? workspace.isWorkspace() : false;
+}
+
 module.exports = {
   PACKAGE_MANAGERS,
   DETECTION_PRIORITY,
@@ -386,5 +507,10 @@ module.exports = {
   getRunCommand,
   getExecCommand,
   getSelectionPrompt,
-  getCommandPattern
+  getCommandPattern,
+  // Workspace-aware functions
+  getPackageManagerForFile,
+  getPackageManagerForPackage,
+  getAllWorkspacePackageManagers,
+  isInWorkspace
 };

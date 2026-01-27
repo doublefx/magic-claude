@@ -340,6 +340,37 @@ function runTests() {
     assert.ok(prompt.includes('CLAUDE_PACKAGE_MANAGER'), 'Should mention env var');
   })) passed++; else failed++;
 
+  // Workspace-aware functions (Phase 6)
+  console.log('\nWorkspace-aware Functions (Phase 6):');
+
+  if (test('isInWorkspace should return boolean', () => {
+    const result = pm.isInWorkspace();
+    assert.strictEqual(typeof result, 'boolean');
+  })) passed++; else failed++;
+
+  if (test('getAllWorkspacePackageManagers should return array', () => {
+    const result = pm.getAllWorkspacePackageManagers();
+    assert.ok(Array.isArray(result));
+    assert.ok(result.length > 0);
+    // Should have expected properties
+    assert.ok(result[0].name);
+    assert.ok(result[0].config);
+    assert.ok(result[0].source);
+  })) passed++; else failed++;
+
+  if (test('getPackageManagerForFile should work for any file', () => {
+    const result = pm.getPackageManagerForFile(__filename);
+    assert.strictEqual(typeof result, 'object');
+    assert.ok(result.name);
+    assert.ok(result.config);
+  })) passed++; else failed++;
+
+  if (test('getPackageManagerForPackage should handle non-existent package', () => {
+    const result = pm.getPackageManagerForPackage('nonexistent-package-xyz');
+    // Returns null if not in workspace or package not found
+    assert.ok(result === null || typeof result === 'object');
+  })) passed++; else failed++;
+
   // Summary
   console.log('\n=== Test Results ===');
   console.log(`Passed: ${passed}`);

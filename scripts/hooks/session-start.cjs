@@ -16,7 +16,12 @@ const {
   ensureDir,
   log
 } = require('../lib/utils.cjs');
-const { getPackageManager, getSelectionPrompt } = require('../lib/package-manager.cjs');
+const {
+  getPackageManager,
+  getSelectionPrompt,
+  isInWorkspace,
+  getAllWorkspacePackageManagers
+} = require('../lib/package-manager.cjs');
 
 async function main() {
   const sessionsDir = getSessionsDir();
@@ -42,14 +47,37 @@ async function main() {
     log(`[SessionStart] ${learnedSkills.length} learned skill(s) available in ${learnedDir}`);
   }
 
-  // Detect and report package manager
-  const pm = getPackageManager();
-  log(`[SessionStart] Package manager: ${pm.name} (${pm.source})`);
+  // Detect and report package manager / workspace
+  if (isInWorkspace()) {
+    log('[SessionStart] Workspace/monorepo detected');
 
-  // If package manager was detected via fallback, show selection prompt
-  if (pm.source === 'fallback' || pm.source === 'default') {
-    log('[SessionStart] No package manager preference found.');
-    log(getSelectionPrompt());
+    const workspaceManagers = getAllWorkspacePackageManagers();
+
+    // Count unique package managers and ecosystems
+    const uniquePMs = [...new Set(workspaceManagers.map(pm => pm.name))];
+    const uniqueEcosystems = [...new Set(workspaceManagers.map(pm => pm.ecosystem).filter(Boolean))];
+
+    log(`[SessionStart] Packages: ${workspaceManagers.length}`);
+    log(`[SessionStart] Ecosystems: ${uniqueEcosystems.join(', ') || 'unknown'}`);
+    log(`[SessionStart] Package managers: ${uniquePMs.join(', ')}`);
+
+    // Show individual packages if there are multiple package managers
+    if (uniquePMs.length > 1) {
+      log('[SessionStart] Per-package configuration:');
+      for (const pm of workspaceManagers) {
+        log(`  - ${pm.packageName || 'root'}: ${pm.name} (${pm.ecosystem || 'unknown'})`);
+      }
+    }
+  } else {
+    // Single project (not in workspace)
+    const pm = getPackageManager();
+    log(`[SessionStart] Package manager: ${pm.name} (${pm.source})`);
+
+    // If package manager was detected via fallback, show selection prompt
+    if (pm.source === 'fallback' || pm.source === 'default') {
+      log('[SessionStart] No package manager preference found.');
+      log(getSelectionPrompt());
+    }
   }
 
   process.exit(0);
