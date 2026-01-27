@@ -11,9 +11,10 @@ const fs = require('fs');
 
 const testsDir = __dirname;
 const testFiles = [
-  'lib/utils.test.js',
-  'lib/package-manager.test.js',
-  'hooks/hooks.test.js'
+  'lib/utils.test.cjs',
+  'lib/package-manager.test.cjs',
+  'lib/workspace-context.test.cjs',
+  'hooks/hooks.test.cjs'
 ];
 
 console.log('╔══════════════════════════════════════════════════════════╗');

@@ -10,8 +10,8 @@ const fs = require('fs');
 const os = require('os');
 
 // Import the modules
-const pm = require('../../scripts/lib/package-manager');
-const utils = require('../../scripts/lib/utils');
+const pm = require('../../scripts/lib/package-manager.cjs');
+const utils = require('../../scripts/lib/utils.cjs');
 
 // Test helper
 function test(name, fn) {
