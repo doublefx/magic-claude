@@ -11,6 +11,9 @@
  *   node scripts/setup-ecosystem.cjs --interactive
  */
 
+const fs = require('fs');
+const path = require('path');
+const readline = require('readline');
 const { getWorkspaceContext } = require('./lib/workspace-context.cjs');
 const { detectPackageEcosystem } = require('./lib/workspace/ecosystems.cjs');
 const {
@@ -18,6 +21,7 @@ const {
   checkEcosystemTools,
   getInstallationHelp
 } = require('./lib/workspace/tool-detection.cjs');
+const { ensureDir, writeFile } = require('./lib/utils.cjs');
 
 // Ecosystem tool definitions
 const ECOSYSTEM_TOOLS = {
@@ -43,6 +47,202 @@ const ECOSYSTEM_TOOLS = {
   }
 };
 
+/**
+ * Detect if current directory could be a workspace root
+ * @returns {object|null} { subPackages: [...], suggestedWorkspaceType: '...' }
+ */
+function detectPotentialWorkspace() {
+  const cwd = process.cwd();
+
+  // Check if root already has package.json
+  if (fs.existsSync(path.join(cwd, 'package.json'))) {
+    return null;
+  }
+
+  // Look for common workspace directories
+  const commonDirs = ['packages', 'apps', 'services', 'libs', 'packages/*', 'apps/*'];
+  const subPackages = [];
+
+  for (const dir of ['packages', 'apps', 'services', 'libs']) {
+    const dirPath = path.join(cwd, dir);
+    if (!fs.existsSync(dirPath)) continue;
+
+    try {
+      const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+      for (const entry of entries) {
+        if (!entry.isDirectory()) continue;
+
+        const pkgJsonPath = path.join(dirPath, entry.name, 'package.json');
+        if (fs.existsSync(pkgJsonPath)) {
+          subPackages.push({
+            name: entry.name,
+            path: path.join(dir, entry.name),
+            ecosystem: detectPackageEcosystem(path.join(dirPath, entry.name))
+          });
+        }
+      }
+    } catch (err) {
+      // Skip directories we can't read
+    }
+  }
+
+  if (subPackages.length === 0) {
+    return null;
+  }
+
+  // Suggest workspace type based on what's already there
+  let suggestedType = 'pnpm'; // Default
+  if (fs.existsSync(path.join(cwd, 'nx.json'))) {
+    suggestedType = 'nx';
+  } else if (fs.existsSync(path.join(cwd, 'lerna.json'))) {
+    suggestedType = 'lerna';
+  } else if (fs.existsSync(path.join(cwd, 'pnpm-lock.yaml'))) {
+    suggestedType = 'pnpm';
+  } else if (fs.existsSync(path.join(cwd, 'yarn.lock'))) {
+    suggestedType = 'yarn';
+  }
+
+  return { subPackages, suggestedType };
+}
+
+/**
+ * Prompt user for input
+ * @param {string} question
+ * @param {string} defaultValue - Default value if --yes flag is used
+ * @param {boolean} autoYes - If true, automatically return default
+ * @returns {Promise<string>}
+ */
+function prompt(question, defaultValue = '', autoYes = false) {
+  if (autoYes) {
+    console.log(`${question}${defaultValue}`);
+    return Promise.resolve(defaultValue);
+  }
+
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
+
+  return new Promise(resolve => {
+    rl.question(question, answer => {
+      rl.close();
+      resolve(answer.trim());
+    });
+  });
+}
+
+/**
+ * Initialize workspace root with package.json and workspace config
+ * @param {string} workspaceType - pnpm, yarn, npm, lerna, nx
+ * @param {Array} subPackages - Detected sub-packages
+ * @param {string} preferredPM - Preferred package manager
+ */
+async function initializeWorkspaceRoot(workspaceType, subPackages, preferredPM = 'pnpm') {
+  const cwd = process.cwd();
+  const dirname = path.basename(cwd);
+
+  console.log('\n=== Initializing Workspace Root ===\n');
+
+  // 1. Create root package.json
+  const packageJson = {
+    name: dirname,
+    version: '1.0.0',
+    private: true,
+    packageManager: `${preferredPM}@latest`,
+    scripts: {
+      build: `${preferredPM} --recursive run build`,
+      test: `${preferredPM} --recursive run test`,
+      format: 'prettier --write "**/*.{js,ts,json,md,yml}"',
+      'format:check': 'prettier --check "**/*.{js,ts,json,md,yml}"',
+      lint: 'eslint . --ext .js,.ts',
+      clean: `${preferredPM} --recursive run clean`
+    },
+    devDependencies: {
+      prettier: '^3.0.0',
+      eslint: '^8.0.0'
+    }
+  };
+
+  writeFile(
+    path.join(cwd, 'package.json'),
+    JSON.stringify(packageJson, null, 2)
+  );
+  console.log('✓ Created package.json');
+
+  // 2. Create workspace config
+  if (workspaceType === 'pnpm' || preferredPM === 'pnpm') {
+    // Create pnpm-workspace.yaml
+    const workspaceDirs = [...new Set(subPackages.map(p => p.path.split('/')[0]))];
+    const workspaceYaml = `packages:\n${workspaceDirs.map(d => `  - '${d}/*'`).join('\n')}\n`;
+
+    writeFile(
+      path.join(cwd, 'pnpm-workspace.yaml'),
+      workspaceYaml
+    );
+    console.log('✓ Created pnpm-workspace.yaml');
+  } else if (workspaceType === 'yarn' || preferredPM === 'yarn') {
+    // Yarn workspaces go in package.json
+    packageJson.workspaces = [...new Set(subPackages.map(p => p.path.split('/')[0] + '/*'))];
+    writeFile(
+      path.join(cwd, 'package.json'),
+      JSON.stringify(packageJson, null, 2)
+    );
+    console.log('✓ Added workspaces to package.json');
+  }
+
+  // 3. Create .claude directory and config
+  const claudeDir = path.join(cwd, '.claude');
+  ensureDir(claudeDir);
+
+  const pmConfig = {
+    packageManager: preferredPM,
+    setAt: new Date().toISOString()
+  };
+  writeFile(
+    path.join(claudeDir, 'package-manager.json'),
+    JSON.stringify(pmConfig, null, 2)
+  );
+  console.log('✓ Created .claude/package-manager.json');
+
+  // 4. Create basic .prettierrc
+  const prettierrc = {
+    semi: true,
+    singleQuote: true,
+    trailingComma: 'es5',
+    tabWidth: 2,
+    printWidth: 100
+  };
+  writeFile(
+    path.join(cwd, '.prettierrc'),
+    JSON.stringify(prettierrc, null, 2)
+  );
+  console.log('✓ Created .prettierrc');
+
+  // 5. Create .gitignore if it doesn't exist
+  const gitignorePath = path.join(cwd, '.gitignore');
+  if (!fs.existsSync(gitignorePath)) {
+    const gitignore = `node_modules/
+dist/
+build/
+.env
+.env.local
+*.log
+.DS_Store
+coverage/
+.turbo/
+`;
+    writeFile(gitignorePath, gitignore);
+    console.log('✓ Created .gitignore');
+  }
+
+  console.log('\n✓ Workspace root initialized!');
+  console.log('\nNext steps:');
+  console.log(`  1. Run: ${preferredPM} install`);
+  console.log('  2. Review and adjust package.json scripts');
+  console.log('  3. Configure shared tooling (.eslintrc, tsconfig.json)');
+  console.log('');
+}
+
 function showHelp() {
   console.log(`
 Ecosystem Setup for Claude Code
@@ -56,6 +256,7 @@ Options:
   --help <tool>      Show installation help for specific tool
   --interactive      Interactive setup wizard
   --all              Show all ecosystems (for monorepos)
+  --yes, -y          Auto-accept prompts with defaults (for automation)
 
 Examples:
   # Detect and check current project
@@ -72,7 +273,58 @@ Examples:
 `);
 }
 
-function detectAndShow() {
+async function detectAndShow(autoYes = false) {
+  // Check for potential workspace without root package.json
+  const potentialWorkspace = detectPotentialWorkspace();
+  if (potentialWorkspace) {
+    console.log('\n⚠️  Workspace Structure Detected\n');
+    console.log(`Found ${potentialWorkspace.subPackages.length} sub-package(s):`);
+    for (const pkg of potentialWorkspace.subPackages) {
+      console.log(`  - ${pkg.path} (${pkg.ecosystem})`);
+    }
+    console.log('\nBut no root package.json found.');
+    console.log('A root package.json is recommended for:');
+    console.log('  • Shared development tools (prettier, eslint)');
+    console.log('  • Workspace orchestration scripts');
+    console.log('  • Documentation formatting');
+    console.log('  • Hook compatibility\n');
+
+    const answer = await prompt('Initialize workspace root? [Y/n] ', 'y', autoYes);
+    if (!answer || answer.toLowerCase() === 'y' || answer.toLowerCase() === 'yes') {
+      // Ask for preferred package manager
+      console.log('\nAvailable package managers:');
+      const detector = new ToolDetector();
+      const pms = ['pnpm', 'yarn', 'npm', 'bun'];
+      for (const pm of pms) {
+        const available = detector.isAvailable(pm);
+        const marker = available ? '✓' : '✗';
+        console.log(`  ${marker} ${pm}${pm === 'pnpm' ? ' (recommended)' : ''}`);
+      }
+
+      const pmAnswer = await prompt('\nPreferred package manager [pnpm]: ', 'pnpm', autoYes);
+      const preferredPM = pmAnswer || 'pnpm';
+
+      await initializeWorkspaceRoot(
+        potentialWorkspace.suggestedType,
+        potentialWorkspace.subPackages,
+        preferredPM
+      );
+
+      // Refresh workspace context after initialization
+      const { getWorkspaceContext } = require('./lib/workspace-context.cjs');
+      const newWorkspace = getWorkspaceContext(true); // Refresh
+
+      console.log('\n=== Ecosystem Detection (after init) ===\n');
+      console.log(`Workspace type: ${newWorkspace.getType()}`);
+      console.log(`Packages: ${newWorkspace.getAllPackages().length}`);
+      console.log('\nRun this command again to check tools for all packages.');
+      return;
+    } else {
+      console.log('\nSkipping workspace initialization.');
+      console.log('You can initialize manually later by creating package.json\n');
+    }
+  }
+
   const workspace = getWorkspaceContext();
   const detector = new ToolDetector();
 
@@ -322,28 +574,31 @@ if (args.length === 0 || args.includes('--help') || args.includes('-h')) {
 }
 
 if (args.includes('--detect')) {
-  detectAndShow();
-  process.exit(0);
-}
-
-const checkIdx = args.indexOf('--check');
-if (checkIdx !== -1) {
-  const ecosystem = args[checkIdx + 1];
-  if (!ecosystem) {
-    console.error('Error: --check requires an ecosystem name');
-    console.error('Supported: nodejs, python, jvm, rust');
-    process.exit(1);
-  }
-  checkSpecificEcosystem(ecosystem);
-  process.exit(0);
-}
-
-if (args.includes('--interactive')) {
+  const autoYes = args.includes('--yes') || args.includes('-y');
+  detectAndShow(autoYes)
+    .then(() => process.exit(0))
+    .catch(err => {
+      console.error('Error:', err.message);
+      process.exit(1);
+    });
+} else if (args.includes('--interactive')) {
   interactiveSetup().catch(err => {
     console.error('Error:', err.message);
     process.exit(1);
   });
 } else {
-  console.error('Unknown option. Run with --help for usage information.');
-  process.exit(1);
+  const checkIdx = args.indexOf('--check');
+  if (checkIdx !== -1) {
+    const ecosystem = args[checkIdx + 1];
+    if (!ecosystem) {
+      console.error('Error: --check requires an ecosystem name');
+      console.error('Supported: nodejs, python, jvm, rust');
+      process.exit(1);
+    }
+    checkSpecificEcosystem(ecosystem);
+    process.exit(0);
+  } else {
+    console.error('Unknown option. Run with --help for usage information.');
+    process.exit(1);
+  }
 }

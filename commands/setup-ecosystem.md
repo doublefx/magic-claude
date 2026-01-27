@@ -13,6 +13,9 @@ Automatically detect your project's ecosystem and help install any missing devel
 # Detect ecosystem and check tools
 node "${CLAUDE_PLUGIN_ROOT}/scripts/setup-ecosystem.cjs" --detect
 
+# Auto-initialize workspace (no prompts)
+node "${CLAUDE_PLUGIN_ROOT}/scripts/setup-ecosystem.cjs" --detect --yes
+
 # Check specific ecosystem
 node "${CLAUDE_PLUGIN_ROOT}/scripts/setup-ecosystem.cjs" --check nodejs
 node "${CLAUDE_PLUGIN_ROOT}/scripts/setup-ecosystem.cjs" --check python
@@ -54,10 +57,16 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/setup-ecosystem.cjs" --interactive
    - JVM: `pom.xml`, `build.gradle`
    - Rust: `Cargo.toml`
 
-2. **Checks** which tools are installed
-3. **Reports** missing tools with severity levels
-4. **Provides** platform-specific installation instructions
-5. **Guides** through installation (interactive mode)
+2. **Auto-initializes** workspace roots when detected:
+   - Finds sub-packages without root `package.json`
+   - Offers to create workspace configuration
+   - Sets up shared development tools
+   - Configures package manager preference
+
+3. **Checks** which tools are installed
+4. **Reports** missing tools with severity levels
+5. **Provides** platform-specific installation instructions
+6. **Guides** through installation (interactive mode)
 
 ## Platform Support
 
@@ -118,6 +127,50 @@ Alternative: Use pyenv for version management
 
 Or use the interactive setup:
   node scripts/setup-ecosystem.cjs --interactive
+```
+
+### Workspace Auto-Initialization
+```bash
+$ cd my-monorepo
+$ node scripts/setup-ecosystem.cjs --detect
+
+⚠️  Workspace Structure Detected
+
+Found 3 sub-package(s):
+  - packages/api (nodejs)
+  - packages/web (nodejs)
+  - services/auth (nodejs)
+
+But no root package.json found.
+A root package.json is recommended for:
+  • Shared development tools (prettier, eslint)
+  • Workspace orchestration scripts
+  • Documentation formatting
+  • Hook compatibility
+
+Initialize workspace root? [Y/n] y
+
+Available package managers:
+  ✓ pnpm (recommended)
+  ✓ yarn
+  ✓ npm
+
+Preferred package manager [pnpm]: pnpm
+
+=== Initializing Workspace Root ===
+
+✓ Created package.json
+✓ Created pnpm-workspace.yaml
+✓ Created .claude/package-manager.json
+✓ Created .prettierrc
+✓ Created .gitignore
+
+✓ Workspace root initialized!
+
+Next steps:
+  1. Run: pnpm install
+  2. Review and adjust package.json scripts
+  3. Configure shared tooling (.eslintrc, tsconfig.json)
 ```
 
 ## Integration with Workspace Detection
