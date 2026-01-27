@@ -208,13 +208,13 @@ To set your preferred package manager:
 export CLAUDE_PACKAGE_MANAGER=pnpm
 
 # Via global config
-node scripts/setup-package-manager.js --global pnpm
+node scripts/setup-package-manager.cjs --global pnpm
 
 # Via project config
-node scripts/setup-package-manager.js --project bun
+node scripts/setup-package-manager.cjs --project bun
 
 # Detect current setting
-node scripts/setup-package-manager.js --detect
+node scripts/setup-package-manager.cjs --detect
 ```
 
 Or use the `/setup-pm` command in Claude Code.
@@ -313,7 +313,7 @@ everything-claude-code/
 |   |   |-- python-security.js   # Python security scanning (NEW v2.0)
 |   |   |-- java-security.js     # Java security scanning (NEW v2.0)
 |   |   |-- maven-advisor.js     # Maven/Gradle best practices (NEW v2.0)
-|   |-- setup-package-manager.js # Interactive PM setup
+|   |-- setup-package-manager.cjs # Interactive PM setup
 |
 |-- templates/        # CI/CD and deployment templates (NEW v2.0, 44 files)
 |   |-- github-actions/          # GitHub Actions workflows (6 files)

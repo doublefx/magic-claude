@@ -21,8 +21,8 @@ const {
   detectFromLockFile,
   detectFromPackageJson,
   getSelectionPrompt
-} = require('./lib/package-manager');
-const { log } = require('./lib/utils');
+} = require('./lib/package-manager.cjs');
+const { log } = require('./lib/utils.cjs');
 
 function showHelp() {
   console.log(`

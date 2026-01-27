@@ -24,9 +24,9 @@ node tests/lib/package-manager.test.js
 node tests/hooks/hooks.test.js
 
 # Package manager setup (interactive)
-node scripts/setup-package-manager.js --detect
-node scripts/setup-package-manager.js --global pnpm
-node scripts/setup-package-manager.js --project bun
+node scripts/setup-package-manager.cjs --detect
+node scripts/setup-package-manager.cjs --global pnpm
+node scripts/setup-package-manager.cjs --project bun
 
 # Available via /commands when installed as plugin
 /setup-pm          # Configure package manager

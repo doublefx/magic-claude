@@ -11,16 +11,16 @@ Configure your preferred package manager for this project or globally.
 
 ```bash
 # Detect current package manager
-node "${CLAUDE_PLUGIN_ROOT}/scripts/setup-package-manager.js" --detect
+node "${CLAUDE_PLUGIN_ROOT}/scripts/setup-package-manager.cjs" --detect
 
 # Set global preference
-node "${CLAUDE_PLUGIN_ROOT}/scripts/setup-package-manager.js" --global pnpm
+node "${CLAUDE_PLUGIN_ROOT}/scripts/setup-package-manager.cjs" --global pnpm
 
 # Set project preference
-node "${CLAUDE_PLUGIN_ROOT}/scripts/setup-package-manager.js" --project bun
+node "${CLAUDE_PLUGIN_ROOT}/scripts/setup-package-manager.cjs" --project bun
 
 # List available package managers
-node "${CLAUDE_PLUGIN_ROOT}/scripts/setup-package-manager.js" --list
+node "${CLAUDE_PLUGIN_ROOT}/scripts/setup-package-manager.cjs" --list
 ```
 
 ## Detection Priority
@@ -76,5 +76,5 @@ export CLAUDE_PACKAGE_MANAGER=pnpm
 To see current package manager detection results, run:
 
 ```bash
-node "${CLAUDE_PLUGIN_ROOT}/scripts/setup-package-manager.js" --detect
+node "${CLAUDE_PLUGIN_ROOT}/scripts/setup-package-manager.cjs" --detect
 ```
