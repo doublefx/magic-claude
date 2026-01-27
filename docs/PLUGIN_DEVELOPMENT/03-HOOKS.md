@@ -1,79 +1,342 @@
-# Hooks System - Event Automation
+# Hooks System - Complete Reference
 
 ## What Are Hooks?
 
 Hooks are automated actions triggered by specific events in the Claude Code workflow. They enable side effects like file formatting, security checks, and notifications without blocking normal operations.
 
 **Key Characteristics:**
-- Event-driven (Pre/Post tool use, session start/end, etc.)
-- Non-blocking (except PreToolUse)
-- Execute Node.js scripts
-- Support pattern matching (CEL expressions)
-- Can block operations (PreToolUse only)
+- Event-driven (PreToolUse, PostToolUse, SessionStart, SessionEnd, PreCompact, Stop)
+- Non-blocking except PreToolUse (which can block execution)
+- Execute Node.js scripts with JSON input/output
+- Support pattern matching with CEL expressions
+- Only PreToolUse can block operations
+- Executed synchronously in order
+
+## Hook Lifecycle Diagram
+
+```
+Workflow Event
+    ↓
+[Hook Type: PreToolUse, PostToolUse, SessionStart, etc.]
+    ↓
+[Matcher CEL Expression Evaluated]
+    ↓
+Match? YES → [Execute Hook Commands in Order]
+     ↓              ↓
+     NO            [Node.js Script Runs]
+     ↓              ↓
+  Skip        [Read from stdin, Write to stdout]
+              ↓
+          [Hook Decision: 0=continue, 1=block]
+              ↓
+          [Only PreToolUse can block]
+              ↓
+          [Return to Workflow]
+```
 
 ## Hook File Structure
 
 **File:** `hooks/hooks.json`
 
+**Root Structure:**
 ```json
 {
   "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "tool == \"Bash\" && tool_input.command matches \"npm install\"",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node -e \"console.error('[Hook] Installing dependencies')\""
-          }
-        ],
-        "description": "Notify when installing dependencies"
-      }
-    ],
-    "PostToolUse": [ /* ... */ ],
-    "SessionStart": [ /* ... */ ],
-    "SessionEnd": [ /* ... */ ],
-    "PreCompact": [ /* ... */ ],
-    "Stop": [ /* ... */ ]
+    "PreToolUse": [ /* array of hook rules */ ],
+    "PostToolUse": [ /* array of hook rules */ ],
+    "SessionStart": [ /* array of hook rules */ ],
+    "SessionEnd": [ /* array of hook rules */ ],
+    "PreCompact": [ /* array of hook rules */ ],
+    "Stop": [ /* array of hook rules */ ]
   }
 }
 ```
 
-## Hook Types
+Each hook type contains an array of hook rule objects.
 
-| Hook Type | Timing | Can Block? | Purpose | Examples |
-|-----------|--------|-----------|---------|----------|
-| **PreToolUse** | Before tool executes | Yes | Validation, blocking | Block dev servers, suggest tmux |
-| **PostToolUse** | After tool executes | No | Side effects | Format code, type check |
-| **SessionStart** | Session begins | No | Initialization | Load context, detect PM |
-| **SessionEnd** | Session ending | No | Cleanup | Save state, extract patterns |
-| **PreCompact** | Before compaction | No | State preservation | Save session state |
-| **Stop** | Before response sent | No | Final checks | Warn about console.log |
+## Hook Types - Complete Reference
+
+### Hook Type Overview
+
+| Hook Type | When | Blocking | Stdin | Stdout | Purpose |
+|-----------|------|----------|-------|--------|---------|
+| **PreToolUse** | Before tool execution | YES | JSON | JSON | Validation, blocking operations |
+| **PostToolUse** | After tool execution | NO | JSON | JSON | Side effects, formatting, checks |
+| **SessionStart** | Session begins | NO | JSON | JSON | Initialization, context loading |
+| **SessionEnd** | Session ending | NO | JSON | JSON | Cleanup, state persistence |
+| **PreCompact** | Before context compaction | NO | JSON | JSON | State preservation |
+| **Stop** | Before response sent | NO | JSON | JSON | Final validation checks |
 
 ## Hook Anatomy
 
-### Required Fields
+### Hook Rule Structure
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `matcher` | string | CEL expression to match tools and conditions |
-| `hooks` | array | Array of hook objects to execute |
-| `description` | string | Human-readable explanation |
+```json
+{
+  "matcher": "CEL expression",
+  "hooks": [
+    {
+      "type": "command",
+      "command": "node -e \"...\" or node \"path/to/script.cjs\""
+    }
+  ],
+  "description": "Human-readable explanation"
+}
+```
+
+### Hook Rule Fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `matcher` | string | Yes | CEL expression to match when hook should run |
+| `hooks` | array | Yes | Array of hook commands to execute |
+| `description` | string | Yes | Human-readable explanation of what hook does |
 
 ### Hook Command Fields
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `type` | string | Yes | "command" (only type currently) |
-| `command` | string | Yes | Node.js command to execute |
+| `type` | string | Yes | Always "command" (only type currently) |
+| `command` | string | Yes | Node.js command: `node -e "..."` or `node "script.cjs"` |
+
+## Complete Input Schemas for Each Hook Type
+
+### PreToolUse Input Schema
+
+**Fired:** Before a tool is executed
+**Can Block:** YES (exit code 1)
+**Stdin JSON:**
+
+```json
+{
+  "tool": "Bash|Edit|Write|Read|Grep|Glob|TaskCreate|TaskUpdate",
+  "tool_input": {
+    // Tool-specific input parameters
+    // Examples below for each tool type
+  }
+}
+```
+
+**Tool-Specific Input Examples:**
+
+**Bash Tool:**
+```json
+{
+  "tool": "Bash",
+  "tool_input": {
+    "command": "npm install",
+    "description": "Install dependencies"
+  }
+}
+```
+
+**Edit Tool:**
+```json
+{
+  "tool": "Edit",
+  "tool_input": {
+    "file_path": "/path/to/file.ts",
+    "old_string": "const x = 1",
+    "new_string": "const x = 2"
+  }
+}
+```
+
+**Write Tool:**
+```json
+{
+  "tool": "Write",
+  "tool_input": {
+    "file_path": "/path/to/file.md",
+    "content": "File content here"
+  }
+}
+```
+
+**Read Tool:**
+```json
+{
+  "tool": "Read",
+  "tool_input": {
+    "file_path": "/path/to/file.ts",
+    "limit": 100,
+    "offset": 0
+  }
+}
+```
+
+**Grep Tool:**
+```json
+{
+  "tool": "Grep",
+  "tool_input": {
+    "pattern": "function.*async",
+    "path": "/src",
+    "type": "ts"
+  }
+}
+```
+
+**Glob Tool:**
+```json
+{
+  "tool": "Glob",
+  "tool_input": {
+    "pattern": "**/*.test.ts",
+    "path": "/src"
+  }
+}
+```
+
+**PreToolUse Output:**
+
+```bash
+# Continue execution (default)
+exit(0)
+
+# Block execution (PreToolUse only)
+exit(1)
+```
+
+Script can also output JSON to stdout (same as input).
+
+### PostToolUse Input Schema
+
+**Fired:** After a tool has executed
+**Can Block:** NO
+**Stdin JSON:**
+
+```json
+{
+  "tool": "Tool name",
+  "tool_input": { /* Input that was sent to tool */ },
+  "tool_output": {
+    "output": "Standard output",
+    "error": "Standard error",
+    "exit_code": 0
+  }
+}
+```
+
+**Example:**
+
+```json
+{
+  "tool": "Bash",
+  "tool_input": {
+    "command": "npm test"
+  },
+  "tool_output": {
+    "output": "PASS src/utils.test.ts\n  ✓ adds numbers",
+    "error": "",
+    "exit_code": 0
+  }
+}
+```
+
+**PostToolUse Output:**
+
+JSON passed to stdout (usually just echo input or modified version).
+
+### SessionStart Input Schema
+
+**Fired:** When session begins
+**Can Block:** NO
+**Stdin JSON:**
+
+```json
+{
+  "event": "SessionStart",
+  "session_id": "${CLAUDE_SESSION_ID}",
+  "timestamp": "2025-01-27T12:00:00Z",
+  "environment": {
+    "CLAUDE_PLUGIN_ROOT": "/path/to/plugin",
+    "HOME": "/home/user",
+    "PWD": "/current/dir"
+  }
+}
+```
+
+**SessionStart Output:**
+
+Can output configuration or context to be loaded.
+
+### SessionEnd Input Schema
+
+**Fired:** When session is ending
+**Can Block:** NO
+**Stdin JSON:**
+
+```json
+{
+  "event": "SessionEnd",
+  "session_id": "${CLAUDE_SESSION_ID}",
+  "timestamp": "2025-01-27T12:00:00Z",
+  "duration_ms": 3600000,
+  "messages_count": 42
+}
+```
+
+**SessionEnd Output:**
+
+Can output cleanup or persistence status.
+
+### PreCompact Input Schema
+
+**Fired:** Before context compaction
+**Can Block:** NO
+**Stdin JSON:**
+
+```json
+{
+  "event": "PreCompact",
+  "session_id": "${CLAUDE_SESSION_ID}",
+  "current_tokens": 45000,
+  "compaction_target": 30000
+}
+```
+
+**PreCompact Output:**
+
+Can output state to be saved before compaction.
+
+### Stop Input Schema
+
+**Fired:** Before response sent to user
+**Can Block:** NO
+**Stdin JSON:**
+
+```json
+{
+  "event": "Stop",
+  "session_id": "${CLAUDE_SESSION_ID}",
+  "response_ready": true,
+  "files_modified": ["path1.ts", "path2.ts"],
+  "timestamp": "2025-01-27T12:00:00Z"
+}
+```
+
+**Stop Output:**
+
+Can output final validation warnings.
 
 ## Matchers (CEL Expressions)
 
 Matchers use Common Expression Language (CEL) to determine when hooks run.
 
+### CEL Syntax Reference
+
+| Pattern | Meaning |
+|---------|---------|
+| `*` | Match all (any tool, any event) |
+| `tool == "Bash"` | Match only Bash tool |
+| `tool == "Edit" \|\| tool == "Write"` | Match Edit OR Write |
+| `tool == "Edit" && tool_input.file_path matches "\\.ts$"` | Match Edit with TypeScript files |
+| `!(tool == "Read")` | Match any tool except Read |
+
 ### Basic Matchers
 
-**Match All:**
+**Match All Events:**
 ```json
 "matcher": "*"
 ```
@@ -83,57 +346,68 @@ Matchers use Common Expression Language (CEL) to determine when hooks run.
 "matcher": "tool == \"Bash\""
 ```
 
-**Match Tool with Input Check:**
+**Match Tool with Input Condition:**
 ```json
 "matcher": "tool == \"Edit\" && tool_input.file_path matches \"\\\\.ts$\""
 ```
 
-**Match Multiple Conditions:**
+**Match Multiple Conditions (OR):**
 ```json
 "matcher": "(tool == \"Edit\" || tool == \"Write\") && tool_input.file_path matches \"\\\\.java$\""
 ```
 
-### Common Matchers
+### Common Tool Matchers
 
-| Pattern | Description |
-|---------|-------------|
-| `tool == "Bash"` | Bash tool execution |
-| `tool == "Edit"` | File editing |
-| `tool == "Write"` | File writing |
-| `tool == "Read"` | File reading |
-| `tool == "Glob"` | File globbing |
-| `tool == "Grep"` | Content searching |
-| `tool_input.command matches "pattern"` | Bash command pattern |
-| `tool_input.file_path matches "pattern"` | File path pattern |
-| `*` | Match all (any tool) |
+| Pattern | Matches |
+|---------|---------|
+| `tool == "Bash"` | Bash commands |
+| `tool == "Edit"` | File edits |
+| `tool == "Write"` | File creation |
+| `tool == "Read"` | File reads |
+| `tool == "Grep"` | Content search |
+| `tool == "Glob"` | File glob |
+| `tool == "TaskCreate"` | Task creation |
+| `tool == "TaskUpdate"` | Task updates |
 
-### Regular Expression Patterns
+### Tool Input Matchers
 
-File extensions:
-```
-\\.ts$                 # TypeScript files
-\\.(ts\|tsx)$         # TypeScript and TSX
-\\.(js\|jsx)$         # JavaScript files
-\\.java$              # Java files
-\\.py$                # Python files
-```
+| Pattern | Description | Example |
+|---------|-------------|---------|
+| `tool_input.command matches "pattern"` | Bash command pattern | `matches "npm install"` |
+| `tool_input.file_path matches "pattern"` | File path pattern | `matches "\\.ts$"` |
+| `!tool_input.file_path matches "pattern"` | Negated pattern | `!matches "test"` |
 
-Command patterns:
-```
-npm install            # Exact command
-(npm\|pnpm) install   # Either npm or pnpm
-npm (install\|test)   # npm with install or test
-```
+### File Extension Patterns
 
-Exclusion patterns:
-```
-!(README\\.md)        # NOT README.md
-!(CLAUDE\\.md|CONTRIBUTING\\.md)  # NOT these files
+| Pattern | Matches |
+|---------|---------|
+| `\\.ts$` | TypeScript files |
+| `\\.(ts\|tsx)$` | TypeScript and TSX |
+| `\\.(js\|jsx)$` | JavaScript files |
+| `\\.java$` | Java files |
+| `\\.py$` | Python files |
+| `\\.md$` | Markdown files |
+
+### Command Patterns
+
+| Pattern | Matches |
+|---------|---------|
+| `npm install` | Exact command |
+| `(npm\|pnpm) install` | npm or pnpm install |
+| `npm (install\|test)` | npm install or test |
+| `git push` | Git push |
+| `(pytest\|vitest\|jest)` | Test runners |
+
+### Negation Patterns
+
+```json
+// Block creation of random .md files
+"matcher": "tool == \"Write\" && tool_input.file_path matches \"\\\\.md$\" && !(tool_input.file_path matches \"README\\\\.md\")"
 ```
 
 ## Hook Execution Types
 
-### Inline Node.js
+### Inline Node.js Execution
 
 Execute JavaScript directly with `node -e`:
 
@@ -144,100 +418,92 @@ Execute JavaScript directly with `node -e`:
 }
 ```
 
-**Use for:** Quick operations, simple logic
+**Use for:**
+- Quick operations
+- Simple logic
+- One-liners
+
+**Example:**
+```json
+{
+  "type": "command",
+  "command": "node -e \"console.error('[Hook] Installing dependencies')\""
+}
+```
 
 ### Script File Reference
 
-Execute Node.js script with plugin root reference:
+Reference external Node.js script:
 
 ```json
 {
   "type": "command",
-  "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/my-hook.cjs\""
+  "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/formatter.js\""
 }
 ```
 
-**Use for:** Complex logic, code reuse
+**Use for:**
+- Complex logic
+- Reusable code
+- Long scripts (>50 lines)
 
-### Stdin/Stdout Pattern
-
-Receive input via stdin, process, and output:
-
-```javascript
-let data = '';
-process.stdin.on('data', chunk => data += chunk);
-process.stdin.on('end', () => {
-  const input = JSON.parse(data);
-  // Process input
-  console.log(JSON.stringify(output));
-});
-```
-
-## Hook Event Details
-
-### PreToolUse Hooks
-
-Executed **before** the tool runs. Can block execution by calling `process.exit(1)`.
-
-**Tool Input Available:**
-```javascript
-{
-  "tool": "Bash",
-  "tool_input": {
-    "command": "npm install"
-  }
-}
-```
-
-**Example: Block Dev Server Outside Tmux**
+**Example:**
 ```json
 {
-  "matcher": "tool == \"Bash\" && tool_input.command matches \"(npm|pnpm) dev\"",
+  "type": "command",
+  "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/smart-formatter.js\""
+}
+```
+
+## Complete Hook Examples
+
+### Example 1: Block Dev Servers Outside Tmux (PreToolUse)
+
+```json
+{
+  "matcher": "tool == \"Bash\" && tool_input.command matches \"(npm run dev|yarn dev|pnpm dev)\"",
   "hooks": [
     {
       "type": "command",
-      "command": "node -e \"if(!process.env.TMUX){console.error('[Hook] BLOCKED: Must run in tmux');process.exit(1)}\""
+      "command": "node -e \"console.error('[Hook] BLOCKED: Dev server must run in tmux');console.error('Use: tmux new -s dev \\\"npm run dev\\\"');process.exit(1)\""
     }
   ],
-  "description": "Ensure dev servers run in tmux"
+  "description": "Block dev servers outside tmux for log access"
 }
 ```
 
-### PostToolUse Hooks
+**Flow:**
+1. User tries to run `npm run dev`
+2. PreToolUse hook matches
+3. Script outputs error and exits with code 1
+4. Execution is BLOCKED
+5. User is told to use tmux
 
-Executed **after** the tool completes. Cannot block, but can have side effects.
+### Example 2: Format Code After Edit (PostToolUse)
 
-**Tool Input + Output Available:**
-```javascript
-{
-  "tool": "Bash",
-  "tool_input": { "command": "npm test" },
-  "tool_output": {
-    "output": "Test results...",
-    "exit_code": 0
-  }
-}
-```
-
-**Example: Format TypeScript After Edit**
 ```json
 {
-  "matcher": "tool == \"Edit\" && tool_input.file_path matches \"\\\\.ts$\"",
+  "matcher": "(tool == \"Edit\" || tool == \"Write\") && (tool_input.file_path matches \"\\\\.ts$\" || tool_input.file_path matches \"\\\\.tsx$\")",
   "hooks": [
     {
       "type": "command",
       "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/smart-formatter.js\""
     }
   ],
-  "description": "Auto-format TypeScript files"
+  "description": "Auto-format TypeScript/TSX files with prettier"
 }
 ```
 
-### SessionStart Hooks
+**Flow:**
+1. User edits a .ts or .tsx file
+2. Tool execution completes
+3. PostToolUse hook matches
+4. smart-formatter.js script runs
+5. File is formatted
+6. User continues (no blocking)
 
-Executed when a new session begins. No input data.
+### Example 3: Session Initialization (SessionStart)
 
-**Example: Load Previous Context**
 ```json
 {
   "matcher": "*",
@@ -247,361 +513,213 @@ Executed when a new session begins. No input data.
       "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/session-start.cjs\""
     }
   ],
-  "description": "Load session context and detect package manager"
+  "description": "Load previous context and detect package manager on new session"
 }
 ```
 
-### SessionEnd Hooks
+**Flow:**
+1. New session starts
+2. SessionStart hook fires
+3. session-start.cjs runs
+4. Loads previous session state
+5. Detects package manager
+6. Sets up environment
 
-Executed when session ends. No input data.
+### Example 4: Security Check on Java Files (PostToolUse)
 
-**Example: Persist Session State**
+```json
+{
+  "matcher": "(tool == \"Edit\" || tool == \"Write\") && tool_input.file_path matches \"\\\\.java$\"",
+  "hooks": [
+    {
+      "type": "command",
+      "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/java-security.js\""
+    }
+  ],
+  "description": "Run security checks on Java files (SQL injection, hardcoded credentials)"
+}
+```
+
+**Flow:**
+1. Java file is edited or created
+2. PostToolUse hook matches
+3. java-security.js runs security checks
+4. Reports any vulnerabilities found
+5. Non-blocking (user can continue)
+
+### Example 5: Warn About Console.log (Stop)
+
 ```json
 {
   "matcher": "*",
   "hooks": [
     {
       "type": "command",
-      "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/session-end.cjs\""
+      "command": "node -e \"const fs=require('fs');let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const i=JSON.parse(d);const files=(i.files_modified||[]).filter(f=>/(ts|js)x?$/.test(f));let found=false;for(const f of files){if(fs.existsSync(f)&&fs.readFileSync(f,'utf8').includes('console.log')){console.error('[Hook] ⚠️  console.log in '+f);found=true}}console.log(d)})\""
     }
   ],
-  "description": "Save session state and extract patterns"
+  "description": "Check for console.log statements before sending response"
 }
 ```
 
-### PreCompact Hooks
+**Flow:**
+1. Claude prepares response
+2. Stop hook fires
+3. Script checks modified files for console.log
+4. Warns user if found
+5. Response is sent (non-blocking)
 
-Executed before context compaction. Chance to save state.
+## Hook Script Template
 
-**Example: Save State Before Compaction**
-```json
-{
-  "matcher": "*",
-  "hooks": [
-    {
-      "type": "command",
-      "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/pre-compact.cjs\""
-    }
-  ],
-  "description": "Save state before context compaction"
-}
-```
+**File:** `scripts/hooks/my-hook.cjs`
 
-### Stop Hooks
-
-Executed before final response. Can warn about issues.
-
-**Example: Check for Console.log**
-```json
-{
-  "matcher": "*",
-  "hooks": [
-    {
-      "type": "command",
-      "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/check-console-log.cjs\""
-    }
-  ],
-  "description": "Warn about console.log statements"
-}
-```
-
-## Real-World Hook Examples
-
-### Example 1: Block Dev Server Outside Tmux
-
-```json
-{
-  "matcher": "tool == \"Bash\" && tool_input.command matches \"(npm run dev|pnpm( run)? dev|yarn dev|bun run dev)\"",
-  "hooks": [
-    {
-      "type": "command",
-      "command": "node -e \"console.error('[Hook] BLOCKED: Dev server must run in tmux for log access');console.error('[Hook] Use: tmux new-session -d -s dev \\\"npm run dev\\\"');console.error('[Hook] Then: tmux attach -t dev');process.exit(1)\""
-    }
-  ],
-  "description": "Block dev servers outside tmux - ensures you can access logs"
-}
-```
-
-### Example 2: Suggest Tmux for Long-Running Commands
-
-```json
-{
-  "matcher": "tool == \"Bash\" && tool_input.command matches \"(npm (install|test)|pnpm (install|test)|yarn (install|test)?|bun (install|test)|cargo build|make|docker|pytest|playwright)\"",
-  "hooks": [
-    {
-      "type": "command",
-      "command": "node -e \"if(!process.env.TMUX){console.error('[Hook] Consider running in tmux for session persistence');console.error('[Hook] tmux new -s dev  |  tmux attach -t dev')}\""
-    }
-  ],
-  "description": "Reminder to use tmux for long-running commands"
-}
-```
-
-### Example 3: Auto-Format Code on Edit
-
-```json
-{
-  "matcher": "tool == \"Edit\" || tool == \"Write\"",
-  "hooks": [
-    {
-      "type": "command",
-      "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/smart-formatter.js\""
-    }
-  ],
-  "description": "Auto-format files based on type (Prettier for JS/TS, Ruff for Python)"
-}
-```
-
-### Example 4: TypeScript Type Check
-
-```json
-{
-  "matcher": "tool == \"Edit\" && tool_input.file_path matches \"\\\\.(ts|tsx)$\"",
-  "hooks": [
-    {
-      "type": "command",
-      "command": "node -e \"const{execSync}=require('child_process');const fs=require('fs');const path=require('path');let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const i=JSON.parse(d);const p=i.tool_input?.file_path;if(p&&fs.existsSync(p)){let dir=path.dirname(p);while(dir!==path.dirname(dir)&&!fs.existsSync(path.join(dir,'tsconfig.json'))){dir=path.dirname(dir)}if(fs.existsSync(path.join(dir,'tsconfig.json'))){try{const r=execSync('npx tsc --noEmit --pretty false 2>&1',{cwd:dir,encoding:'utf8',stdio:['pipe','pipe','pipe']});const lines=r.split('\\n').filter(l=>l.includes(p)).slice(0,10);if(lines.length)console.error(lines.join('\\n'))}catch(e){const lines=(e.stdout||'').split('\\n').filter(l=>l.includes(p)).slice(0,10);if(lines.length)console.error(lines.join('\\n'))}}}console.log(d)})\""
-    }
-  ],
-  "description": "TypeScript check after editing .ts/.tsx files"
-}
-```
-
-### Example 5: Warn About console.log
-
-```json
-{
-  "matcher": "tool == \"Edit\" && tool_input.file_path matches \"\\\\.(ts|tsx|js|jsx)$\"",
-  "hooks": [
-    {
-      "type": "command",
-      "command": "node -e \"const fs=require('fs');let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const i=JSON.parse(d);const p=i.tool_input?.file_path;if(p&&fs.existsSync(p)){const c=fs.readFileSync(p,'utf8');const lines=c.split('\\n');const matches=[];lines.forEach((l,idx)=>{if(/console\\\\.log/.test(l))matches.push((idx+1)+': '+l.trim())});if(matches.length){console.error('[Hook] WARNING: console.log found in '+p);matches.slice(0,5).forEach(m=>console.error(m));console.error('[Hook] Remove console.log before committing')}}console.log(d)})\""
-    }
-  ],
-  "description": "Warn about console.log statements after edits"
-}
-```
-
-### Example 6: Block Random Documentation Files
-
-```json
-{
-  "matcher": "tool == \"Write\" && tool_input.file_path matches \"\\\\.(md|txt)$\" && !(tool_input.file_path matches \"README\\\\.md|CLAUDE\\\\.md|AGENTS\\\\.md|CONTRIBUTING\\\\.md\")",
-  "hooks": [
-    {
-      "type": "command",
-      "command": "node -e \"const fs=require('fs');let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const i=JSON.parse(d);const p=i.tool_input?.file_path||'';if(/\\\\.(md|txt)$/.test(p)&&!/(README|CLAUDE|AGENTS|CONTRIBUTING)\\\\.md$/.test(p)){console.error('[Hook] BLOCKED: Unnecessary documentation file creation');console.error('[Hook] File: '+p);console.error('[Hook] Use README.md for documentation instead');process.exit(1)}console.log(d)})\""
-    }
-  ],
-  "description": "Block creation of random .md files - keeps docs consolidated"
-}
-```
-
-## Creating Custom Hooks
-
-### Step 1: Define Trigger
-
-What event should trigger this hook?
-
-```json
-"matcher": "tool == \"Bash\" && tool_input.command matches \"custom\""
-```
-
-### Step 2: Choose Execution Method
-
-Inline Node.js or script file?
-
-**Inline (simple):**
-```json
-"command": "node -e \"console.error('message')\""
-```
-
-**Script (complex):**
-```json
-"command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/my-hook.cjs\""
-```
-
-### Step 3: Implement Logic
-
-For inline:
 ```javascript
-node -e "console.error('My message'); process.exit(0)"
-```
+#!/usr/bin/env node
 
-For script file:
-```javascript
-// scripts/hooks/my-hook.cjs
+// Read JSON from stdin
 let data = '';
 process.stdin.on('data', chunk => data += chunk);
+
 process.stdin.on('end', () => {
-  const input = JSON.parse(data);
-  // Do something with input
-  console.error('[Hook] Action taken');
-  console.log(data);
+  try {
+    const input = JSON.parse(data);
+
+    // Log to stderr (visible to user)
+    if (shouldBlock(input)) {
+      console.error('[Hook] ERROR: Operation not allowed');
+      process.stdout.write(data);  // Pass through unchanged
+      process.exit(1);              // Exit with error code (blocks PreToolUse)
+    }
+
+    // Perform side effects
+    performAction(input);
+
+    // Pass through or modified JSON
+    process.stdout.write(data);
+    process.exit(0);                // Success
+  } catch (error) {
+    console.error('[Hook] Script error:', error.message);
+    process.stdout.write(data);
+    process.exit(0);  // Don't crash the workflow
+  }
 });
+
+function shouldBlock(input) {
+  // Your logic here
+  return false;
+}
+
+function performAction(input) {
+  // Your side effects here
+}
 ```
 
-### Step 4: Add to hooks.json
+## Environment Variables in Hooks
+
+**Available in all hooks:**
+
+| Variable | Value |
+|----------|-------|
+| `${CLAUDE_PLUGIN_ROOT}` | Absolute plugin directory |
+| `${CLAUDE_SESSION_ID}` | Current session ID |
+| `HOME` | User home directory |
+| `PWD` | Current working directory |
+
+**Usage:**
 
 ```json
 {
-  "matcher": "...",
-  "hooks": [ { "type": "command", "command": "..." } ],
-  "description": "What this hook does"
+  "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/check.js\""
 }
 ```
 
-### Step 5: Test
+## Hook Execution Order and Parallelization
 
-Trigger the hook and verify it works:
-- Check execution
-- Verify output
-- Confirm side effects
+**Within a Hook Type:**
+- Hooks execute sequentially (in order)
+- Each hook waits for previous to complete
+- All hooks must complete before tool execution (PreToolUse)
 
-## Hook Best Practices
+**Example with Multiple Hooks:**
 
-### 1. Keep Hooks Fast
-- Avoid heavy operations
-- Minimize subprocess calls
-- Target specific conditions
-
-**Good:**
 ```json
-"matcher": "tool == \"Edit\" && tool_input.file_path matches \"\\\\.ts$\""
-```
-
-**Bad:**
-```json
-"matcher": "*"  // Runs on every tool use
-```
-
-### 2. Clear Descriptions
-```json
-"description": "Auto-format TypeScript files after editing"
-```
-
-### 3. Use Meaningful Error Output
-```javascript
-console.error('[Hook] WARNING: Issue detected');
-```
-
-### 4. Always Return Data
-For PostToolUse hooks, always output the original data:
-```javascript
-console.log(data);  // Return unmodified input
-```
-
-### 5. Handle Errors Gracefully
-```javascript
-try {
-  // Hook logic
-} catch (error) {
-  console.error('[Hook] Error:', error.message);
-  // Continue or fail gracefully
+{
+  "PreToolUse": [
+    { "matcher": "*", "hooks": [...] },  // Hook 1 executes
+    { "matcher": "*", "hooks": [...] },  // Hook 2 executes after Hook 1
+    { "matcher": "*", "hooks": [...] }   // Hook 3 executes after Hook 2
+  ]
 }
 ```
-
-### 6. Specific Matchers
-Use specific matchers to avoid unnecessary execution:
-
-```json
-// Good - specific
-"matcher": "tool == \"Edit\" && tool_input.file_path matches \"\\\\.ts$\""
-
-// Bad - too general
-"matcher": "tool == \"Edit\""
-```
-
-### 7. Document Input/Output
-
-If writing script files, document what data the hook receives:
-
-```javascript
-/**
- * Receives stdin with format:
- * {
- *   "tool": "Bash",
- *   "tool_input": { "command": "..." },
- *   "tool_output": { "output": "...", "exit_code": 0 }
- * }
- */
-```
-
-## Troubleshooting Hooks
-
-### Hook Not Running
-
-1. Check matcher syntax (CEL expression)
-2. Verify tool name spelling
-3. Test with `*` matcher to confirm hook fires
-4. Check hook array structure
-
-### Hook Blocking Operations
-
-Only PreToolUse can block. For others:
-- Remove blocking logic
-- Use process.exit(1) only in PreToolUse
-- Use console.error for warnings in PostToolUse
-
-### Slow Operations
-
-- Reduce subprocess calls
-- Cache results
-- Use more specific matchers
-- Move complex logic to script files
 
 ## Performance Considerations
 
-### Hook Overhead
-- Each hook adds latency
-- Inline scripts: ~10-50ms
-- File-based scripts: ~20-100ms
-- Subprocess calls: ~50-500ms
+**Hook Execution Time:**
+- Hooks should complete quickly (< 1 second ideal)
+- Long hooks slow down tool execution (PreToolUse)
+- PostToolUse hooks don't block user, so longer acceptable
 
-### Optimization Tips
-1. **Batch operations:** Combine multiple checks
-2. **Lazy evaluation:** Only compute when needed
-3. **Cache results:** Reuse expensive computations
-4. **Minimize I/O:** Reduce file system access
-5. **Use specific matchers:** Avoid unnecessary execution
+**Best Practices:**
+- Keep inline Node.js simple
+- Use script files for complex logic
+- Avoid heavy file I/O in PreToolUse
+- Cache results when possible
+- Use environmental checks to skip unnecessary work
 
-## Environment Variables
-
-Hooks have access to:
-- `CLAUDE_PLUGIN_ROOT` - Plugin root directory
-- `PWD` - Current working directory
-- All system environment variables
-
-Use in commands:
-```json
-"command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/script.cjs\""
-```
-
-## Security Considerations
-
-### 1. Avoid Injection Attacks
-Don't use unsanitized input in shell commands:
+**Example: Only Run When Needed**
 
 ```javascript
-// Bad
-execSync(`command ${userInput}`);
-
-// Good
-execSync('command', { shell: '/bin/bash', timeout: 5000 });
+// In script - skip if file doesn't exist
+if (!fs.existsSync('.git')) {
+  console.log(data);
+  process.exit(0);  // Skip gracefully
+}
 ```
 
-### 2. Timeout Operations
+## Debugging Hooks
+
+**Enable logging:**
+
 ```javascript
-execSync('command', { timeout: 5000 }); // 5 second timeout
+// In hook script
+const debug = process.env.CLAUDE_HOOK_DEBUG === 'true';
+if (debug) console.error('[DEBUG]', input);
 ```
 
-### 3. Validate File Paths
-```javascript
-const fs = require('fs');
-if (!fs.existsSync(filePath)) return;
+**Test hook script directly:**
+
+```bash
+# Create test input
+echo '{"tool":"Edit","tool_input":{"file_path":"test.ts"}}' | \
+  node scripts/hooks/my-hook.cjs
 ```
+
+## Complete Reference Checklist
+
+### Creating a Hook
+
+- [ ] File: `hooks/hooks.json`
+- [ ] Valid JSON structure
+- [ ] Hook type: PreToolUse/PostToolUse/SessionStart/etc
+- [ ] Matcher: Valid CEL expression
+- [ ] Commands: Valid Node.js commands
+- [ ] Description: Clear explanation
+- [ ] Exit codes: Correct for hook type
+- [ ] JSON input/output handling
+- [ ] Performance: < 1 second ideal
+- [ ] Error handling: Graceful failures
+
+### Matcher Checklist
+
+- [ ] Syntax: Valid CEL expression
+- [ ] Tool name: Correct (Bash, Edit, etc)
+- [ ] Input fields: Correct for tool
+- [ ] Regex escaping: Proper backslash escaping
+- [ ] Negation: Using correct syntax
+- [ ] Testing: Verified matcher works
 
 ---
 
 **Last Updated:** 2025-01-27
 **Version:** 2.0.0
+**Status:** Complete Specification

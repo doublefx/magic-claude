@@ -1,53 +1,413 @@
-# Agents - Specialized Subagents
+# Agents - Complete Reference
 
 ## What Are Agents?
 
-Agents are specialized AI assistants with specific models, tools, and instructions. They handle complex, delegated tasks autonomously or can be invoked directly by users.
+Agents are specialized AI subagents with custom models, tools, and instructions. They can be invoked directly or delegated to for complex tasks.
 
-**Key Characteristics:**
-- Independent AI instances with their own context
-- Specific model assignment (Opus, Sonnet, Haiku)
-- Limited tool access (not all tools)
-- Focused instructions for expertise domain
-- Can be invoked by name or delegated to
+## Agent File Format
 
-## Agent File Structure
+**File Location:** `agents/agent-name.md`
 
-**File:** `agents/agent-name.md`
+**Format:** Markdown file with YAML frontmatter + instructions in body
+
+### Agent Frontmatter - COMPLETE REFERENCE
+
+| Field | Type | Required | Default | Valid Values | Description |
+|-------|------|----------|---------|--------------|-------------|
+| `name` | string | Yes | - | lowercase-hyphens | Agent identifier (machine-readable) |
+| `description` | string | Yes | - | Any string | One-line description (shown in agent list, max 120 chars) |
+| `tools` | string | Yes | - | Comma-separated tool names | Tools available to agent (subset of built-in tools) |
+| `model` | string | Yes | - | `opus`, `sonnet`, `haiku` | Claude model to use for this agent |
+| `skills` | string | No | - | Comma-separated skill names | Skills preloaded into agent context |
+| `hooks` | string | No | - | Hook type list | Hook events this agent should trigger |
+
+### Minimal Agent Example
 
 ```markdown
 ---
-name: agent-name
-description: One-line description
+name: code-reviewer
+description: Expert code review specialist ensuring code quality and security
 tools: Read, Grep, Glob, Bash
 model: opus
 ---
 
-You are an expert in [domain].
+You are a senior code reviewer ensuring high standards of code quality and security.
 
-Your role:
-- Task 1
-- Task 2
+Your responsibilities:
+1. Review code for quality, security, and maintainability
+2. Provide actionable feedback with specific fixes
+3. Check for common vulnerabilities and issues
+4. Ensure tests are adequate
 
-Instructions...
+Review Checklist:
+- Code is simple and readable
+- Functions are well-named (<50 lines each)
+- No hardcoded secrets or API keys
+- Proper error handling
+- Good test coverage
 ```
 
-## Agent Frontmatter Fields
+### Complete Agent Example
 
-| Field | Type | Required | Options | Description |
-|-------|------|----------|---------|-------------|
-| `name` | string | Yes | - | Machine-readable name (lowercase-with-hyphens) |
-| `description` | string | Yes | - | One-line description (shown in agent list) |
-| `tools` | string | No | Any tool names | Comma-separated list of available tools |
-| `model` | string | No | opus, sonnet, haiku | AI model to use |
+```markdown
+---
+name: tdd-guide
+description: Test-Driven Development specialist enforcing write-tests-first methodology
+tools: Read, Write, Edit, Bash, Grep
+model: opus
+skills: tdd-workflow
+---
 
-### Model Selection
+You are a Test-Driven Development (TDD) specialist who ensures all code is developed test-first.
 
-| Model | Capability | Speed | Cost | Best For |
-|-------|-----------|-------|------|----------|
-| **opus** | Maximum reasoning | Slowest | Highest | Complex planning, architecture, security decisions |
-| **sonnet** | Excellent general purpose | Medium | Medium | Feature implementation, code review, testing |
-| **haiku** | 90% of Sonnet | Fast | Lowest | Simple tasks, worker agents, frequent invocation |
+## Your Role
+
+- Enforce tests-before-code methodology
+- Guide developers through TDD Red-Green-Refactor cycle
+- Ensure 80%+ test coverage
+- Write comprehensive test suites (unit, integration, E2E)
+
+## TDD Workflow
+
+[Detailed instructions...]
+```
+
+### Agent with Multiple Skills
+
+```markdown
+---
+name: security-architect
+description: Security expert designing secure systems with comprehensive threat modeling
+tools: Read, Grep, Glob, Bash
+model: opus
+skills: security-review, backend-patterns, coding-standards
+---
+
+You are a security architect ensuring all systems are designed securely from the start.
+
+[Detailed instructions...]
+```
+
+## Agent Fields Explained in Detail
+
+### `name`
+
+**Type:** string
+**Required:** Yes
+**Rules:**
+- Lowercase with hyphens only
+- No spaces, underscores, camelCase
+- 3-50 characters
+- Unique within plugin
+
+**Examples:**
+- `code-reviewer` ✓
+- `tdd-guide` ✓
+- `security-reviewer` ✓
+- `CodeReviewer` ✗ (not lowercase-hyphenated)
+- `code_reviewer` ✗ (underscores not allowed)
+
+### `description`
+
+**Type:** string
+**Required:** Yes
+**Rules:**
+- One-line description
+- Should fit in UI tooltip (120 characters max)
+- Describes what agent does or specializes in
+- Action-oriented language
+
+**Examples:**
+- `Expert code review specialist. Proactively reviews code for quality, security, and maintainability.` ✓
+- `Test-Driven Development specialist enforcing write-tests-first methodology.` ✓
+- `Agent` ✗ (too vague)
+
+### `tools`
+
+**Type:** string
+**Required:** Yes
+**Rules:**
+- Comma-separated list of tool names
+- Tools must exist in Claude Code
+- Subset of available tools (not all)
+
+**Available Tools:**
+
+| Tool | Purpose | When to Use |
+|------|---------|-----------|
+| `Read` | Read file contents | All agents that analyze code/files |
+| `Write` | Create new files | Code generation, template creation |
+| `Edit` | Modify file contents | Code fixes, refactoring |
+| `Bash` | Run shell commands | Build, test, deploy tasks |
+| `Grep` | Search file contents | Code analysis, pattern matching |
+| `Glob` | Find files by pattern | File discovery, organization |
+| `TaskCreate` | Create task items | Project management, delegation |
+| `TaskUpdate` | Update task status | Workflow management |
+| `Skill` | Invoke skills | Multi-agent workflows |
+
+**Best Practices:**
+- Only include tools agent will actually use
+- More tools = broader capability, more context used
+- Fewer tools = focused, efficient agent
+
+**Examples:**
+
+```markdown
+---
+tools: Read, Grep, Glob, Bash
+---
+```
+
+### `model`
+
+**Type:** string
+**Required:** Yes
+**Valid Values:** `opus`, `sonnet`, `haiku`
+
+**Model Comparison:**
+
+| Model | Speed | Cost | Best For | Reasoning Depth |
+|-------|-------|------|----------|-----------------|
+| **opus** | Slow | Highest | Complex analysis, architecture, security | Maximum |
+| **sonnet** | Medium | Medium | Feature implementation, code review | High |
+| **haiku** | Fast | ~1/3 Sonnet | Simple tasks, worker agents | Good |
+
+**Selection Strategy:**
+
+- **Use Opus for:**
+  - Complex architectural decisions
+  - Security vulnerability analysis
+  - Long-form planning
+  - Novel problem solving
+
+- **Use Sonnet for:**
+  - Main feature implementation
+  - Code generation and testing
+  - Refactoring and code review
+
+- **Use Haiku for:**
+  - Quick fixes and validation
+  - Worker agents (many invocations)
+  - Simple formatting and checks
+
+### `skills` (Optional)
+
+**Type:** string
+**Required:** No
+**Rules:**
+- Comma-separated skill names
+- Skills must exist in plugin
+- Multiple skills allowed
+- Skills are preloaded into agent context
+
+**What it does:**
+
+When `skills` is specified, the skill content is:
+1. Loaded into agent's system prompt
+2. Available throughout agent's use
+3. Integrated into agent instructions
+
+**Examples:**
+
+```markdown
+---
+skills: tdd-workflow
+---
+```
+
+Multiple skills:
+```markdown
+---
+skills: tdd-workflow, security-review, coding-standards
+---
+```
+
+### `hooks` (Optional)
+
+**Type:** string
+**Required:** No
+**Rules:**
+- Comma-separated hook types
+- Valid: `PreToolUse`, `PostToolUse`, `SessionStart`, `SessionEnd`, `PreCompact`, `Stop`
+
+**Example:**
+
+```markdown
+---
+hooks: PreToolUse, PostToolUse
+---
+```
+
+## Complete Agent Structure
+
+### Anatomy of an Agent File
+
+```markdown
+---
+name: agent-identifier
+description: One-line description
+tools: Tool1, Tool2, Tool3
+model: opus
+skills: skill-name-1, skill-name-2
+---
+
+# Agent Title
+
+## Role and Responsibilities
+
+Description of what this agent does.
+
+## When to Use
+
+List scenarios for agent activation.
+
+## Key Principles
+
+Core principles agent follows.
+
+## Workflow
+
+Step-by-step instructions.
+
+## Checklist
+
+Success criteria:
+- Criterion 1
+- Criterion 2
+
+## Example
+
+Example interaction.
+```
+
+## Agent Invocation Patterns
+
+### Direct Mention
+
+```
+User: Use the code-reviewer agent to review this change.
+```
+
+### Delegation in Commands
+
+```markdown
+---
+description: Review code for quality and security
+---
+
+# Code Review
+
+I'm delegating to the **code-reviewer** agent for analysis.
+```
+
+### Agent Collaboration
+
+```markdown
+---
+name: architect
+---
+
+You may delegate code review to the **code-reviewer** agent.
+```
+
+## Model Selection Guide
+
+| Scenario | Recommended Model | Reasoning |
+|----------|-------------------|-----------|
+| Planning complex features | opus | Deep reasoning for architecture |
+| Implementing features | sonnet | Good balance of capability and speed |
+| Quick validation | haiku | Fast, sufficient capability |
+| Security analysis | opus | Maximum reasoning for vulnerabilities |
+| Code formatting | haiku | Simple transformation, fast execution |
+| Bug fixing | sonnet | Good for problem-solving |
+
+## Permission Modes (Future/Advanced)
+
+While not currently fully implemented, granular permission control is planned:
+
+```markdown
+---
+name: restricted-agent
+tools: Read, Write
+# Future: permissions for read, write, execute
+---
+```
+
+## Best Practices
+
+### 1. Clear Role Definition
+
+```markdown
+---
+name: good-agent
+---
+
+You are an expert in feature implementation.
+
+Your role:
+- Plan feature architecture
+- Write implementation code
+- Ensure tests pass
+```
+
+### 2. Focused Toolset
+
+```markdown
+---
+tools: Read, Write, Edit, Bash
+---
+```
+
+### 3. Appropriate Model Selection
+
+Complex task = Opus
+Standard task = Sonnet
+Simple task = Haiku
+
+### 4. Leverage Skills When Available
+
+```markdown
+---
+skills: tdd-workflow
+---
+
+You MUST follow the **tdd-workflow** skill for TDD tasks.
+```
+
+## Agent Examples in This Repository
+
+| Agent | Model | Purpose | Tools |
+|-------|-------|---------|-------|
+| `code-reviewer` | opus | Code quality and security | Read, Grep, Glob, Bash |
+| `tdd-guide` | opus | Test-driven development | Read, Write, Edit, Bash, Grep |
+| `security-reviewer` | opus | Security analysis | Read, Bash, Grep |
+| `planner` | opus | Feature planning | Read, Write, Grep |
+| `architect` | opus | System architecture | Read, Grep |
+| `build-error-resolver` | sonnet | Fix build errors | Read, Bash, Grep, Edit |
+| `e2e-runner` | sonnet | E2E test generation | Read, Write, Edit, Bash |
+| `refactor-cleaner` | haiku | Dead code removal | Read, Bash, Grep |
+| `doc-updater` | haiku | Documentation updates | Read, Write, Edit |
+
+## Complete Reference Checklist
+
+### Creating an Agent
+
+- [ ] File in `agents/` directory
+- [ ] Filename: `lowercase-with-hyphens.md`
+- [ ] Frontmatter: `name`, `description`, `tools`, `model`
+- [ ] Clear role statement
+- [ ] When to use scenarios
+- [ ] Core principles explained
+- [ ] Process/workflow documented
+- [ ] Success criteria listed
+- [ ] Example interaction shown
+- [ ] Tools match responsibilities
+
+---
+
+**Last Updated:** 2025-01-27
+**Version:** 2.0.0
+**Status:** Complete Specification
 
 **Strategy:**
 - **Opus:** Planning, architecture, security review (1-2 agents)

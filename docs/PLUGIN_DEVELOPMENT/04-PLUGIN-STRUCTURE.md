@@ -1,635 +1,658 @@
-# Plugin Structure - Architecture Reference
+# Plugin Structure - Complete Architecture Reference
 
-## Directory Layout
+## Overview
 
-A complete Claude Code plugin follows this directory structure:
+A Claude Code plugin is a self-contained directory with metadata, commands, agents, skills, hooks, and other resources.
+
+## Complete Directory Structure
 
 ```
 my-plugin/
 ├── .claude-plugin/
-│   └── plugin.json              # Plugin manifest and metadata
-├── commands/                    # Slash commands (/command-name)
-│   ├── setup.md                 # Markdown-based command
-│   ├── another.md               # Another command
-│   └── script-command.cjs       # Node.js script command
-├── agents/                      # Specialized subagents
-│   ├── planner.md               # Planning agent (Opus)
-│   ├── code-reviewer.md         # Code review agent (Opus)
-│   └── tdd-guide.md             # TDD guide agent (Sonnet)
-├── skills/                      # Reusable workflows and knowledge
-│   ├── tdd-workflow/            # Complex skill with config
+│   └── plugin.json              # REQUIRED: Plugin metadata
+├── commands/                    # OPTIONAL: Slash commands
+│   ├── setup.md                 # Markdown command
+│   ├── deploy.md                # Another markdown command
+│   └── deploy.cjs               # Node.js script command
+├── agents/                      # OPTIONAL: Specialized AI agents
+│   ├── planner.md               # Planning agent
+│   ├── code-reviewer.md         # Code review agent
+│   └── security-reviewer.md     # Security specialist
+├── skills/                      # OPTIONAL: Reusable knowledge
+│   ├── tdd-workflow/            # Complex skill with resources
 │   │   ├── SKILL.md             # Main skill content
 │   │   ├── config.json          # Optional configuration
-│   │   └── templates/           # Optional templates
-│   │       ├── test-template.md
-│   │       └── impl-template.md
-│   ├── coding-standards.md      # Simple single-file skill
-│   └── security-review/         # Another complex skill
-│       └── SKILL.md
-├── hooks/                       # Event automation
-│   └── hooks.json               # All hook definitions
-├── rules/                       # Custom guidelines (optional)
-│   ├── coding-style.md          # Code style guide
-│   ├── git-workflow.md          # Git conventions
-│   └── performance.md           # Performance guidelines
-├── contexts/                    # MCP contexts (optional)
-│   └── context-name.json        # Context configuration
-├── mcp-configs/                 # MCP server configs (optional)
-│   ├── server1.json
-│   └── server2.json
-├── templates/                   # Project templates (optional)
+│   │   └── templates/
+│   │       ├── test-template.ts
+│   │       └── impl-template.ts
+│   ├── security-review/         # Another complex skill
+│   │   └── SKILL.md
+│   └── quick-reference.md       # Simple single-file skill
+├── hooks/                       # OPTIONAL: Event automation
+│   └── hooks.json               # Hook definitions
+├── rules/                       # OPTIONAL: Project guidelines
+│   ├── coding-style.md
+│   ├── git-workflow.md
+│   └── performance.md
+├── scripts/                     # OPTIONAL: Utility scripts
+│   ├── setup.cjs
+│   ├── lib/
+│   │   └── utils.js
+│   └── hooks/
+│       ├── formatter.js
+│       └── security-check.js
+├── docs/                        # OPTIONAL: Documentation
+│   ├── GUIDES.md
+│   └── API-REFERENCE.md
+├── tests/                       # OPTIONAL: Plugin tests
+│   ├── commands.test.js
+│   ├── agents.test.js
+│   └── hooks.test.js
+├── templates/                   # OPTIONAL: Project templates
 │   ├── node-app/
-│   │   ├── package.json.template
-│   │   └── src/
-│   │       └── index.js.template
+│   │   └── package.json.template
 │   └── python-app/
 │       └── main.py.template
-├── scripts/                     # Utility scripts (optional)
-│   ├── setup.js                 # Setup script
-│   └── lib/
-│       └── utility.js           # Shared utilities
-├── docs/                        # Additional documentation (optional)
-│   ├── GUIDES.md
-│   └── API.md
-├── tests/                       # Tests for plugin (optional)
-│   ├── commands.test.js
-│   └── agents.test.js
-├── package.json                 # Node.js package metadata
+├── package.json                 # Node.js metadata (optional)
 ├── README.md                    # Plugin documentation
 ├── CONTRIBUTING.md              # Contribution guidelines
-└── LICENSE                      # License file
+└── LICENSE                      # License (MIT, Apache-2.0, etc)
 ```
 
-## Core Files
+## Core Components
 
-### plugin.json (Required)
-
-Plugin manifest file that tells Claude Code about your plugin.
+### 1. plugin.json (REQUIRED)
 
 **Location:** `.claude-plugin/plugin.json`
 
-**Structure:**
+**Complete Schema:**
+
 ```json
 {
   "name": "my-plugin",
   "version": "1.0.0",
-  "description": "Plugin description",
+  "description": "What this plugin does",
   "author": {
     "name": "Your Name",
     "email": "your@email.com",
-    "url": "https://github.com/yourname"
+    "url": "https://github.com/username"
   },
-  "homepage": "https://github.com/yourname/my-plugin",
-  "repository": "https://github.com/yourname/my-plugin",
   "license": "MIT",
-  "keywords": ["claude-code", "plugin", "productivity"],
+  "homepage": "https://github.com/username/my-plugin",
+  "repository": "https://github.com/username/my-plugin",
+  "keywords": ["keyword1", "keyword2", "keyword3"],
   "commands": "./commands",
   "skills": "./skills",
   "agents": "./agents",
-  "hooks": "./hooks/hooks.json",
   "rules": "./rules",
-  "contexts": "./contexts",
-  "mcp-configs": "./mcp-configs"
+  "hooks": "./hooks/hooks.json",
+  "engines": {
+    "claude-code": ">=1.0.0"
+  }
 }
 ```
 
-**Fields Explained:**
+**Field Reference:**
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `name` | string | Yes | Unique plugin identifier (lowercase, no spaces) |
-| `version` | string | Yes | Semantic version (1.0.0) |
-| `description` | string | Yes | One-line plugin description |
-| `author` | object | No | Author information |
-| `homepage` | string | No | Plugin home page URL |
-| `repository` | string | No | Repository URL (GitHub preferred) |
-| `license` | string | No | License identifier (MIT, Apache-2.0, etc.) |
-| `keywords` | array | No | Tags for discovery |
-| `commands` | string | No | Path to commands directory |
-| `skills` | string | No | Path to skills directory |
-| `agents` | string | No | Path to agents directory |
-| `hooks` | string | No | Path to hooks.json file |
-| `rules` | string | No | Path to rules directory |
-| `contexts` | string | No | Path to contexts directory |
-| `mcp-configs` | string | No | Path to MCP configs directory |
+| `name` | string | Yes | Plugin identifier (lowercase, hyphens, unique) |
+| `version` | string | Yes | Semantic version (e.g., "1.0.0", "2.3.4-beta") |
+| `description` | string | Yes | One-line description |
+| `author` | object | No | Author details (name, email, url) |
+| `license` | string | No | License type (MIT, Apache-2.0, etc) |
+| `homepage` | string | No | Project homepage URL |
+| `repository` | string | No | Repository URL |
+| `keywords` | array | No | Search keywords (5-10 recommended) |
+| `commands` | string | No | Path to commands dir (default: "./commands") |
+| `skills` | string | No | Path to skills dir (default: "./skills") |
+| `agents` | string | No | Path to agents dir (default: "./agents") |
+| `rules` | string | No | Path to rules dir (default: "./rules") |
+| `hooks` | string | No | Path to hooks.json (default: "./hooks/hooks.json") |
+| `engines` | object | No | Version requirements |
 
-**Complete Example:**
+**Minimal Valid plugin.json:**
+
+```json
+{
+  "name": "my-plugin",
+  "version": "1.0.0",
+  "description": "My first plugin"
+}
+```
+
+**Complete plugin.json:**
+
 ```json
 {
   "name": "everything-claude-code",
   "version": "2.0.0-enterprise",
-  "description": "Enterprise Stack Extension - Complete collection of battle-tested Claude Code configs with Python, Java, Kotlin, Maven, Gradle, and CI/CD pipeline support",
+  "description": "Enterprise Stack Extension - Complete collection of battle-tested Claude Code configs",
   "author": {
-    "name": "Affaan Mustafa (Original) + doublefx (Enterprise Extension)",
+    "name": "doublefx",
+    "email": "contact@example.com",
     "url": "https://github.com/doublefx"
   },
+  "license": "MIT",
   "homepage": "https://github.com/doublefx/everything-claude-code",
   "repository": "https://github.com/doublefx/everything-claude-code",
-  "license": "MIT",
   "keywords": [
     "claude-code",
     "agents",
     "skills",
     "hooks",
-    "commands",
-    "rules",
     "tdd",
     "code-review",
-    "security",
     "python",
     "java",
-    "kotlin",
-    "gradle",
-    "maven",
     "ci-cd"
   ],
   "commands": "./commands",
-  "skills": "./skills"
-}
-```
-
-### hooks.json (Optional but Recommended)
-
-Event automation configuration.
-
-**Location:** `hooks/hooks.json`
-
-**Structure:**
-```json
-{
-  "hooks": {
-    "PreToolUse": [ /* hooks */ ],
-    "PostToolUse": [ /* hooks */ ],
-    "SessionStart": [ /* hooks */ ],
-    "SessionEnd": [ /* hooks */ ],
-    "PreCompact": [ /* hooks */ ],
-    "Stop": [ /* hooks */ ]
+  "skills": "./skills",
+  "agents": "./agents",
+  "rules": "./rules",
+  "hooks": "./hooks/hooks.json",
+  "engines": {
+    "claude-code": ">=1.0.0"
   }
 }
 ```
 
-See [Hooks Documentation](./03-HOOKS.md) for complete reference.
+### 2. Commands Directory
 
-## Commands Directory
+**Location:** `commands/`
 
-Slash commands that users invoke directly.
+**Contents:**
+- Markdown files (`.md`) for Claude-driven commands
+- Node.js files (`.cjs`) for script-driven commands
+
+**Structure:**
 
 ```
 commands/
-├── setup.md               # /setup command
-├── review.md              # /review command
-├── tdd.md                 # /tdd command
-└── install.cjs            # Node.js command
+├── setup.md              # Basic command
+├── setup-pm.md           # Another command
+├── setup-ecosystem.md    # Yet another
+├── ci-cd.cjs            # Node.js script
+└── tdd.md               # TDD workflow command
 ```
 
-**File Naming:** `kebab-case.md` or `kebab-case.cjs`
+**Rules:**
+- Filename: lowercase-with-hyphens
+- Each file = one command
+- File name = command name (minus extension)
 
-**Auto-Discovery:** All `.md` files are automatically detected as commands.
+### 3. Agents Directory
 
-See [Commands & Skills Documentation](./01-COMMANDS-SKILLS.md) for complete reference.
+**Location:** `agents/`
 
-## Agents Directory
+**Contents:**
+- Markdown files (`.md`) only
+- Each file describes one agent
 
-Specialized AI assistants with specific expertise.
+**Structure:**
 
 ```
 agents/
-├── planner.md             # Feature planning (Opus)
-├── code-reviewer.md       # Code review (Opus)
-├── tdd-guide.md           # TDD workflow (Sonnet)
-├── security-reviewer.md   # Security analysis (Opus)
-└── refactor-cleaner.md    # Code cleanup (Haiku)
+├── code-reviewer.md      # Code review specialist
+├── tdd-guide.md          # TDD methodology
+├── planner.md            # Feature planning
+├── security-reviewer.md  # Security expert
+└── architect.md          # Architecture specialist
 ```
 
-**File Naming:** `kebab-case.md`
+**Rules:**
+- Filename: lowercase-with-hyphens
+- File name = agent name
+- Frontmatter: `name`, `description`, `tools`, `model`
 
-**Auto-Discovery:** All `.md` files are automatically detected as agents.
+### 4. Skills Directory
 
-**Model Assignment:** Each agent specifies `model: opus|sonnet|haiku` in frontmatter.
+**Location:** `skills/`
 
-See [Agents Documentation](./02-AGENTS.md) for complete reference.
+**Contents:**
+- Directories with `SKILL.md` (complex skills)
+- Markdown files (`.md`) (simple skills)
 
-## Skills Directory
-
-Reusable domain knowledge and workflows.
+**Structure:**
 
 ```
 skills/
-├── tdd-workflow/
-│   ├── SKILL.md           # Main content
-│   ├── config.json        # Optional config
-│   └── templates/
-│       ├── unit-test.md
-│       └── integration-test.md
-├── coding-standards/
+├── tdd-workflow/         # Complex skill
 │   ├── SKILL.md
-│   ├── typescript.md      # Sub-file
-│   ├── javascript.md      # Sub-file
-│   └── python.md          # Sub-file
-└── security-review.md     # Simple single-file
+│   ├── config.json
+│   └── templates/
+│       ├── test.ts
+│       └── implementation.ts
+├── security-review/      # Another complex skill
+│   └── SKILL.md
+├── coding-standards.md   # Simple skill
+└── git-workflow.md       # Another simple skill
 ```
 
-**Directory Types:**
-- **Complex Skills:** `skills/skill-name/SKILL.md` (with optional config.json and templates)
-- **Simple Skills:** `skills/skill-name.md` (single file)
+**Rules:**
+- Directory-based: `skill-name/SKILL.md`
+- File-based: `skill-name.md`
+- Frontmatter: `name`, `description`, optional `context`
+- Can include templates, config, resources
 
-**Auto-Discovery:**
-- Directories with `SKILL.md` are discovered as skills
-- `.md` files in skills directory are discovered as skills
+### 5. Hooks Directory
 
-See [Commands & Skills Documentation](./01-COMMANDS-SKILLS.md) for complete reference.
+**Location:** `hooks/hooks.json`
 
-## Rules Directory
+**Structure:**
 
-Custom guidelines and conventions for the project.
+```json
+{
+  "hooks": {
+    "PreToolUse": [ { /* hook rules */ } ],
+    "PostToolUse": [ { /* hook rules */ } ],
+    "SessionStart": [ { /* hook rules */ } ],
+    "SessionEnd": [ { /* hook rules */ } ],
+    "PreCompact": [ { /* hook rules */ } ],
+    "Stop": [ { /* hook rules */ } ]
+  }
+}
+```
+
+**Each hook rule contains:**
+- `matcher`: CEL expression
+- `hooks`: Array of commands
+- `description`: Explanation
+
+### 6. Rules Directory (Optional)
+
+**Location:** `rules/`
+
+**Contents:**
+- Markdown files (`.md`) with project guidelines
+- Auto-loaded into context when plugin is active
+
+**Structure:**
 
 ```
 rules/
-├── coding-style.md        # Code style guidelines
-├── git-workflow.md        # Git conventions
-├── performance.md         # Performance guidelines
-└── security.md            # Security best practices
+├── coding-style.md       # Code style guidelines
+├── git-workflow.md       # Git conventions
+├── performance.md        # Performance rules
+└── security.md          # Security guidelines
 ```
 
-**Purpose:** Provide project-specific guidance that's referenced in agents and skills.
+**Rules:**
+- Standard markdown format
+- No frontmatter required
+- Auto-loaded, no explicit activation
 
-**File Naming:** `kebab-case.md`
+### 7. Scripts Directory (Optional)
 
-**Content Examples:**
-- Code formatting and style
-- Naming conventions
-- Git commit messages
-- Testing requirements
-- Performance targets
-- Security standards
+**Location:** `scripts/`
 
-Rules are not auto-executed but are referenced in CLAUDE.md or other configuration.
+**Contents:**
+- Node.js utility scripts (`.js`, `.cjs`, `.mjs`)
+- Referenced by commands and hooks
 
-## Optional Directories
-
-### Contexts Directory
-
-Model Context Protocol (MCP) context definitions.
-
-```
-contexts/
-├── my-context.json
-└── another-context.json
-```
-
-See Claude Code MCP documentation for details.
-
-### MCP Configs Directory
-
-MCP server configurations.
-
-```
-mcp-configs/
-├── github.json
-├── filesystem.json
-└── custom-server.json
-```
-
-### Templates Directory
-
-Project templates for initialization.
-
-```
-templates/
-├── node-app/
-│   ├── package.json.template
-│   ├── .gitignore.template
-│   └── src/
-│       └── index.js.template
-├── python-app/
-│   ├── pyproject.toml.template
-│   └── main.py.template
-└── go-app/
-    ├── go.mod.template
-    └── main.go.template
-```
-
-### Scripts Directory
-
-Utility scripts for plugin operations.
+**Structure:**
 
 ```
 scripts/
-├── setup.js               # Plugin setup
-├── validate.js            # Validation
-└── lib/
-    ├── utils.js
-    └── helpers.js
+├── setup-pm.cjs          # Package manager setup
+├── deploy.cjs            # Deployment script
+├── lib/
+│   ├── utils.js          # Shared utilities
+│   ├── package-manager.js
+│   └── detection.js
+└── hooks/
+    ├── formatter.js      # Code formatter hook
+    ├── security-check.js # Security check hook
+    └── lib/
+        └── shared.js
 ```
 
-### Docs Directory
+**Rules:**
+- Use CommonJS (`.cjs`) for cross-platform compatibility
+- Can use `.js` with `"type": "module"` in package.json
+- Should be referenced with `${CLAUDE_PLUGIN_ROOT}`
 
-Additional documentation.
+## Environment Variables and Path Handling
 
+### ${CLAUDE_PLUGIN_ROOT} Variable
+
+**What it is:**
+Absolute path to plugin root directory
+
+**When available:**
+- In commands (frontmatter `command` field)
+- In hooks (script path references)
+- In scripts (when executed)
+- At runtime (process.env.CLAUDE_PLUGIN_ROOT)
+
+**Usage:**
+
+In command frontmatter:
+```markdown
+---
+command: node "${CLAUDE_PLUGIN_ROOT}/scripts/setup-pm.cjs"
+---
 ```
-docs/
-├── GUIDES.md              # How-to guides
-├── API.md                 # API reference
-├── EXAMPLES.md            # Code examples
-└── MIGRATION.md           # Migration guide
-```
 
-### Tests Directory
-
-Plugin tests.
-
-```
-tests/
-├── commands.test.js
-├── agents.test.js
-├── skills.test.js
-└── hooks.test.js
-```
-
-## Required Root Files
-
-### package.json
-
-Node.js package metadata.
-
+In hook definitions:
 ```json
 {
-  "name": "my-plugin",
-  "version": "1.0.0",
-  "description": "Plugin description",
-  "main": "index.js",
-  "scripts": {
-    "test": "node tests/run-all.js",
-    "lint": "eslint ."
-  },
-  "keywords": ["claude-code"],
-  "author": "Your Name",
-  "license": "MIT",
-  "dependencies": {},
-  "devDependencies": {}
+  "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/formatter.js\""
 }
 ```
 
-### README.md
-
-Plugin documentation and installation instructions.
-
-```markdown
-# My Plugin
-
-Plugin description.
-
-## Features
-
-- Feature 1
-- Feature 2
-
-## Installation
-
-```
-/plugin install /path/to/my-plugin
+In Node.js scripts:
+```javascript
+const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT;
+const scriptPath = path.join(pluginRoot, 'scripts', 'utility.js');
 ```
 
-## Usage
+### Path Resolution Rules
 
-### Commands
+**Absolute Paths:**
+- Always work
+- Use `${CLAUDE_PLUGIN_ROOT}` for plugin-relative paths
+- Use `process.env.HOME` for user home
+- Use `process.env.PWD` for current directory
 
-- `/command1` - Description
-- `/command2` - Description
+**Relative Paths (in commands/hooks):**
+- Relative to plugin root when specified
+- Use `${CLAUDE_PLUGIN_ROOT}` to be explicit
 
-### Agents
+**Best Practice:**
 
-- `agent-name` - Description
+```javascript
+const path = require('path');
 
-### Skills
+// GOOD: Explicit, cross-platform
+const scriptPath = path.join(
+  process.env.CLAUDE_PLUGIN_ROOT,
+  'scripts',
+  'setup.js'
+);
 
-- `skill-name` - Description
+// BAD: Relative path, ambiguous
+const scriptPath = './scripts/setup.js';
 
-## Configuration
-
-...
-
-## Contributing
-
-...
+// BAD: Hardcoded path, platform-specific
+const scriptPath = '/home/user/plugin/scripts/setup.js';
 ```
-
-### LICENSE
-
-Open source license file.
-
-```
-MIT License
-
-Copyright (c) 2025 Your Name
-
-...
-```
-
-## Auto-Discovery Behavior
-
-Claude Code automatically discovers components from plugin.json paths:
-
-| Component | File Pattern | Discovery |
-|-----------|--------------|-----------|
-| **Commands** | `commands/*.md` | All `.md` files |
-| **Agents** | `agents/*.md` | All `.md` files |
-| **Skills** | `skills/**/SKILL.md` or `skills/*.md` | Directory with SKILL.md or top-level .md |
-| **Hooks** | `hooks/hooks.json` | Single file |
-| **Rules** | `rules/*.md` | All `.md` files (referenced, not auto-activated) |
-
-### No Manual Registration Needed
-
-When you add a new file to `commands/`, `agents/`, or `skills/`, it's automatically available without updating any configuration!
 
 ## Plugin Installation
 
-### From Repository
-
-```bash
-/plugin install /path/to/plugin-directory
-```
-
-### From GitHub
-
-```bash
-/plugin install https://github.com/username/plugin-repo
-```
-
-### From Marketplace
-
-```bash
-/plugin search "keyword"
-/plugin install marketplace-plugin-name
-```
-
-## Plugin Configuration
-
-### Global Plugin Settings
-
-Users can configure plugin-wide settings in:
-```
-~/.claude/plugins/my-plugin/settings.json
-```
-
-### Project-Specific Settings
-
-Plugins can store project settings in:
-```
-.claude/plugins/my-plugin/config.json
-```
-
-## Size and Performance Considerations
-
-### Plugin Size
-- **Minimal:** 10-20 KB (basic commands)
-- **Small:** 50-100 KB (commands + skills)
-- **Medium:** 100-500 KB (agents + skills + hooks)
-- **Large:** 500KB+ (comprehensive plugin)
-
-### Context Window Impact
-
-Each plugin component uses context:
-- **Command:** 1-5 KB (description only)
-- **Agent:** 5-20 KB (instructions + tools)
-- **Skill:** 10-50 KB (detailed guidance)
-- **Hook:** 0.5-2 KB (metadata only)
-
-Keep enabled MCPs under 80 total tools to avoid context bloat.
-
-## Cross-Platform Compatibility
-
-### File Paths
-- Use forward slashes: `./commands/setup.md`
-- Use `${CLAUDE_PLUGIN_ROOT}` for absolute paths
-- Never use Windows-specific paths
-
-### Scripts
-- Use Node.js for all scripts (not bash/shell)
-- Use `child_process` for system commands
-- Test on Windows, macOS, and Linux
-
-### File Encoding
-- Use UTF-8 encoding for all files
-- Avoid platform-specific line endings (use LF)
-
-## Validation Checklist
-
-Before releasing your plugin:
-
-- [ ] `plugin.json` is valid JSON with required fields
-- [ ] All referenced paths exist
-- [ ] Commands have clear descriptions
-- [ ] Agents have name, description, model
-- [ ] Skills have structured content
-- [ ] Hooks have valid CEL matchers
-- [ ] No hardcoded paths (use ${CLAUDE_PLUGIN_ROOT})
-- [ ] No console.log in production code
-- [ ] README.md is comprehensive
-- [ ] LICENSE file is present
-- [ ] Tested on Windows, macOS, Linux
-- [ ] Package.json is valid JSON
-- [ ] No sensitive data in config files
-
-## Example Plugin Structure
-
-Here's a complete minimal plugin:
+### Installation Process
 
 ```
-my-plugin/
-├── .claude-plugin/
-│   └── plugin.json
-├── commands/
-│   └── hello.md
-├── agents/
-│   └── my-agent.md
-├── hooks/
-│   └── hooks.json
-├── README.md
-├── LICENSE
-└── package.json
+User: /plugin install /path/to/my-plugin
+  ↓
+Claude Code locates plugin root
+  ↓
+Claude Code reads .claude-plugin/plugin.json
+  ↓
+Claude Code discovers:
+  - Commands from ./commands
+  - Agents from ./agents
+  - Skills from ./skills
+  - Hooks from ./hooks/hooks.json
+  - Rules from ./rules
+  ↓
+Plugin is registered and available
 ```
 
-**plugin.json:**
+### Plugin Discovery
+
+**Components Auto-Discovered:**
+
+| Component | Location | Auto-Loaded |
+|-----------|----------|-------------|
+| Commands | Directory in plugin.json | Yes |
+| Agents | Directory in plugin.json | Yes |
+| Skills | Directory in plugin.json | Yes |
+| Hooks | File path in plugin.json | Yes (if specified) |
+| Rules | Directory in plugin.json | Yes (if specified) |
+
+**Disabling Components:**
+
+To disable discovery, set path to `null` in plugin.json:
+
+```json
+{
+  "commands": null,      // No commands
+  "agents": "./agents",  // Load agents
+  "skills": null,        // No skills
+  "hooks": "./hooks/hooks.json"  // Load hooks
+}
+```
+
+## Component Naming and File Conventions
+
+### File Naming Rules
+
+**MUST:**
+- Use lowercase with hyphens: `my-command.md`
+- Never use camelCase: ❌ `myCommand.md`
+- Never use underscores: ❌ `my_command.md`
+- Never use spaces: ❌ `my command.md`
+
+**Should:**
+- Be descriptive: `code-review.md` ✓
+- Indicate purpose: `tdd-guide.md` ✓
+- Avoid acronyms: `ci-cd.md` ✓
+
+**Examples:**
+
+| File | ✓/❌ | Reason |
+|------|-----|--------|
+| `setup-pm.md` | ✓ | Clear, descriptive |
+| `code-reviewer.md` | ✓ | Clear purpose |
+| `tdd-guide.md` | ✓ | Indicates TDD guidance |
+| `setupPm.md` | ❌ | camelCase not allowed |
+| `setup_pm.md` | ❌ | Underscores not allowed |
+| `setup.pm.md` | ❌ | Dots confusing |
+
+## Configuration Files
+
+### Optional: package.json
+
+If using Node.js dependencies:
+
 ```json
 {
   "name": "my-plugin",
   "version": "1.0.0",
-  "description": "My first plugin",
-  "author": { "name": "Your Name" },
-  "license": "MIT",
-  "commands": "./commands",
-  "skills": "./skills"
+  "description": "My plugin",
+  "type": "module",
+  "scripts": {
+    "test": "node tests/run.js",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "commander": "^11.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.0.0"
+  }
 }
 ```
 
-**commands/hello.md:**
+### Optional: .npmrc or .npmignore
+
+For npm-specific configuration (if publishing to npm registry).
+
+## Inline vs External Configuration
+
+### Inline Configuration (Recommended for Simple Plugins)
+
+**Structure:**
+- Everything in plugin.json
+- Commands/agents/skills in separate files
+- Hooks all in hooks.json
+- Scripts in scripts/ directory
+
+**Advantages:**
+- Simple to understand
+- Clear structure
+- Self-contained
+
+### External Configuration (For Complex Plugins)
+
+Can reference external config files:
+
 ```markdown
 ---
-description: Say hello
+name: skill-name
+config-file: ./skills/skill-name/config.json
 ---
-
-# Hello Command
-
-Greets the user with a friendly message.
-
-Hello! How can I help you today?
 ```
 
-**agents/my-agent.md:**
-```markdown
----
-name: my-agent
-description: Helpful assistant
-model: sonnet
-tools: Read, Bash
----
+**Not fully standardized yet**, but allows separate configuration.
 
-You are a helpful assistant. Help the user with their tasks.
+## Multi-Plugin Architecture
+
+You can install multiple plugins together:
+
+```
+~/.claude/plugins/
+├── plugin-1/
+│   ├── .claude-plugin/plugin.json
+│   ├── commands/
+│   ├── agents/
+│   └── skills/
+├── plugin-2/
+│   ├── .claude-plugin/plugin.json
+│   ├── commands/
+│   └── agents/
+└── plugin-3/
+    ├── .claude-plugin/plugin.json
+    └── commands/
 ```
 
-**hooks/hooks.json:**
-```json
-{
-  "hooks": {}
-}
+**Considerations:**
+- Command names must be unique across plugins
+- Agent names must be unique
+- Skill names must be unique
+- Hooks combine from all plugins
+
+## Testing Plugin Structure
+
+### Validate plugin.json
+
+```bash
+# Check JSON validity
+node -e "console.log(JSON.stringify(require('./​.claude-plugin/plugin.json'), null, 2))"
 ```
 
-## Publishing Your Plugin
+### Check File Locations
 
-### To GitHub
+```bash
+# Verify commands exist
+ls -la commands/
 
-1. Create repository
-2. Add all plugin files
-3. Update README with installation instructions
-4. Tag with semantic version: `git tag v1.0.0`
-5. Share repository URL
+# Verify agents exist
+ls -la agents/
 
-### To Claude Code Marketplace
+# Verify skills exist
+ls -la skills/
+```
 
-(When available)
+### Test Command Execution
 
-1. Publish to GitHub first
-2. Submit to marketplace
-3. Wait for review
-4. Plugin appears in `/plugin search`
+```bash
+# Test script command
+node commands/my-command.cjs --help
 
-## Versioning
+# Test hook script
+echo '{}' | node scripts/hooks/my-hook.js
+```
 
-Use semantic versioning:
+## Best Practices
 
-- **MAJOR.MINOR.PATCH** (e.g., 1.0.0)
-- **MAJOR:** Breaking changes
-- **MINOR:** New features (backward compatible)
-- **PATCH:** Bug fixes
+### 1. Clear Structure
 
-Update version in:
-- `plugin.json`
-- `package.json`
-- Git tag (v1.0.0)
-- Release notes
+```
+my-plugin/
+├── .claude-plugin/plugin.json  # Metadata first
+├── commands/                   # User-facing
+├── agents/                     # AI specialists
+├── skills/                     # Knowledge base
+├── hooks/                      # Automation
+├── scripts/                    # Supporting
+└── docs/                       # Documentation
+```
+
+### 2. Meaningful Names
+
+- `code-reviewer.md` ✓ (clear purpose)
+- `agent.md` ❌ (vague)
+- `setup-ecosystem.md` ✓ (specific function)
+- `setup.md` ❌ (which setup?)
+
+### 3. DRY (Don't Repeat Yourself)
+
+- Share scripts between commands and hooks
+- Use utilities in scripts/lib/
+- Reference skills in agents
+
+### 4. Performance
+
+- Keep hook execution < 1 second
+- Use efficient matchers
+- Avoid redundant file I/O
+- Cache results
+
+## Troubleshooting
+
+### Plugin Not Loading
+
+**Check:**
+1. `.claude-plugin/plugin.json` exists
+2. JSON is valid (no syntax errors)
+3. Required fields are present
+4. Paths in plugin.json are correct
+
+### Commands Not Appearing
+
+**Check:**
+1. `commands` directory exists
+2. Files have correct naming
+3. Files have YAML frontmatter with `description`
+4. Path in plugin.json is correct
+
+### Agents Not Available
+
+**Check:**
+1. `agents` directory exists
+2. Files have correct naming
+3. Frontmatter has `name`, `description`, `tools`, `model`
+4. Path in plugin.json is correct
+
+### Hooks Not Firing
+
+**Check:**
+1. `hooks.json` exists at correct path
+2. JSON is valid
+3. Matchers are correct CEL expressions
+4. Scripts exist and are executable
+5. Path in plugin.json is correct
+
+## Plugin Publishing (Future)
+
+When plugin marketplace becomes available:
+
+```bash
+# Package plugin
+tar czf my-plugin.tgz my-plugin/
+
+# Publish to registry
+claude-code publish my-plugin.tgz
+
+# Others can install
+/plugin install my-plugin
+```
 
 ---
 
 **Last Updated:** 2025-01-27
 **Version:** 2.0.0
+**Status:** Complete Specification
