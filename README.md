@@ -145,6 +145,45 @@ Generate complete, production-ready CI/CD pipelines with a single command:
 /ci-cd-patterns
 ```
 
+### Monorepo & Workspace Support
+
+**Automatic workspace detection** with full support for mixed-language monorepos:
+
+- **Workspace Types**: pnpm workspaces, Nx, Lerna, Yarn workspaces, Turborepo
+- **Multi-Ecosystem**: Node.js, Java/JVM, Python, and Rust in one workspace
+- **Per-Package Config**: Each package can have its own package manager and settings
+- **Configuration Hierarchy**: Global > Workspace > Package precedence
+- **Tool Detection**: Cross-platform checks with installation guidance
+
+**Example workspace context**:
+```
+[SessionStart] Workspace/monorepo detected
+[SessionStart] Packages: 8
+[SessionStart] Ecosystems: nodejs, python, rust
+[SessionStart] Package managers: pnpm, pip, cargo
+```
+
+**Workspace-aware API**:
+```javascript
+const { getWorkspaceContext } = require('./scripts/lib/workspace-context.cjs');
+
+const workspace = getWorkspaceContext();
+if (workspace.isWorkspace()) {
+  // Get all packages
+  const packages = workspace.getAllPackages();
+
+  // Find package for a file
+  const pkg = workspace.findPackageForFile('/path/to/file.ts');
+
+  // Get merged configuration (global + workspace + package)
+  const config = workspace.getConfig();
+}
+```
+
+**100% backward compatible** - single-project workflows work unchanged!
+
+See [Migration Guide](docs/MIGRATION-v2.md) for details.
+
 ---
 
 ## Cross-Platform Support

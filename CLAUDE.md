@@ -138,6 +138,128 @@ Skills define reusable workflows and domain knowledge in `skills/` directory:
 
 Skills are directories with `SKILL.md` or single `.md` files.
 
+## Workspace & Monorepo Support
+
+### Workspace Infrastructure
+
+The plugin has comprehensive monorepo/workspace support with **100% backward compatibility**.
+
+**Workspace Detection** (`scripts/lib/workspace/detection.cjs`):
+- Auto-detects: pnpm workspaces, Nx, Lerna, Yarn workspaces, Turborepo
+- Discovers all packages in workspace
+- Caches detection results for performance
+
+**Multi-Ecosystem Support** (`scripts/lib/workspace/ecosystems.cjs`):
+- Detects project types: nodejs, jvm, python, rust
+- Per-package ecosystem identification
+- Mixed-language monorepo support
+
+**Configuration Hierarchy** (`scripts/lib/workspace/config.cjs`):
+```
+~/.claude/settings.json              # Global (lowest priority)
+  ↓
+workspace-root/.claude/settings.json # Workspace
+  ↓
+package-dir/.claude/settings.json    # Package (highest priority)
+```
+
+**WorkspaceContext API** (`scripts/lib/workspace-context.cjs`):
+```javascript
+const { getWorkspaceContext } = require('./scripts/lib/workspace-context.cjs');
+
+const workspace = getWorkspaceContext();
+
+// Check if in workspace
+if (workspace.isWorkspace()) {
+  const type = workspace.getType();    // 'pnpm-workspace', 'nx', 'lerna', etc.
+  const root = workspace.getRoot();     // Workspace root directory
+
+  // Get all packages
+  const packages = workspace.getAllPackages();
+  // [{ name, path, packageJson, ecosystem }, ...]
+
+  // Find package for a file
+  const pkg = workspace.findPackageForFile('/path/to/file.ts');
+
+  // Get merged configuration (global + workspace + package)
+  const config = workspace.getConfig();
+
+  // Get package manager info
+  const pm = workspace.getPackageManager();
+  const pmForFile = workspace.getPackageManagerForFile('/path/to/file.ts');
+}
+```
+
+**Command Generation** (`scripts/lib/workspace/commands.cjs`):
+```javascript
+const { CommandGenerator } = require('./scripts/lib/workspace/commands.cjs');
+
+// Generate commands for any ecosystem
+const gen = new CommandGenerator('nodejs', { packageManager: 'pnpm' });
+gen.install();  // pnpm install
+gen.test();     // pnpm test
+gen.build();    // pnpm build
+
+// JVM with Gradle wrapper on Windows
+const jvmGen = new CommandGenerator('jvm', {
+  buildTool: 'gradle',
+  useWrapper: true,
+  platform: 'win32'
+});
+jvmGen.build();  // gradlew.bat build
+```
+
+**Tool Detection** (`scripts/lib/workspace/tool-detection.cjs`):
+```javascript
+const { ToolDetector, checkEcosystemTools } = require('./scripts/lib/workspace/tool-detection.cjs');
+
+const detector = new ToolDetector();
+detector.isAvailable('node');        // true/false
+detector.getVersion('node');         // 'v20.11.0' or null
+
+// Check all tools for an ecosystem
+const tools = checkEcosystemTools('nodejs');
+// { node: true, npm: true, pnpm: true, yarn: false, bun: false }
+```
+
+**Package Manager Functions** (`scripts/lib/package-manager.cjs`):
+```javascript
+const {
+  getPackageManager,
+  isInWorkspace,
+  getPackageManagerForFile,
+  getAllWorkspacePackageManagers
+} = require('./scripts/lib/package-manager.cjs');
+
+// Workspace-aware functions (v2.0)
+if (isInWorkspace()) {
+  const allPMs = getAllWorkspacePackageManagers();
+  // [{ packageName, packagePath, ecosystem, name, config, source }, ...]
+
+  const pm = getPackageManagerForFile('/path/to/file.ts');
+  // { name, config, source, package, packagePath }
+}
+
+// Original functions (v1.0) - still work unchanged
+const pm = getPackageManager();
+// { name, config, source }
+```
+
+### When to Use Workspace Features
+
+**Use WorkspaceContext when**:
+- Operating in monorepo/workspace
+- Need package-level configuration
+- Finding which package owns a file
+- Working with multiple ecosystems
+
+**Use existing functions for**:
+- Single-project workflows
+- Backward compatibility
+- Simple package manager detection
+
+See `docs/MIGRATION-v2.md` for complete migration guide.
+
 ## Critical Coding Rules
 
 ### Immutability (MANDATORY)
