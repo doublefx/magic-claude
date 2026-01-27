@@ -34,14 +34,20 @@ node scripts/setup-package-manager.cjs --project bun
 When installed as a plugin, use these slash commands:
 
 ```bash
-/setup-pm          # Configure package manager
-/setup-ecosystem   # Check development tools
+# Setup & Configuration
+/setup             # Complete automated setup (workspace + tools + dependencies)
+/setup-pm          # Configure package manager only
+/setup-ecosystem   # Check development tools only
+
+# Development Workflow
 /tdd               # Test-driven development workflow
 /plan              # Implementation planning
 /code-review       # Quality and security review
 /build-fix         # Fix build errors
 /e2e               # E2E test generation
 /refactor-clean    # Dead code removal
+
+# Learning & Verification
 /learn             # Extract patterns mid-session
 /checkpoint        # Save verification state
 /verify            # Run verification loop

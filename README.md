@@ -384,6 +384,34 @@ Or add directly to your `~/.claude/settings.json`:
 
 This gives you instant access to all commands, agents, skills, and hooks.
 
+### First-Time Setup
+
+After installation, run the complete setup for your project:
+
+```bash
+# Interactive setup (recommended for first time)
+/setup
+
+# Or fully automated
+/setup --yes
+
+# Or ask Claude naturally
+"Setup everything for this project"
+"Initialize Claude Code for this workspace"
+```
+
+The `/setup` command will:
+- ✓ Detect workspace/monorepo structure
+- ✓ Initialize workspace root if needed
+- ✓ Configure package manager (npm/pnpm/yarn/bun)
+- ✓ Check development tools (Node.js, Python, Java, Rust)
+- ✓ Install dependencies
+- ✓ Create Claude Code configuration
+
+For granular control, use individual commands:
+- `/setup-pm` - Package manager only
+- `/setup-ecosystem` - Tools and dependencies only
+
 ---
 
 ### Option 2: Manual Installation
