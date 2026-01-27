@@ -1,6 +1,7 @@
 ---
 description: Configure your preferred package manager (npm/pnpm/yarn/bun)
 disable-model-invocation: true
+command: node "${CLAUDE_PLUGIN_ROOT}/scripts/setup-package-manager.cjs"
 ---
 
 # Package Manager Setup

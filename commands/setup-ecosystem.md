@@ -1,6 +1,7 @@
 ---
 description: Detect and install missing development tools for your project's ecosystem (Node.js, Python, Java, Rust)
 disable-model-invocation: true
+command: node "${CLAUDE_PLUGIN_ROOT}/scripts/setup-ecosystem.cjs"
 ---
 
 # Ecosystem Setup

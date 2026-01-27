@@ -236,11 +236,8 @@ coverage/
   }
 
   console.log('\n✓ Workspace root initialized!');
-  console.log('\nNext steps:');
-  console.log(`  1. Run: ${preferredPM} install`);
-  console.log('  2. Review and adjust package.json scripts');
-  console.log('  3. Configure shared tooling (.eslintrc, tsconfig.json)');
-  console.log('');
+
+  return preferredPM;
 }
 
 function showHelp() {
@@ -304,11 +301,32 @@ async function detectAndShow(autoYes = false) {
       const pmAnswer = await prompt('\nPreferred package manager [pnpm]: ', 'pnpm', autoYes);
       const preferredPM = pmAnswer || 'pnpm';
 
-      await initializeWorkspaceRoot(
+      const installedPM = await initializeWorkspaceRoot(
         potentialWorkspace.suggestedType,
         potentialWorkspace.subPackages,
         preferredPM
       );
+
+      // Offer to run install
+      console.log('\nNext steps:');
+      console.log(`  1. Run: ${installedPM} install`);
+      console.log('  2. Review and adjust package.json scripts');
+      console.log('  3. Configure shared tooling (.eslintrc, tsconfig.json)\n');
+
+      const installAnswer = await prompt(`\nRun "${installedPM} install" now? [Y/n] `, 'y', autoYes);
+      if (!installAnswer || installAnswer.toLowerCase() === 'y' || installAnswer.toLowerCase() === 'yes') {
+        console.log(`\nRunning ${installedPM} install...\n`);
+        const { execSync } = require('child_process');
+        try {
+          execSync(`${installedPM} install`, {
+            stdio: 'inherit',
+            cwd: process.cwd()
+          });
+          console.log(`\n✓ Dependencies installed successfully!`);
+        } catch (err) {
+          console.error(`\n✗ Installation failed. You can run "${installedPM} install" manually.`);
+        }
+      }
 
       // Refresh workspace context after initialization
       const { getWorkspaceContext } = require('./lib/workspace-context.cjs');
