@@ -11,24 +11,24 @@ Automatically detect your project's ecosystem and help install any missing devel
 
 ```bash
 # Detect ecosystem and check tools
-node "${CLAUDE_PLUGIN_ROOT}/scripts/setup-ecosystem.cjs" --detect
+/setup-ecosystem --detect
 
 # Auto-initialize workspace (no prompts)
-node "${CLAUDE_PLUGIN_ROOT}/scripts/setup-ecosystem.cjs" --detect --yes
+/setup-ecosystem --detect --yes
 
 # Check specific ecosystem
-node "${CLAUDE_PLUGIN_ROOT}/scripts/setup-ecosystem.cjs" --check nodejs
-node "${CLAUDE_PLUGIN_ROOT}/scripts/setup-ecosystem.cjs" --check python
-node "${CLAUDE_PLUGIN_ROOT}/scripts/setup-ecosystem.cjs" --check jvm
-node "${CLAUDE_PLUGIN_ROOT}/scripts/setup-ecosystem.cjs" --check rust
+/setup-ecosystem --check nodejs
+/setup-ecosystem --check python
+/setup-ecosystem --check jvm
+/setup-ecosystem --check rust
 
 # Get installation help for specific tool
-node "${CLAUDE_PLUGIN_ROOT}/scripts/setup-ecosystem.cjs" --help node
-node "${CLAUDE_PLUGIN_ROOT}/scripts/setup-ecosystem.cjs" --help python
-node "${CLAUDE_PLUGIN_ROOT}/scripts/setup-ecosystem.cjs" --help java
+/setup-ecosystem --help node
+/setup-ecosystem --help python
+/setup-ecosystem --help java
 
 # Interactive setup (guides through installation)
-node "${CLAUDE_PLUGIN_ROOT}/scripts/setup-ecosystem.cjs" --interactive
+/setup-ecosystem --interactive
 ```
 
 ## Supported Ecosystems
@@ -79,7 +79,7 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/setup-ecosystem.cjs" --interactive
 
 ### Detect Current Project
 ```bash
-$ node scripts/setup-ecosystem.cjs --detect
+$ /setup-ecosystem --detect
 
 === Ecosystem Detection ===
 Detected: nodejs
@@ -96,7 +96,7 @@ Recommended Tools:
 
 ### Interactive Setup
 ```bash
-$ node scripts/setup-ecosystem.cjs --interactive
+$ /setup-ecosystem --interactive
 
 === Ecosystem Setup Wizard ===
 Detected ecosystem: nodejs
@@ -112,7 +112,7 @@ Installing pnpm...
 
 ### Get Installation Help
 ```bash
-$ node scripts/setup-ecosystem.cjs --help python
+$ /setup-ecosystem --help python
 
 === Python Installation Guide ===
 
@@ -126,13 +126,13 @@ Alternative: Use pyenv for version management
   pyenv install 3.11
 
 Or use the interactive setup:
-  node scripts/setup-ecosystem.cjs --interactive
+  /setup-ecosystem --interactive
 ```
 
 ### Workspace Auto-Initialization
 ```bash
 $ cd my-monorepo
-$ node scripts/setup-ecosystem.cjs --detect
+$ /setup-ecosystem --detect
 
 ⚠️  Workspace Structure Detected
 
