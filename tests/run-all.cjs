@@ -17,6 +17,7 @@ const testFiles = [
   'lib/ecosystems.test.cjs',
   'lib/workspace-detection.test.cjs',
   'lib/workspace-ecosystems.test.cjs',
+  'lib/config-hierarchy.test.cjs',
   'hooks/hooks.test.cjs'
 ];
 

@@ -15,6 +15,7 @@ const { getClaudeDir, getUserLearnedSkillsDir, getProjectLearnedSkillsDir, readF
 const { getPackageManager } = require('./package-manager.cjs');
 const { detectWorkspace } = require('./workspace/detection.cjs');
 const { enrichPackagesWithEcosystems, detectPackageEcosystem } = require('./workspace/ecosystems.cjs');
+const { ConfigLoader } = require('./workspace/config.cjs');
 
 /**
  * WorkspaceContext class - Central abstraction for workspace operations
@@ -134,39 +135,31 @@ class WorkspaceContext {
   /**
    * Get configuration with hierarchy support
    * @param {string} scope - 'current' (default), 'global', 'workspace', 'package'
+   * @param {string} configName - Config file name (default: 'settings')
    * @returns {object} - Configuration object
    */
-  getConfig(scope = 'current') {
-    const config = {};
+  getConfig(scope = 'current', configName = 'settings') {
+    const workspaceRoot = this.getRoot();
+    const loader = new ConfigLoader(workspaceRoot);
 
     if (scope === 'global') {
-      // Load global config from ~/.claude/
-      const globalConfigPath = path.join(getClaudeDir(), 'settings.json');
-      const globalConfig = readFile(globalConfigPath);
-      if (globalConfig) {
-        try {
-          Object.assign(config, JSON.parse(globalConfig));
-        } catch {
-          // Invalid JSON
-        }
+      // Load only global config
+      return loader.loadGlobal(configName);
+    } else if (scope === 'workspace') {
+      // Load only workspace config
+      return loader.loadWorkspace(configName);
+    } else if (scope === 'package') {
+      // Load only package config (current directory)
+      return loader.loadPackage(this.startDir, configName);
+    } else {
+      // 'current' - load with full hierarchy
+      // If in a package, include package-level config
+      const pkg = this.findPackageForDir(this.startDir);
+      if (pkg) {
+        return loader.load(configName, pkg.path);
       }
-    } else if (scope === 'current') {
-      // Load current scope (project or global)
-      const projectConfigPath = path.join(this.startDir, '.claude', 'settings.json');
-      const projectConfig = readFile(projectConfigPath);
-      if (projectConfig) {
-        try {
-          Object.assign(config, JSON.parse(projectConfig));
-        } catch {
-          // Invalid JSON
-        }
-      } else {
-        // Fall back to global
-        return this.getConfig('global');
-      }
+      return loader.load(configName);
     }
-
-    return config;
   }
 
   /**
