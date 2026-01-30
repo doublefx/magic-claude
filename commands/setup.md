@@ -2,9 +2,33 @@
 description: Complete automated setup for your project (workspace detection, package manager, tools, dependencies)
 command: node "${CLAUDE_PLUGIN_ROOT}/scripts/setup-complete.cjs"
 disable-model-invocation: false
+context: fork
+allowed-tools: Read, Write, Edit, Bash, Bash(mcp-cli *), Grep, Glob, AskUserQuestion, TaskCreate, TaskUpdate, TaskList, Skill
 ---
 
 # Complete Project Setup
+
+## ⚠️ CRITICAL: Task Tracking Required
+
+**YOU MUST use TaskCreate at the start to create tasks for ALL steps below, then TaskUpdate as you complete each one.**
+
+```
+TaskCreate for each step:
+1. "Detect workspace structure"
+2. "Initialize workspace if needed"
+3. "Configure package manager" (create .claude/everything-claude-code.package-manager.json)
+4. "Detect project ecosystems"
+5. "Verify development tools"
+6. "Install dependencies" (ask user first)
+7. "Create project configuration files"
+8. "Run Serena setup" (if installed - INVOKE /serena-setup skill)
+9. "Save setup status"
+
+Mark each task in_progress before starting, completed when done.
+Do NOT skip tasks - if a step is not applicable, mark it completed with a note.
+```
+
+---
 
 Automated, interactive setup that handles everything:
 
@@ -15,6 +39,21 @@ Automated, interactive setup that handles everything:
 5. **Tool Checking** - Verifies required development tools
 6. **Dependency Installation** - Installs workspace and package dependencies
 7. **Configuration** - Sets up .claude/ configs
+8. **Serena Integration** - **INVOKE /serena-setup skill** (activate, onboard, memories, CLAUDE.md migration)
+
+## Step 8: Serena Integration (CRITICAL)
+
+When Serena MCP is detected (check `mcp-cli info plugin_serena_serena/get_current_config`):
+
+**YOU MUST invoke the `/serena-setup` skill using the Skill tool.**
+
+This skill contains the complete 11-step workflow for:
+- Activating project in Serena
+- Running onboarding
+- Creating memories from ALL documentation
+- Configuring project.yml
+- Migrating and minimizing CLAUDE.md
+- Installing git hooks (append to existing, don't overwrite)
 
 ## Usage
 
@@ -46,7 +85,7 @@ Automated, interactive setup that handles everything:
 ### Initialization Phase
 - Creates workspace root package.json (if missing)
 - Sets up workspace configuration
-- Creates .claude/package-manager.json
+- Creates .claude/everything-claude-code.package-manager.json
 - Adds .prettierrc, .gitignore
 
 ### Installation Phase
@@ -131,13 +170,22 @@ workspace-root/
 ├── package.json           # Created
 ├── pnpm-workspace.yaml    # Created (or workspaces in package.json)
 ├── .claude/
-│   └── package-manager.json  # Created
+│   ├── everything-claude-code.package-manager.json  # Package manager preference
+│   ├── everything-claude-code.project-type.json     # Detected project types cache
+│   ├── everything-claude-code.ecosystems.json       # Detected ecosystems per package
+│   └── everything-claude-code.setup-status.json     # Setup completion status
 ├── .prettierrc            # Created
 ├── .gitignore             # Created if missing
 └── packages/
     ├── api/
     └── web/
 ```
+
+**Config file update triggers:**
+- `package-manager.json` - Updated via `/setup-pm --project <pm>`
+- `project-type.json` - Auto-invalidates when manifest files change
+- `ecosystems.json` - Regenerated on `/setup`, delete to force refresh
+- `setup-status.json` - Updated by `/setup` and `/serena-setup`
 
 ## Which Command Should I Use?
 
