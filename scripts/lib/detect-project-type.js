@@ -89,7 +89,7 @@ function readCache(cacheFile) {
     }
 
     return cache;
-  } catch (error) {
+  } catch (_error) {
     // Invalid cache file, return null
     return null;
   }
@@ -116,7 +116,7 @@ function writeCache(cacheFile, data) {
     };
 
     fs.writeFileSync(cacheFile, JSON.stringify(cacheData, null, 2), 'utf8');
-  } catch (error) {
+  } catch (_error) {
     // Fail silently - caching is optional
     // console.error(`[detect-project-type] Failed to write cache: ${error.message}`);
   }
@@ -139,7 +139,7 @@ function calculateManifestHash(cwd) {
         hash.update(`${manifest}:${stats.mtimeMs}`);
         foundManifests = true;
       }
-    } catch (error) {
+    } catch (_error) {
       // Skip files we can't access
       continue;
     }
@@ -174,13 +174,13 @@ export function detectProjectType(cwd = process.cwd()) {
     if (!stats.isDirectory()) {
       return [];
     }
-  } catch (error) {
+  } catch (_error) {
     // Permission error or other issue
     return [];
   }
 
   // Check cache first
-  const cacheFile = path.join(cwd, '.claude', 'project-type.json');
+  const cacheFile = path.join(cwd, '.claude', 'everything-claude-code.project-type.json');
   const cache = readCache(cacheFile);
 
   // Calculate current manifest hash
@@ -204,7 +204,7 @@ export function detectProjectType(cwd = process.cwd()) {
           }
           break; // Found one indicator, no need to check others for this type
         }
-      } catch (error) {
+      } catch (_error) {
         // Permission error or other issue, skip this indicator
         continue;
       }
@@ -222,12 +222,12 @@ export function detectProjectType(cwd = process.cwd()) {
  * @param {string} cwd - Directory to clear cache for
  */
 export function clearCache(cwd = process.cwd()) {
-  const cacheFile = path.join(cwd, '.claude', 'project-type.json');
+  const cacheFile = path.join(cwd, '.claude', 'everything-claude-code.project-type.json');
   try {
     if (fs.existsSync(cacheFile)) {
       fs.unlinkSync(cacheFile);
     }
-  } catch (error) {
+  } catch (_error) {
     // Fail silently
   }
 }

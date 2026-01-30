@@ -94,7 +94,7 @@ process.stdin.on('end', () => {
     return;
   }
 
-  // Detect project types (uses cached .claude/project-type.json)
+  // Detect project types (uses cached .claude/everything-claude-code.project-type.json)
   const projectTypes = detectProjectType(process.cwd());
   const ext = path.extname(filePath);
 

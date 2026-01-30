@@ -1,7 +1,7 @@
 {
   "name": "everything-claude-code",
-  "version": "2.0.0-enterprise",
-  "description": "Enterprise Stack Extension - Complete collection of battle-tested Claude Code configs with Python, Java, Kotlin, Maven, Gradle, and CI/CD pipeline support",
+  "version": "2.1.0",
+  "description": "Enterprise Stack Extension with Serena MCP Integration - Battle-tested Claude Code configs, memory-first workflow, Python, Java, Kotlin, Maven, Gradle, and CI/CD pipeline support",
   "author": {
     "name": "Affaan Mustafa (Original) + doublefx (Enterprise Extension)",
     "url": "https://github.com/doublefx"
@@ -27,7 +27,11 @@
     "kotlin",
     "gradle",
     "maven",
-    "ci-cd"
+    "ci-cd",
+    "serena",
+    "mcp",
+    "memory-first",
+    "semantic-analysis"
   ],
   "commands": "./commands",
   "skills": "./skills"

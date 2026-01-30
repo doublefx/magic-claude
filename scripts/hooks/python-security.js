@@ -262,8 +262,8 @@ async function main() {
     logHook(`Unexpected error: ${error.message}`, 'ERROR');
     // CRITICAL: Always pass through context, even on catastrophic failure
     try {
-      writeHookOutput(context || {});
-    } catch (writeError) {
+      writeHookOutput({});
+    } catch (_writeError) {
       // Last resort: output minimal valid context to maintain hook chain
       console.log('{}');
     }

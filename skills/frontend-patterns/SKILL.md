@@ -1,6 +1,9 @@
 ---
 name: frontend-patterns
 description: Frontend development patterns for React, Next.js, state management, performance optimization, and UI best practices.
+user-invocable: false
+context: fork
+agent: architect
 ---
 
 # Frontend Development Patterns

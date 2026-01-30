@@ -16,15 +16,14 @@
 
 import fs from 'fs';
 import path from 'path';
+import { execSync } from 'child_process';
 import {
   readHookInput,
   writeHookOutput,
   getFilePath,
   detectProjectType,
   logHook,
-  commandExists,
-  safeExecSync,
-  isValidFilePath
+  commandExists
 } from '../lib/hook-utils.js';
 
 /**
@@ -159,7 +158,7 @@ function checkSecurityPluginConfiguration(cwd, projectTypes) {
 
       const hasSpotBugs = pomContent.includes('spotbugs-maven-plugin');
       const hasFindSecBugs = pomContent.includes('findsecbugs-plugin');
-      const hasPMD = pomContent.includes('maven-pmd-plugin');
+      const _hasPMD = pomContent.includes('maven-pmd-plugin'); // Reserved for future use
 
       if (!hasSpotBugs || !hasFindSecBugs) {
         logHook(
@@ -182,7 +181,7 @@ function checkSecurityPluginConfiguration(cwd, projectTypes) {
       const buildContent = fs.readFileSync(buildFile, 'utf-8');
 
       const hasSpotBugs = buildContent.includes('com.github.spotbugs');
-      const hasPMD = buildContent.includes('pmd');
+      const _hasPMD = buildContent.includes('pmd'); // Reserved for future use
 
       if (!hasSpotBugs) {
         logHook(

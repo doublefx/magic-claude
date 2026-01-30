@@ -1,6 +1,7 @@
 ---
 name: python-patterns
 description: Python project structure, modern packaging (uv, poetry, pyproject.toml), virtual environments, async patterns, type hints, and testing with pytest. Modern Python 2026 best practices.
+user-invocable: false
 ---
 
 # Python Project Patterns (2026)

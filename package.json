@@ -11,15 +11,26 @@
     "test:unit": "vitest tests/unit",
     "test:integration": "vitest tests/integration",
     "test:e2e": "vitest tests/e2e",
-    "test:harness": "vitest tests/harnesses"
+    "test:harness": "vitest tests/harnesses",
+    "lint": "eslint scripts/hooks/*.cjs scripts/hooks/*.js scripts/lib/*.cjs scripts/lib/*.js",
+    "lint:fix": "eslint --fix scripts/hooks/*.cjs scripts/hooks/*.js scripts/lib/*.cjs scripts/lib/*.js",
+    "lint:deprecated": "node scripts/lib/deprecation-checker.cjs scripts",
+    "lint:dead-code": "knip",
+    "lint:all": "npm run lint && npm run lint:deprecated && npm run lint:dead-code",
+    "check": "npm run lint:all && npm run test"
   },
   "devDependencies": {
-    "vitest": "^1.2.0",
-    "@vitest/ui": "^1.2.0",
-    "@vitest/coverage-v8": "^1.2.0",
+    "@eslint/js": "^9.39.2",
     "@types/node": "^20.11.0",
+    "@vitest/coverage-v8": "^1.2.0",
+    "@vitest/ui": "^1.2.0",
+    "eslint": "^9.39.2",
+    "eslint-plugin-jsdoc": "^62.4.1",
+    "globals": "^17.2.0",
+    "js-yaml": "^4.1.0",
+    "knip": "^5.82.1",
     "vite": "^5.0.0",
-    "js-yaml": "^4.1.0"
+    "vitest": "^1.2.0"
   },
   "keywords": [
     "claude-code",

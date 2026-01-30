@@ -2,24 +2,58 @@
 
 ## What Are Agents?
 
-Agents are specialized AI subagents with custom models, tools, and instructions. They can be invoked directly or delegated to for complex tasks.
+Agents (also called subagents) are specialized AI assistants that handle specific types of tasks. Each subagent runs in its own context window with a custom system prompt, specific tool access, and independent permissions. When Claude encounters a task that matches a subagent's description, it delegates to that subagent, which works independently and returns results.
+
+Subagents help you:
+
+- **Preserve context** by keeping exploration and implementation out of your main conversation
+- **Enforce constraints** by limiting which tools a subagent can use
+- **Reuse configurations** across projects with user-level subagents
+- **Specialize behavior** with focused system prompts for specific domains
+- **Control costs** by routing tasks to faster, cheaper models like Haiku
+
+**Important:** Subagents cannot spawn other subagents. If your workflow requires nested delegation, use Skills or chain subagents from the main conversation.
+
+## Built-in Subagents
+
+Claude Code includes built-in subagents that Claude automatically uses when appropriate:
+
+| Agent | Model | Tools | Purpose |
+|-------|-------|-------|---------|
+| **Explore** | Haiku | Read-only (no Write/Edit) | File discovery, code search, codebase exploration. Invoked with thoroughness levels: `quick`, `medium`, or `very thorough` |
+| **Plan** | Inherits | Read-only (no Write/Edit) | Codebase research during plan mode |
+| **general-purpose** | Inherits | All tools | Complex research, multi-step operations, code modifications |
+| **Bash** | Inherits | - | Running terminal commands in separate context |
+| **statusline-setup** | Sonnet | - | When you run `/statusline` to configure your status line |
+| **Claude Code Guide** | Haiku | - | When you ask questions about Claude Code features |
 
 ## Agent File Format
 
-**File Location:** `agents/agent-name.md`
-
 **Format:** Markdown file with YAML frontmatter + instructions in body
+
+### Agent Scope and Locations
+
+Agents can be stored in different locations depending on scope. When multiple agents share the same name, the higher-priority location wins:
+
+| Location | Scope | Priority | Description |
+|----------|-------|----------|-------------|
+| `--agents` CLI flag | Current session only | 1 (highest) | Pass JSON when launching Claude Code |
+| `.claude/agents/` | Current project | 2 | Check into version control for team use |
+| `~/.claude/agents/` | All your projects | 3 | Personal agents available everywhere |
+| Plugin's `agents/` directory | Where plugin is enabled | 4 (lowest) | Installed with plugins |
 
 ### Agent Frontmatter - COMPLETE REFERENCE
 
 | Field | Type | Required | Default | Valid Values | Description |
 |-------|------|----------|---------|--------------|-------------|
 | `name` | string | Yes | - | lowercase-hyphens | Agent identifier (machine-readable) |
-| `description` | string | Yes | - | Any string | One-line description (shown in agent list, max 120 chars) |
-| `tools` | string | Yes | - | Comma-separated tool names | Tools available to agent (subset of built-in tools) |
-| `model` | string | Yes | - | `opus`, `sonnet`, `haiku` | Claude model to use for this agent |
-| `skills` | string | No | - | Comma-separated skill names | Skills preloaded into agent context |
-| `hooks` | string | No | - | Hook type list | Hook events this agent should trigger |
+| `description` | string | Yes | - | Any string | When Claude should delegate to this agent (max 120 chars). Include "use proactively" for proactive delegation |
+| `tools` | string | No | All inherited | Comma-separated tool names | Tools available to agent (allowlist) |
+| `disallowedTools` | string | No | - | Comma-separated tool names | Tools to deny (denylist, removed from inherited or specified list) |
+| `model` | string | No | `inherit` | `opus`, `sonnet`, `haiku`, `inherit` | Claude model to use. `inherit` uses main conversation's model |
+| `permissionMode` | string | No | `default` | `default`, `acceptEdits`, `dontAsk`, `bypassPermissions`, `plan` | How the subagent handles permission prompts |
+| `skills` | string | No | - | Comma-separated skill names | Skills preloaded into agent context (full content injected, not just available for invocation) |
+| `hooks` | object | No | - | YAML hook definitions | Lifecycle hooks scoped to this subagent |
 
 ### Minimal Agent Example
 
@@ -161,8 +195,13 @@ tools: Read, Grep, Glob, Bash
 ### `model`
 
 **Type:** string
-**Required:** Yes
-**Valid Values:** `opus`, `sonnet`, `haiku`
+**Required:** No
+**Default:** `inherit`
+**Valid Values:** `opus`, `sonnet`, `haiku`, `inherit`
+
+- **Model alias**: Use one of the available aliases: `sonnet`, `opus`, or `haiku`
+- **inherit**: Use the same model as the main conversation
+- **Omitted**: If not specified, defaults to `inherit`
 
 **Model Comparison:**
 
@@ -171,6 +210,7 @@ tools: Read, Grep, Glob, Bash
 | **opus** | Slow | Highest | Complex analysis, architecture, security | Maximum |
 | **sonnet** | Medium | Medium | Feature implementation, code review | High |
 | **haiku** | Fast | ~1/3 Sonnet | Simple tasks, worker agents | Good |
+| **inherit** | Varies | Varies | Match main conversation model | Varies |
 
 **Selection Strategy:**
 
@@ -190,6 +230,63 @@ tools: Read, Grep, Glob, Bash
   - Worker agents (many invocations)
   - Simple formatting and checks
 
+- **Use inherit for:**
+  - When agent should match main conversation capability
+  - Flexible agents that adapt to context
+
+### `disallowedTools` (Optional)
+
+**Type:** string
+**Required:** No
+**Rules:**
+- Comma-separated tool names
+- Tools to deny (denylist approach)
+- Removed from inherited or specified tool list
+
+**What it does:**
+
+Use `disallowedTools` when you want to inherit most tools but exclude specific ones. This is the inverse of the `tools` allowlist.
+
+**Example:**
+
+```markdown
+---
+name: safe-researcher
+description: Research agent with restricted capabilities
+tools: Read, Grep, Glob, Bash
+disallowedTools: Write, Edit
+---
+```
+
+### `permissionMode` (Optional)
+
+**Type:** string
+**Required:** No
+**Default:** `default`
+**Valid Values:**
+
+| Mode | Behavior |
+|------|----------|
+| `default` | Standard permission checking with prompts |
+| `acceptEdits` | Auto-accept file edits |
+| `dontAsk` | Auto-deny permission prompts (explicitly allowed tools still work) |
+| `bypassPermissions` | Skip all permission checks (use with caution!) |
+| `plan` | Plan mode (read-only exploration) |
+
+**Warning:** Use `bypassPermissions` with caution. It skips all permission checks, allowing the subagent to execute any operation without approval.
+
+**Note:** If the parent uses `bypassPermissions`, this takes precedence and cannot be overridden.
+
+**Example:**
+
+```markdown
+---
+name: auto-formatter
+description: Automatically formats code without asking
+permissionMode: acceptEdits
+---
+```
+
 ### `skills` (Optional)
 
 **Type:** string
@@ -198,14 +295,16 @@ tools: Read, Grep, Glob, Bash
 - Comma-separated skill names
 - Skills must exist in plugin
 - Multiple skills allowed
-- Skills are preloaded into agent context
+- Full skill content is injected into agent context at startup
 
 **What it does:**
 
 When `skills` is specified, the skill content is:
-1. Loaded into agent's system prompt
-2. Available throughout agent's use
+1. Loaded into agent's system prompt (full content injected)
+2. Available throughout agent's execution
 3. Integrated into agent instructions
+
+**Important:** Subagents don't inherit skills from the parent conversation; you must list them explicitly. The full content of each skill is injected, not just made available for invocation.
 
 **Examples:**
 
@@ -224,17 +323,54 @@ skills: tdd-workflow, security-review, coding-standards
 
 ### `hooks` (Optional)
 
-**Type:** string
+**Type:** object (YAML)
 **Required:** No
 **Rules:**
-- Comma-separated hook types
-- Valid: `PreToolUse`, `PostToolUse`, `SessionStart`, `SessionEnd`, `PreCompact`, `Stop`
+- Define hooks that run only while the subagent is active
+- Hooks are cleaned up when the subagent finishes
+- Valid events: `PreToolUse`, `PostToolUse`, `Stop`
 
-**Example:**
+**Hook Format in Frontmatter:**
 
-```markdown
+```yaml
 ---
-hooks: PreToolUse, PostToolUse
+name: code-reviewer
+description: Review code changes with automatic linting
+hooks:
+  PreToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: "./scripts/validate-command.sh"
+  PostToolUse:
+    - matcher: "Edit|Write"
+      hooks:
+        - type: command
+          command: "./scripts/run-linter.sh"
+---
+```
+
+**Hook Events in Subagent Frontmatter:**
+
+| Event | Matcher Input | When it Fires |
+|-------|---------------|---------------|
+| `PreToolUse` | Tool name | Before the subagent uses a tool |
+| `PostToolUse` | Tool name | After the subagent uses a tool |
+| `Stop` | (none) | When the subagent finishes |
+
+**Example: Database Query Validator**
+
+```yaml
+---
+name: db-reader
+description: Execute read-only database queries
+tools: Bash
+hooks:
+  PreToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: "./scripts/validate-readonly-query.sh"
 ---
 ```
 
@@ -310,6 +446,162 @@ name: architect
 You may delegate code review to the **code-reviewer** agent.
 ```
 
+### Proactive Delegation
+
+Claude automatically delegates tasks based on the task description, the `description` field in agent configurations, and current context. To encourage proactive delegation, include phrases like "use proactively" in your agent's description:
+
+```markdown
+---
+name: code-reviewer
+description: Expert code review specialist. Use proactively after code changes.
+---
+```
+
+## Foreground vs Background Execution
+
+Subagents can run in the foreground (blocking) or background (concurrent):
+
+### Foreground Subagents
+- Block the main conversation until complete
+- Permission prompts and clarifying questions are passed through to you
+- Full interactive capability
+
+### Background Subagents
+- Run concurrently while you continue working
+- Before launching, Claude prompts for any tool permissions the subagent will need
+- Once running, the subagent inherits these permissions and auto-denies anything not pre-approved
+- If a background subagent needs to ask clarifying questions, that tool call fails but the subagent continues
+- MCP tools are not available in background subagents
+
+**Controls:**
+- Ask Claude to "run this in the background"
+- Press **Ctrl+B** to background a running task
+- Set `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=1` to disable background tasks entirely
+
+## Resume Subagents
+
+Each subagent invocation creates a new instance with fresh context. To continue an existing subagent's work instead of starting over, ask Claude to resume it:
+
+```
+Use the code-reviewer subagent to review the authentication module
+[Agent completes]
+
+Continue that code review and now analyze the authorization logic
+[Claude resumes the subagent with full context from previous conversation]
+```
+
+Resumed subagents retain their full conversation history, including all previous tool calls, results, and reasoning.
+
+**Transcript Location:** `~/.claude/projects/{project}/{sessionId}/subagents/agent-{agentId}.jsonl`
+
+## Disabling Specific Subagents
+
+Prevent Claude from using specific subagents by adding them to the `deny` array in settings. Use the format `Task(subagent-name)`:
+
+```json
+{
+  "permissions": {
+    "deny": ["Task(Explore)", "Task(my-custom-agent)"]
+  }
+}
+```
+
+Or via CLI:
+```bash
+claude --disallowedTools "Task(Explore)"
+```
+
+## Project-Level Hooks for Subagent Events
+
+Configure hooks in `settings.json` that respond to subagent lifecycle events in the main session:
+
+| Event | Matcher Input | When it Fires |
+|-------|---------------|---------------|
+| `SubagentStart` | Agent type name | When a subagent begins execution |
+| `SubagentStop` | Agent type name | When a subagent completes |
+
+**Example: Setup/Cleanup for Database Agent**
+
+```json
+{
+  "hooks": {
+    "SubagentStart": [
+      {
+        "matcher": "db-agent",
+        "hooks": [
+          { "type": "command", "command": "./scripts/setup-db-connection.sh" }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": "db-agent",
+        "hooks": [
+          { "type": "command", "command": "./scripts/cleanup-db-connection.sh" }
+        ]
+      }
+    ]
+  }
+}
+```
+
+## Common Subagent Patterns
+
+### Isolate High-Volume Operations
+
+Delegate operations that produce large output to keep verbose results out of your main context:
+
+```
+Use a subagent to run the test suite and report only the failing tests with their error messages
+```
+
+### Parallel Research
+
+For independent investigations, spawn multiple subagents to work simultaneously:
+
+```
+Research the authentication, database, and API modules in parallel using separate subagents
+```
+
+Each subagent explores its area independently, then Claude synthesizes the findings.
+
+**Warning:** When subagents complete, their results return to your main conversation. Running many subagents that each return detailed results can consume significant context.
+
+### Chain Subagents
+
+For multi-step workflows, use subagents in sequence:
+
+```
+Use the code-reviewer subagent to find performance issues, then use the optimizer subagent to fix them
+```
+
+Each subagent completes its task and returns results to Claude, which passes relevant context to the next subagent.
+
+## CLI-Defined Subagents
+
+Pass agents as JSON when launching Claude Code for session-only agents:
+
+```bash
+claude --agents '{
+  "code-reviewer": {
+    "description": "Expert code reviewer. Use proactively after code changes.",
+    "prompt": "You are a senior code reviewer. Focus on code quality, security, and best practices.",
+    "tools": ["Read", "Grep", "Glob", "Bash"],
+    "model": "sonnet"
+  }
+}'
+```
+
+The `--agents` flag accepts JSON with these fields:
+- `description`: When Claude should delegate to this agent
+- `prompt`: The system prompt (equivalent to markdown body in file-based agents)
+- `tools`: Array of tool names
+- `model`: Model alias or "inherit"
+- `disallowedTools`: Array of tools to deny
+- `permissionMode`: Permission mode string
+- `skills`: Array of skill names
+- `hooks`: Hook definitions object
+
 ## Model Selection Guide
 
 | Scenario | Recommended Model | Reasoning |
@@ -321,17 +613,26 @@ You may delegate code review to the **code-reviewer** agent.
 | Code formatting | haiku | Simple transformation, fast execution |
 | Bug fixing | sonnet | Good for problem-solving |
 
-## Permission Modes (Future/Advanced)
+## Permission Modes
 
-While not currently fully implemented, granular permission control is planned:
+Permission modes control how subagents handle permission prompts. Set via `permissionMode` in frontmatter:
 
 ```markdown
 ---
-name: restricted-agent
-tools: Read, Write
-# Future: permissions for read, write, execute
+name: auto-editor
+description: Automatically edits files without confirmation
+permissionMode: acceptEdits
+tools: Read, Write, Edit
 ---
 ```
+
+| Mode | Use Case |
+|------|----------|
+| `default` | Standard interactive permissions |
+| `acceptEdits` | Auto-formatter, code cleanup agents |
+| `dontAsk` | Agents that should work silently |
+| `bypassPermissions` | Trusted automation (use with caution) |
+| `plan` | Read-only research and planning |
 
 ## Best Practices
 
@@ -405,8 +706,8 @@ You MUST follow the **tdd-workflow** skill for TDD tasks.
 
 ---
 
-**Last Updated:** 2025-01-27
-**Version:** 2.0.0
+**Last Updated:** 2026-01-28
+**Version:** 2.1.0
 **Status:** Complete Specification
 
 **Strategy:**
@@ -927,6 +1228,31 @@ description: Activated when [condition]
 3. **Execution:** Agent operates with limited context
 4. **Completion:** Agent provides results and returns control
 
+### Auto-Compaction
+
+Subagents support automatic compaction using the same logic as the main conversation. By default, auto-compaction triggers at approximately 95% capacity.
+
+To trigger compaction earlier, set `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` to a lower percentage (e.g., `50`).
+
+**Note:** Subagent transcripts are stored independently of the main conversation and persist within their session.
+
+## When to Use Subagents vs Main Conversation
+
+**Use the main conversation when:**
+- The task needs frequent back-and-forth or iterative refinement
+- Multiple phases share significant context (planning -> implementation -> testing)
+- You're making a quick, targeted change
+- Latency matters (subagents start fresh and may need time to gather context)
+
+**Use subagents when:**
+- The task produces verbose output you don't need in your main context
+- You want to enforce specific tool restrictions or permissions
+- The work is self-contained and can return a summary
+
+**Consider Skills instead when:**
+- You want reusable prompts or workflows that run in the main conversation context
+- You need the content to be available rather than isolated in a subagent
+
 ## Best Practices
 
 ### 1. Clear Focus
@@ -1053,5 +1379,5 @@ Check:
 
 ---
 
-**Last Updated:** 2025-01-27
-**Version:** 2.0.0
+**Last Updated:** 2026-01-28
+**Version:** 2.1.0

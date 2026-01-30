@@ -3,6 +3,7 @@ name: maven-expert
 description: Maven build tool specialist. Expertise in dependency management, multi-module projects, lifecycle best practices, Maven wrapper enforcement, and OWASP dependency security scanning.
 tools: Read, Grep, Glob, Bash
 model: sonnet
+skills: maven-patterns
 ---
 
 # Maven Expert Agent

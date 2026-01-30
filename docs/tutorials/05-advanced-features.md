@@ -306,7 +306,7 @@ Claude will load `.claude/rules/api-standards.md` and check compliance.
 
 ```bash
 # Check cache
-cat .claude/project-type.json
+cat .claude/everything-claude-code.project-type.json
 
 # Output:
 # {

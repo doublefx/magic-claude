@@ -40,17 +40,17 @@ Configure your preferred package manager for this project or globally.
 When determining which package manager to use, the following order is checked:
 
 1. **Environment variable**: `CLAUDE_PACKAGE_MANAGER`
-2. **Project config**: `.claude/package-manager.json`
+2. **Project config**: `.claude/everything-claude-code.package-manager.json`
 3. **package.json**: `packageManager` field
 4. **Lock file**: Presence of lock files
-5. **Global config**: `~/.claude/package-manager.json`
+5. **Global config**: `~/.claude/everything-claude-code.package-manager.json`
 6. **Fallback**: First available package manager
 
 ## Configuration Files
 
 ### Global Configuration
 ```json
-// ~/.claude/package-manager.json
+// ~/.claude/everything-claude-code.package-manager.json
 {
   "packageManager": "pnpm"
 }
@@ -58,7 +58,7 @@ When determining which package manager to use, the following order is checked:
 
 ### Project Configuration
 ```json
-// .claude/package-manager.json
+// .claude/everything-claude-code.package-manager.json
 {
   "packageManager": "bun"
 }

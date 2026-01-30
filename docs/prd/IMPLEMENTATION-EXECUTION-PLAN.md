@@ -422,7 +422,7 @@ const PROJECT_INDICATORS = {
 
 function detectProjectType(cwd = process.cwd()) {
   // Check cache first
-  const cacheFile = path.join(cwd, '.claude', 'project-type.json');
+  const cacheFile = path.join(cwd, '.claude', 'everything-claude-code.project-type.json');
   const cache = readCache(cacheFile);
 
   // Calculate manifest hash
@@ -500,7 +500,7 @@ module.exports = { detectProjectType };
 
 **Enhance**: Detection script with robust caching
 
-**Cache Schema** (`.claude/project-type.json`):
+**Cache Schema** (`.claude/everything-claude-code.project-type.json`):
 ```json
 {
   "types": ["nodejs", "maven", "python"],
@@ -827,7 +827,7 @@ if (projectTypes.length > 0) {
   log(`[SessionStart] Project types: ${projectTypes.join(', ')}`);
 
   // Cache for quick access
-  const cacheFile = path.join(process.cwd(), '.claude', 'project-type.json');
+  const cacheFile = path.join(process.cwd(), '.claude', 'everything-claude-code.project-type.json');
   log(`[SessionStart] Project type cache: ${cacheFile}`);
 }
 ```
@@ -835,7 +835,7 @@ if (projectTypes.length > 0) {
 **Testing**: Manual test
 - Start Claude Code session
 - Check stderr for project type detection message
-- Verify `.claude/project-type.json` created
+- Verify `.claude/everything-claude-code.project-type.json` created
 
 **Acceptance Criteria**:
 - Project types detected and logged on session start

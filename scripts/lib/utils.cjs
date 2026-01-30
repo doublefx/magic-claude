@@ -158,7 +158,7 @@ function findFiles(dir, pattern, options = {}) {
           searchDir(fullPath);
         }
       }
-    } catch (err) {
+    } catch (_err) {
       // Ignore permission errors
     }
   }
@@ -174,7 +174,7 @@ function findFiles(dir, pattern, options = {}) {
 /**
  * Read JSON from stdin (for hook input)
  */
-async function readStdinJson() {
+function readStdinJson() {
   return new Promise((resolve, reject) => {
     let data = '';
 
@@ -269,11 +269,48 @@ function commandExists(cmd) {
 }
 
 /**
+ * Run a command safely with argument array (PREFERRED)
+ *
+ * Uses spawnSync with separated arguments to prevent shell injection.
+ * This is the recommended way to run external commands.
+ *
+ * @param {string} cmd - Command to execute
+ * @param {string[]} args - Array of arguments (not a single string!)
+ * @param {object} options - spawnSync options
+ * @returns {{ success: boolean, output: string }}
+ */
+function runCommandSafe(cmd, args = [], options = {}) {
+  // Validate command name to prevent path traversal
+  if (!/^[a-zA-Z0-9_.-]+$/.test(cmd)) {
+    return { success: false, output: 'Invalid command name' };
+  }
+
+  try {
+    const result = spawnSync(cmd, args, {
+      encoding: 'utf8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+      ...options
+    });
+
+    if (result.error) {
+      return { success: false, output: result.error.message };
+    }
+
+    return {
+      success: result.status === 0,
+      output: (result.stdout || result.stderr || '').trim()
+    };
+  } catch (err) {
+    return { success: false, output: err.message };
+  }
+}
+
+/**
  * Run a command and return output
  *
- * SECURITY NOTE: This function executes shell commands. Only use with
- * trusted, hardcoded commands. Never pass user-controlled input directly.
- * For user input, use spawnSync with argument arrays instead.
+ * @deprecated Use runCommandSafe(cmd, args) instead for better security.
+ * This function uses shell execution which is vulnerable to injection.
+ * Will be removed in a future version.
  *
  * @param {string} cmd - Command to execute (should be trusted/hardcoded)
  * @param {object} options - execSync options
@@ -295,7 +332,7 @@ function runCommand(cmd, options = {}) {
  * Check if current directory is a git repository
  */
 function isGitRepo() {
-  return runCommand('git rev-parse --git-dir').success;
+  return runCommandSafe('git', ['rev-parse', '--git-dir']).success;
 }
 
 /**
@@ -304,7 +341,7 @@ function isGitRepo() {
 function getGitModifiedFiles(patterns = []) {
   if (!isGitRepo()) return [];
 
-  const result = runCommand('git diff --name-only HEAD');
+  const result = runCommandSafe('git', ['diff', '--name-only', 'HEAD']);
   if (!result.success) return [];
 
   let files = result.output.split('\n').filter(Boolean);
@@ -402,7 +439,8 @@ module.exports = {
 
   // System
   commandExists,
-  runCommand,
+  runCommandSafe,
+  runCommand, // @deprecated - use runCommandSafe instead
   isGitRepo,
   getGitModifiedFiles
 };

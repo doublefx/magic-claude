@@ -15,13 +15,12 @@ const {
   getDateString,
   getTimeString,
   ensureDir,
-  readFile,
   writeFile,
   replaceInFile,
   log
 } = require('../lib/utils.cjs');
 
-async function main() {
+function main() {
   const sessionsDir = getSessionsDir();
   const today = getDateString();
   const sessionFile = path.join(sessionsDir, `${today}-session.tmp`);

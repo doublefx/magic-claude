@@ -274,7 +274,7 @@ function calculateManifestHash(cwd) {
  * Check if re-detection is needed (manifest files changed)
  */
 function needsRedetection(cwd) {
-  const cacheFile = path.join(cwd, '.claude/project-type.json');
+  const cacheFile = path.join(cwd, '.claude/everything-claude-code.project-type.json');
 
   if (!fs.existsSync(cacheFile)) {
     return true;
@@ -297,7 +297,7 @@ module.exports = {
 };
 ```
 
-**Storage**: Cache in `${cwd}/.claude/project-type.json` with manifest hash for invalidation:
+**Storage**: Cache in `${cwd}/.claude/everything-claude-code.project-type.json` with manifest hash for invalidation:
 ```json
 {
   "types": ["nodejs", "maven", "python"],
@@ -309,9 +309,9 @@ module.exports = {
 **Monorepo Support**: For monorepos, detect types in subdirectories:
 ```
 /monorepo
-  /backend (.claude/project-type.json) → ["maven", "maven-wrapper"]
-  /frontend (.claude/project-type.json) → ["nodejs", "pnpm"]
-  /ml (.claude/project-type.json) → ["python", "uv"]
+  /backend (.claude/everything-claude-code.project-type.json) → ["maven", "maven-wrapper"]
+  /frontend (.claude/everything-claude-code.project-type.json) → ["nodejs", "pnpm"]
+  /ml (.claude/everything-claude-code.project-type.json) → ["python", "uv"]
 ```
 
 ### 2. Conditional Hook System
@@ -347,7 +347,7 @@ function formatFile(toolInput) {
   const filePath = toolInput?.file_path;
   if (!filePath) return; // Not a file operation
 
-  // Detect project types (cached via .claude/project-type.json)
+  // Detect project types (cached via .claude/everything-claude-code.project-type.json)
   const projectTypes = detectProjectType(process.cwd());
   const ext = path.extname(filePath);
 
@@ -898,7 +898,7 @@ jobs:
 |------|-------------|--------|---------------------|
 | P1-00 | Verify hook matcher capabilities | S | Document Claude Code hook limitations, confirm runtime filtering approach |
 | P1-01 | Create project type detection script | L | Detects multiple types (nodejs+maven+python), supports monorepos |
-| P1-02 | Implement manifest hash-based caching | M | Stores in `.claude/project-type.json` with hash invalidation |
+| P1-02 | Implement manifest hash-based caching | M | Stores in `.claude/everything-claude-code.project-type.json` with hash invalidation |
 | P1-03 | Build runtime hook filtering framework | L | Smart hook scripts filter by project type and file extension |
 | P1-04 | Create smart-formatter.js universal hook | M | Runs ruff/prettier/google-java-format based on project type |
 | P1-05 | Create maven-advisor.js hook | S | Recommends `mvn verify` over `install` in Maven projects |
@@ -1195,7 +1195,7 @@ base-template.yml          # Common stages (build, test, deploy)
 1. **No Action Required**: JS/TS projects work as before (project detection auto-enables hooks)
 2. **Python Projects**: Hooks auto-activate when `pyproject.toml` or `setup.py` detected
 3. **Java Projects**: Hooks auto-activate when `pom.xml` or `build.gradle` detected
-4. **Manual Override**: `.claude/project-type.json` can force specific types
+4. **Manual Override**: `.claude/everything-claude-code.project-type.json` can force specific types
 
 **Breaking Changes**: None.
 

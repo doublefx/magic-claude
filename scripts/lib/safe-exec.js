@@ -57,13 +57,13 @@ export function safeExecSync(command, args = [], options = {}) {
  * @returns {Promise<{stdout: string, stderr: string}>} Command output
  * @throws {Error} If command fails
  */
-export async function safeExecAsync(command, args = [], options = {}) {
+export function safeExecAsync(command, args = [], options = {}) {
   // Validate command name
   if (!/^[a-z0-9_-]+$/i.test(command)) {
     throw new Error(`Invalid command name: ${command}`);
   }
 
-  return await execFileAsync(command, args, {
+  return execFileAsync(command, args, {
     encoding: 'utf8',
     ...options
   });

@@ -2,52 +2,105 @@
 
 ## What Are Hooks?
 
-Hooks are automated actions triggered by specific events in the Claude Code workflow. They enable side effects like file formatting, security checks, and notifications without blocking normal operations.
+Hooks are user-defined shell commands that execute at specific points in Claude Code's lifecycle. They provide deterministic control over behavior, ensuring certain actions always happen rather than relying on the LLM to choose to run them.
 
 **Key Characteristics:**
-- Event-driven (PreToolUse, PostToolUse, SessionStart, SessionEnd, PreCompact, Stop)
-- Non-blocking except PreToolUse (which can block execution)
-- Execute Node.js scripts with JSON input/output
-- Support pattern matching with CEL expressions
-- Only PreToolUse can block operations
-- Executed synchronously in order
+- Event-driven with 12 hook types
+- Shell commands (bash, python, node) with JSON stdin/stdout
+- Support regex pattern matching for tool names
+- PreToolUse and PermissionRequest can block/allow/deny operations
+- Stop and SubagentStop can force Claude to continue
+- Execute with 60-second default timeout (configurable per hook)
+- All matching hooks run in parallel
+
+**Use Cases:**
+- **Notifications**: Custom alerts when Claude needs input
+- **Automatic formatting**: Run prettier, gofmt, etc. after edits
+- **Logging**: Track commands for compliance or debugging
+- **Feedback**: Enforce codebase conventions
+- **Custom permissions**: Block modifications to sensitive files
 
 ## Hook Lifecycle Diagram
 
 ```
-Workflow Event
-    ↓
-[Hook Type: PreToolUse, PostToolUse, SessionStart, etc.]
-    ↓
-[Matcher CEL Expression Evaluated]
-    ↓
-Match? YES → [Execute Hook Commands in Order]
-     ↓              ↓
-     NO            [Node.js Script Runs]
-     ↓              ↓
-  Skip        [Read from stdin, Write to stdout]
-              ↓
-          [Hook Decision: 0=continue, 1=block]
-              ↓
-          [Only PreToolUse can block]
-              ↓
-          [Return to Workflow]
+                         ┌─────────────┐
+                         │SessionStart │
+                         └──────┬──────┘
+                                ↓
+                    ┌───────────────────────┐
+                    │  UserPromptSubmit     │ (can block prompt)
+                    └───────────┬───────────┘
+                                ↓
+                    ┌───────────────────────┐
+                    │      Agentic Loop     │
+                    │  ┌─────────────────┐  │
+                    │  │   PreToolUse    │←─┼── (can block/allow/deny)
+                    │  └────────┬────────┘  │
+                    │           ↓           │
+                    │  ┌─────────────────┐  │
+                    │  │PermissionRequest│←─┼── (can allow/deny)
+                    │  └────────┬────────┘  │
+                    │           ↓           │
+                    │  ┌─────────────────┐  │
+                    │  │  Tool Executes  │  │
+                    │  └────────┬────────┘  │
+                    │           ↓           │
+                    │  ┌─────────────────┐  │
+                    │  │  PostToolUse    │  │ (can provide feedback)
+                    │  │ /PostToolFail   │  │
+                    │  └────────┬────────┘  │
+                    │           ↓           │
+                    │  ┌─────────────────┐  │
+                    │  │  SubagentStart  │  │
+                    │  │   (if Task)     │  │
+                    │  └────────┬────────┘  │
+                    │           ↓           │
+                    │  ┌─────────────────┐  │
+                    │  │  SubagentStop   │←─┼── (can force continue)
+                    │  └─────────────────┘  │
+                    └───────────┬───────────┘
+                                ↓
+                    ┌───────────────────────┐
+                    │        Stop           │← (can force continue)
+                    └───────────┬───────────┘
+                                ↓
+                    ┌───────────────────────┐
+                    │     PreCompact        │← (manual or auto)
+                    └───────────┬───────────┘
+                                ↓
+                    ┌───────────────────────┐
+                    │     SessionEnd        │
+                    └───────────────────────┘
 ```
 
 ## Hook File Structure
 
-**File:** `hooks/hooks.json`
+**File:** `hooks/hooks.json` (for plugins) or in settings files
+
+**Settings File Locations (in order of precedence):**
+- `~/.claude/settings.json` - User settings (global)
+- `.claude/settings.json` - Project settings
+- `.claude/settings.local.json` - Local project settings (not committed)
+- Managed policy settings (enterprise)
 
 **Root Structure:**
 ```json
 {
+  "description": "Optional description of hooks purpose",
   "hooks": {
     "PreToolUse": [ /* array of hook rules */ ],
+    "PermissionRequest": [ /* array of hook rules */ ],
     "PostToolUse": [ /* array of hook rules */ ],
-    "SessionStart": [ /* array of hook rules */ ],
-    "SessionEnd": [ /* array of hook rules */ ],
+    "PostToolUseFailure": [ /* array of hook rules */ ],
+    "UserPromptSubmit": [ /* array of hook rules */ ],
+    "Notification": [ /* array of hook rules */ ],
+    "Stop": [ /* array of hook rules */ ],
+    "SubagentStart": [ /* array of hook rules */ ],
+    "SubagentStop": [ /* array of hook rules */ ],
     "PreCompact": [ /* array of hook rules */ ],
-    "Stop": [ /* array of hook rules */ ]
+    "Setup": [ /* array of hook rules */ ],
+    "SessionStart": [ /* array of hook rules */ ],
+    "SessionEnd": [ /* array of hook rules */ ]
   }
 }
 ```
@@ -58,14 +111,21 @@ Each hook type contains an array of hook rule objects.
 
 ### Hook Type Overview
 
-| Hook Type | When | Blocking | Stdin | Stdout | Purpose |
-|-----------|------|----------|-------|--------|---------|
-| **PreToolUse** | Before tool execution | YES | JSON | JSON | Validation, blocking operations |
-| **PostToolUse** | After tool execution | NO | JSON | JSON | Side effects, formatting, checks |
-| **SessionStart** | Session begins | NO | JSON | JSON | Initialization, context loading |
-| **SessionEnd** | Session ending | NO | JSON | JSON | Cleanup, state persistence |
-| **PreCompact** | Before context compaction | NO | JSON | JSON | State preservation |
-| **Stop** | Before response sent | NO | JSON | JSON | Final validation checks |
+| Hook Type | When | Can Block | Stdin | Purpose |
+|-----------|------|-----------|-------|---------|
+| **SessionStart** | Session begins/resumes | NO | JSON | Load context, set env vars |
+| **UserPromptSubmit** | User submits prompt | YES | JSON | Validate prompts, add context |
+| **PreToolUse** | Before tool execution | YES (allow/deny/ask) | JSON | Permission control, validation |
+| **PermissionRequest** | Permission dialog shown | YES (allow/deny) | JSON | Auto-approve or deny permissions |
+| **PostToolUse** | After tool succeeds | Feedback only | JSON | Formatting, side effects |
+| **PostToolUseFailure** | After tool fails | NO | JSON | Error handling |
+| **SubagentStart** | Spawning a subagent | NO | JSON | Track subagent creation |
+| **SubagentStop** | Subagent finishes | YES (force continue) | JSON | Validate subagent completion |
+| **Stop** | Claude finishes responding | YES (force continue) | JSON | Final validation |
+| **PreCompact** | Before context compaction | NO | JSON | Save state |
+| **Setup** | With --init/--maintenance | NO | JSON | One-time setup tasks |
+| **SessionEnd** | Session terminates | NO | JSON | Cleanup, persistence |
+| **Notification** | Claude sends notification | NO | JSON | Custom notifications |
 
 ## Hook Anatomy
 
@@ -73,11 +133,12 @@ Each hook type contains an array of hook rule objects.
 
 ```json
 {
-  "matcher": "CEL expression",
+  "matcher": "ToolPattern",
   "hooks": [
     {
       "type": "command",
-      "command": "node -e \"...\" or node \"path/to/script.cjs\""
+      "command": "your-command-here",
+      "timeout": 30
     }
   ],
   "description": "Human-readable explanation"
@@ -88,321 +149,571 @@ Each hook type contains an array of hook rule objects.
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `matcher` | string | Yes | CEL expression to match when hook should run |
+| `matcher` | string | Depends | Regex pattern for tool names. Required for PreToolUse, PermissionRequest, PostToolUse. Use `*` or `""` to match all. |
 | `hooks` | array | Yes | Array of hook commands to execute |
-| `description` | string | Yes | Human-readable explanation of what hook does |
+| `description` | string | No | Human-readable explanation of what hook does |
 
 ### Hook Command Fields
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `type` | string | Yes | Always "command" (only type currently) |
-| `command` | string | Yes | Node.js command: `node -e "..."` or `node "script.cjs"` |
+| `type` | string | Yes | `"command"` for bash commands, `"prompt"` for LLM evaluation |
+| `command` | string | For command | The bash/shell command to execute |
+| `prompt` | string | For prompt | Prompt sent to LLM (use `$ARGUMENTS` for input JSON) |
+| `timeout` | number | No | Timeout in seconds (default: 60) |
+| `once` | boolean | No | Skills only: run hook only once per session |
+
+### Prompt-Based Hooks (type: "prompt")
+
+Instead of executing bash commands, prompt-based hooks use an LLM (Haiku) to make context-aware decisions.
+
+**Most useful for:** `Stop`, `SubagentStop`, `PreToolUse`, `PermissionRequest`
+
+```json
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Evaluate if Claude should stop: $ARGUMENTS. Check if all tasks are complete.",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+**Response Schema (from LLM):**
+```json
+{
+  "ok": true,       // true = allow action, false = prevent
+  "reason": "..."   // Required when ok is false
+}
+```
+
+**When to use:**
+- Complex context-aware decisions
+- Natural language understanding needed
+- Bash hooks for simple, deterministic rules
 
 ## Complete Input Schemas for Each Hook Type
+
+### Common Fields (All Hooks)
+
+All hooks receive these common fields in stdin JSON:
+
+```json
+{
+  "session_id": "abc123",
+  "transcript_path": "/Users/.../.claude/projects/.../session.jsonl",
+  "cwd": "/current/working/directory",
+  "permission_mode": "default",  // "default", "plan", "acceptEdits", "dontAsk", "bypassPermissions"
+  "hook_event_name": "PreToolUse"
+}
+```
 
 ### PreToolUse Input Schema
 
 **Fired:** Before a tool is executed
-**Can Block:** YES (exit code 1)
-**Stdin JSON:**
+**Can Block:** YES (exit code 2, or JSON output)
 
 ```json
 {
-  "tool": "Bash|Edit|Write|Read|Grep|Glob|TaskCreate|TaskUpdate",
-  "tool_input": {
-    // Tool-specific input parameters
-    // Examples below for each tool type
-  }
-}
-```
-
-**Tool-Specific Input Examples:**
-
-**Bash Tool:**
-```json
-{
-  "tool": "Bash",
+  "session_id": "abc123",
+  "transcript_path": "/path/to/session.jsonl",
+  "cwd": "/project",
+  "permission_mode": "default",
+  "hook_event_name": "PreToolUse",
+  "tool_name": "Bash",
   "tool_input": {
     "command": "npm install",
-    "description": "Install dependencies"
-  }
+    "description": "Install dependencies",
+    "timeout": 120000
+  },
+  "tool_use_id": "toolu_01ABC123..."
 }
 ```
 
-**Edit Tool:**
-```json
-{
-  "tool": "Edit",
-  "tool_input": {
-    "file_path": "/path/to/file.ts",
-    "old_string": "const x = 1",
-    "new_string": "const x = 2"
-  }
-}
-```
+**Tool-Specific tool_input Examples:**
 
-**Write Tool:**
-```json
-{
-  "tool": "Write",
-  "tool_input": {
-    "file_path": "/path/to/file.md",
-    "content": "File content here"
-  }
-}
-```
+| Tool | tool_input fields |
+|------|-------------------|
+| **Bash** | `command`, `description`, `timeout`, `run_in_background` |
+| **Edit** | `file_path`, `old_string`, `new_string`, `replace_all` |
+| **Write** | `file_path`, `content` |
+| **Read** | `file_path`, `offset`, `limit` |
+| **Task** | Subagent task parameters |
+| **mcp__server__tool** | MCP tool-specific parameters |
 
-**Read Tool:**
-```json
-{
-  "tool": "Read",
-  "tool_input": {
-    "file_path": "/path/to/file.ts",
-    "limit": 100,
-    "offset": 0
-  }
-}
-```
+### PermissionRequest Input Schema
 
-**Grep Tool:**
-```json
-{
-  "tool": "Grep",
-  "tool_input": {
-    "pattern": "function.*async",
-    "path": "/src",
-    "type": "ts"
-  }
-}
-```
+**Fired:** When permission dialog is shown
+**Can Block:** YES (allow/deny)
 
-**Glob Tool:**
-```json
-{
-  "tool": "Glob",
-  "tool_input": {
-    "pattern": "**/*.test.ts",
-    "path": "/src"
-  }
-}
-```
-
-**PreToolUse Output:**
-
-```bash
-# Continue execution (default)
-exit(0)
-
-# Block execution (PreToolUse only)
-exit(1)
-```
-
-Script can also output JSON to stdout (same as input).
+Same structure as PreToolUse. Matches same tool patterns.
 
 ### PostToolUse Input Schema
 
-**Fired:** After a tool has executed
-**Can Block:** NO
-**Stdin JSON:**
+**Fired:** After a tool succeeds
+**Can Block:** Feedback only (not blocking)
 
 ```json
 {
-  "tool": "Tool name",
-  "tool_input": { /* Input that was sent to tool */ },
-  "tool_output": {
-    "output": "Standard output",
-    "error": "Standard error",
-    "exit_code": 0
-  }
-}
-```
-
-**Example:**
-
-```json
-{
-  "tool": "Bash",
+  "session_id": "abc123",
+  "transcript_path": "/path/to/session.jsonl",
+  "cwd": "/project",
+  "permission_mode": "default",
+  "hook_event_name": "PostToolUse",
+  "tool_name": "Write",
   "tool_input": {
-    "command": "npm test"
+    "file_path": "/path/to/file.txt",
+    "content": "file content"
   },
-  "tool_output": {
-    "output": "PASS src/utils.test.ts\n  ✓ adds numbers",
-    "error": "",
-    "exit_code": 0
-  }
+  "tool_response": {
+    "filePath": "/path/to/file.txt",
+    "success": true
+  },
+  "tool_use_id": "toolu_01ABC123..."
 }
 ```
 
-**PostToolUse Output:**
+### PostToolUseFailure Input Schema
 
-JSON passed to stdout (usually just echo input or modified version).
+**Fired:** After a tool fails
+Same structure as PostToolUse with error information in `tool_response`.
 
-### SessionStart Input Schema
+### UserPromptSubmit Input Schema
 
-**Fired:** When session begins
-**Can Block:** NO
-**Stdin JSON:**
+**Fired:** When user submits a prompt (before Claude processes it)
+**Can Block:** YES
 
 ```json
 {
-  "event": "SessionStart",
-  "session_id": "${CLAUDE_SESSION_ID}",
-  "timestamp": "2025-01-27T12:00:00Z",
-  "environment": {
-    "CLAUDE_PLUGIN_ROOT": "/path/to/plugin",
-    "HOME": "/home/user",
-    "PWD": "/current/dir"
-  }
+  "session_id": "abc123",
+  "transcript_path": "/path/to/session.jsonl",
+  "cwd": "/project",
+  "permission_mode": "default",
+  "hook_event_name": "UserPromptSubmit",
+  "prompt": "Write a function to calculate factorial"
 }
 ```
 
-**SessionStart Output:**
+### Notification Input Schema
 
-Can output configuration or context to be loaded.
-
-### SessionEnd Input Schema
-
-**Fired:** When session is ending
-**Can Block:** NO
-**Stdin JSON:**
+**Fired:** When Claude sends notifications
+**Matchers:** `permission_prompt`, `idle_prompt`, `auth_success`, `elicitation_dialog`
 
 ```json
 {
-  "event": "SessionEnd",
-  "session_id": "${CLAUDE_SESSION_ID}",
-  "timestamp": "2025-01-27T12:00:00Z",
-  "duration_ms": 3600000,
-  "messages_count": 42
+  "session_id": "abc123",
+  "transcript_path": "/path/to/session.jsonl",
+  "cwd": "/project",
+  "permission_mode": "default",
+  "hook_event_name": "Notification",
+  "message": "Claude needs your permission to use Bash",
+  "notification_type": "permission_prompt"
 }
 ```
 
-**SessionEnd Output:**
+### Stop Input Schema
 
-Can output cleanup or persistence status.
+**Fired:** When main Claude agent finishes responding
+**Can Block:** YES (force continue)
+
+```json
+{
+  "session_id": "abc123",
+  "transcript_path": "/path/to/session.jsonl",
+  "cwd": "/project",
+  "permission_mode": "default",
+  "hook_event_name": "Stop",
+  "stop_hook_active": true  // true if already continuing from a stop hook
+}
+```
+
+### SubagentStart Input Schema
+
+**Fired:** When spawning a subagent
+
+```json
+{
+  "session_id": "abc123",
+  "transcript_path": "/path/to/session.jsonl",
+  "cwd": "/project",
+  "permission_mode": "default",
+  "hook_event_name": "SubagentStart",
+  "agent_id": "agent-abc123",
+  "agent_type": "Explore"  // "Bash", "Explore", "Plan", or custom agent name
+}
+```
+
+### SubagentStop Input Schema
+
+**Fired:** When subagent finishes
+**Can Block:** YES (force continue)
+
+```json
+{
+  "session_id": "abc123",
+  "transcript_path": "/path/to/session.jsonl",
+  "cwd": "/project",
+  "permission_mode": "default",
+  "hook_event_name": "SubagentStop",
+  "stop_hook_active": false,
+  "agent_id": "def456",
+  "agent_transcript_path": "/path/to/session/subagents/agent-def456.jsonl"
+}
+```
 
 ### PreCompact Input Schema
 
 **Fired:** Before context compaction
-**Can Block:** NO
-**Stdin JSON:**
+**Matchers:** `manual` (from /compact), `auto` (full context window)
 
 ```json
 {
-  "event": "PreCompact",
-  "session_id": "${CLAUDE_SESSION_ID}",
-  "current_tokens": 45000,
-  "compaction_target": 30000
+  "session_id": "abc123",
+  "transcript_path": "/path/to/session.jsonl",
+  "permission_mode": "default",
+  "hook_event_name": "PreCompact",
+  "trigger": "manual",
+  "custom_instructions": ""  // Instructions from /compact command
 }
 ```
 
-**PreCompact Output:**
+### Setup Input Schema
 
-Can output state to be saved before compaction.
-
-### Stop Input Schema
-
-**Fired:** Before response sent to user
-**Can Block:** NO
-**Stdin JSON:**
+**Fired:** With --init, --init-only, or --maintenance flags
+**Matchers:** `init`, `maintenance`
 
 ```json
 {
-  "event": "Stop",
-  "session_id": "${CLAUDE_SESSION_ID}",
-  "response_ready": true,
-  "files_modified": ["path1.ts", "path2.ts"],
-  "timestamp": "2025-01-27T12:00:00Z"
+  "session_id": "abc123",
+  "transcript_path": "/path/to/session.jsonl",
+  "cwd": "/project",
+  "permission_mode": "default",
+  "hook_event_name": "Setup",
+  "trigger": "init"  // "init" or "maintenance"
 }
 ```
 
-**Stop Output:**
+Use Setup for one-time operations (dependencies, migrations). Use SessionStart for every-session tasks.
 
-Can output final validation warnings.
+### SessionStart Input Schema
 
-## Matchers (CEL Expressions)
+**Fired:** When session begins or resumes
+**Matchers:** `startup`, `resume`, `clear`, `compact`
 
-Matchers use Common Expression Language (CEL) to determine when hooks run.
+```json
+{
+  "session_id": "abc123",
+  "transcript_path": "/path/to/session.jsonl",
+  "cwd": "/project",
+  "permission_mode": "default",
+  "hook_event_name": "SessionStart",
+  "source": "startup",  // "startup", "resume", "clear", "compact"
+  "model": "claude-sonnet-4-20250514",
+  "agent_type": "custom-agent"  // Only if started with claude --agent <name>
+}
+```
 
-### CEL Syntax Reference
+**Persisting Environment Variables:**
 
-| Pattern | Meaning |
-|---------|---------|
-| `*` | Match all (any tool, any event) |
-| `tool == "Bash"` | Match only Bash tool |
-| `tool == "Edit" \|\| tool == "Write"` | Match Edit OR Write |
-| `tool == "Edit" && tool_input.file_path matches "\\.ts$"` | Match Edit with TypeScript files |
-| `!(tool == "Read")` | Match any tool except Read |
+SessionStart hooks have access to `CLAUDE_ENV_FILE`:
 
-### Basic Matchers
+```bash
+#!/bin/bash
+if [ -n "$CLAUDE_ENV_FILE" ]; then
+  echo 'export NODE_ENV=production' >> "$CLAUDE_ENV_FILE"
+  echo 'export PATH="$PATH:./node_modules/.bin"' >> "$CLAUDE_ENV_FILE"
+fi
+```
 
-**Match All Events:**
+### SessionEnd Input Schema
+
+**Fired:** When session terminates
+
+```json
+{
+  "session_id": "abc123",
+  "transcript_path": "/path/to/session.jsonl",
+  "cwd": "/project",
+  "permission_mode": "default",
+  "hook_event_name": "SessionEnd",
+  "reason": "exit"  // "clear", "logout", "prompt_input_exit", "other"
+}
+```
+
+## Matchers (Pattern Matching)
+
+Matchers use regex patterns to match tool names. They are case-sensitive.
+
+### Matcher Syntax Reference
+
+| Pattern | Meaning | Hook Types |
+|---------|---------|------------|
+| `*` | Match all tools | PreToolUse, PermissionRequest, PostToolUse |
+| `""` | Match all tools (same as `*`) | PreToolUse, PermissionRequest, PostToolUse |
+| `Bash` | Exact match | PreToolUse, PermissionRequest, PostToolUse |
+| `Edit\|Write` | Match Edit OR Write (regex) | PreToolUse, PermissionRequest, PostToolUse |
+| `Notebook.*` | Regex pattern | PreToolUse, PermissionRequest, PostToolUse |
+
+### Tool Name Matchers
+
+**Match All Tools:**
 ```json
 "matcher": "*"
 ```
 
 **Match Specific Tool:**
 ```json
-"matcher": "tool == \"Bash\""
+"matcher": "Bash"
 ```
 
-**Match Tool with Input Condition:**
+**Match Multiple Tools (regex OR):**
 ```json
-"matcher": "tool == \"Edit\" && tool_input.file_path matches \"\\\\.ts$\""
+"matcher": "Edit|Write"
 ```
 
-**Match Multiple Conditions (OR):**
+**Match Pattern:**
 ```json
-"matcher": "(tool == \"Edit\" || tool == \"Write\") && tool_input.file_path matches \"\\\\.java$\""
+"matcher": "Notebook.*"
 ```
 
-### Common Tool Matchers
+### Common Tool Names
 
-| Pattern | Matches |
-|---------|---------|
-| `tool == "Bash"` | Bash commands |
-| `tool == "Edit"` | File edits |
-| `tool == "Write"` | File creation |
-| `tool == "Read"` | File reads |
-| `tool == "Grep"` | Content search |
-| `tool == "Glob"` | File glob |
-| `tool == "TaskCreate"` | Task creation |
-| `tool == "TaskUpdate"` | Task updates |
+| Tool Name | Description |
+|-----------|-------------|
+| `Bash` | Shell commands |
+| `Edit` | File edits |
+| `Write` | File creation |
+| `Read` | File reading |
+| `Grep` | Content search |
+| `Glob` | File pattern matching |
+| `Task` | Subagent tasks |
+| `WebFetch` | Web content fetching |
+| `WebSearch` | Web search |
 
-### Tool Input Matchers
+### MCP Tool Matchers
 
-| Pattern | Description | Example |
-|---------|-------------|---------|
-| `tool_input.command matches "pattern"` | Bash command pattern | `matches "npm install"` |
-| `tool_input.file_path matches "pattern"` | File path pattern | `matches "\\.ts$"` |
-| `!tool_input.file_path matches "pattern"` | Negated pattern | `!matches "test"` |
-
-### File Extension Patterns
-
-| Pattern | Matches |
-|---------|---------|
-| `\\.ts$` | TypeScript files |
-| `\\.(ts\|tsx)$` | TypeScript and TSX |
-| `\\.(js\|jsx)$` | JavaScript files |
-| `\\.java$` | Java files |
-| `\\.py$` | Python files |
-| `\\.md$` | Markdown files |
-
-### Command Patterns
-
-| Pattern | Matches |
-|---------|---------|
-| `npm install` | Exact command |
-| `(npm\|pnpm) install` | npm or pnpm install |
-| `npm (install\|test)` | npm install or test |
-| `git push` | Git push |
-| `(pytest\|vitest\|jest)` | Test runners |
-
-### Negation Patterns
+MCP tools follow the pattern `mcp__<server>__<tool>`:
 
 ```json
-// Block creation of random .md files
-"matcher": "tool == \"Write\" && tool_input.file_path matches \"\\\\.md$\" && !(tool_input.file_path matches \"README\\\\.md\")"
+// Match all memory server tools
+"matcher": "mcp__memory__.*"
+
+// Match any MCP write operation
+"matcher": "mcp__.*__write.*"
+
+// Match specific MCP tool
+"matcher": "mcp__github__search_repositories"
+```
+
+### Notification Matchers
+
+| Matcher | When |
+|---------|------|
+| `permission_prompt` | Permission requests |
+| `idle_prompt` | Claude waiting for input (60+ seconds idle) |
+| `auth_success` | Authentication success |
+| `elicitation_dialog` | MCP tool elicitation |
+
+```json
+{
+  "hooks": {
+    "Notification": [
+      {
+        "matcher": "permission_prompt",
+        "hooks": [{ "type": "command", "command": "/path/to/permission-alert.sh" }]
+      },
+      {
+        "matcher": "idle_prompt",
+        "hooks": [{ "type": "command", "command": "/path/to/idle-notification.sh" }]
+      }
+    ]
+  }
+}
+```
+
+### PreCompact Matchers
+
+| Matcher | When |
+|---------|------|
+| `manual` | From /compact command |
+| `auto` | From auto-compact (full context) |
+
+### Setup Matchers
+
+| Matcher | When |
+|---------|------|
+| `init` | From --init or --init-only flags |
+| `maintenance` | From --maintenance flag |
+
+### SessionStart Matchers
+
+| Matcher | When |
+|---------|------|
+| `startup` | New session start |
+| `resume` | From --resume, --continue, or /resume |
+| `clear` | From /clear command |
+| `compact` | After auto or manual compact |
+
+## Hook Output
+
+Hooks communicate via exit codes, stdout, and stderr.
+
+### Exit Codes
+
+| Exit Code | Meaning | stdout | stderr |
+|-----------|---------|--------|--------|
+| **0** | Success | Shown in verbose mode (Ctrl+O). JSON parsed for structured control. | Ignored |
+| **2** | Blocking error | Ignored (JSON NOT processed) | Fed back to Claude as error |
+| **Other** | Non-blocking error | Ignored | Shown in verbose mode only |
+
+**Exit Code 2 Behavior by Hook:**
+
+| Hook Event | Exit Code 2 Behavior |
+|------------|---------------------|
+| PreToolUse | Blocks the tool call, shows stderr to Claude |
+| PermissionRequest | Denies permission, shows stderr to Claude |
+| PostToolUse | Shows stderr to Claude (tool already ran) |
+| UserPromptSubmit | Blocks prompt, erases it, shows stderr to user |
+| Stop | Blocks stoppage, shows stderr to Claude |
+| SubagentStop | Blocks stoppage, shows stderr to subagent |
+| Setup, SessionStart, SessionEnd, Notification, PreCompact | Shows stderr to user only |
+
+### JSON Output Structure
+
+All hooks can output JSON to stdout (exit code 0 only) for structured control:
+
+```json
+{
+  "continue": true,           // false = stop processing after hooks
+  "stopReason": "...",        // Message shown when continue is false
+  "suppressOutput": true,     // Hide stdout from transcript mode
+  "systemMessage": "...",     // Warning shown to user
+  "hookSpecificOutput": {
+    "hookEventName": "PreToolUse",
+    // Hook-specific fields below
+  }
+}
+```
+
+### PreToolUse Decision Control
+
+Control whether a tool call proceeds:
+
+| Decision | Effect |
+|----------|--------|
+| `"allow"` | Bypasses permission system. Reason shown to user, not Claude. |
+| `"deny"` | Prevents tool execution. Reason shown to Claude. |
+| `"ask"` | Shows confirmation dialog. Reason shown to user, not Claude. |
+
+**Can also modify tool inputs with `updatedInput`:**
+
+```json
+{
+  "hookSpecificOutput": {
+    "hookEventName": "PreToolUse",
+    "permissionDecision": "allow",
+    "permissionDecisionReason": "Auto-approved read operation",
+    "updatedInput": {
+      "command": "npm run lint --fix"
+    },
+    "additionalContext": "Running in production environment"
+  }
+}
+```
+
+### PermissionRequest Decision Control
+
+```json
+{
+  "hookSpecificOutput": {
+    "hookEventName": "PermissionRequest",
+    "decision": {
+      "behavior": "allow",      // or "deny"
+      "updatedInput": { ... },  // Optional: modify tool input
+      "message": "...",         // For deny: reason shown to Claude
+      "interrupt": true         // For deny: stop Claude
+    }
+  }
+}
+```
+
+### PostToolUse Decision Control
+
+Provide feedback after tool execution:
+
+```json
+{
+  "decision": "block",  // Prompts Claude with reason
+  "reason": "Found console.log statements - please remove",
+  "hookSpecificOutput": {
+    "hookEventName": "PostToolUse",
+    "additionalContext": "File was formatted with prettier"
+  }
+}
+```
+
+### UserPromptSubmit Decision Control
+
+Two ways to add context:
+1. **Plain text stdout** - Simplest, text added as context
+2. **JSON with additionalContext** - More structured
+
+```json
+{
+  "decision": "block",  // Optional: block prompt processing
+  "reason": "Prompt contains sensitive data",
+  "hookSpecificOutput": {
+    "hookEventName": "UserPromptSubmit",
+    "additionalContext": "Current time: 2025-01-28T12:00:00Z"
+  }
+}
+```
+
+### Stop/SubagentStop Decision Control
+
+Force Claude to continue working:
+
+```json
+{
+  "decision": "block",  // Prevents stopping
+  "reason": "Tests are still failing - please fix them"
+}
+```
+
+**Important:** Check `stop_hook_active` in input to prevent infinite loops.
+
+### SessionStart Decision Control
+
+Add context at session start:
+
+```json
+{
+  "hookSpecificOutput": {
+    "hookEventName": "SessionStart",
+    "additionalContext": "Previous session summary: Fixed 3 bugs..."
+  }
+}
+```
+
+### Setup Decision Control
+
+Add context during repository setup:
+
+```json
+{
+  "hookSpecificOutput": {
+    "hookEventName": "Setup",
+    "additionalContext": "Dependencies installed. Node v20.10.0 detected."
+  }
+}
 ```
 
 ## Hook Execution Types
@@ -457,117 +768,152 @@ Reference external Node.js script:
 
 ## Complete Hook Examples
 
-### Example 1: Block Dev Servers Outside Tmux (PreToolUse)
+### Example 1: Auto-Format TypeScript Files (PostToolUse)
 
 ```json
 {
-  "matcher": "tool == \"Bash\" && tool_input.command matches \"(npm run dev|yarn dev|pnpm dev)\"",
-  "hooks": [
-    {
-      "type": "command",
-      "command": "node -e \"console.error('[Hook] BLOCKED: Dev server must run in tmux');console.error('Use: tmux new -s dev \\\"npm run dev\\\"');process.exit(1)\""
-    }
-  ],
-  "description": "Block dev servers outside tmux for log access"
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path' | { read file_path; if echo \"$file_path\" | grep -q '\\.ts$'; then npx prettier --write \"$file_path\"; fi; }"
+          }
+        ]
+      }
+    ]
+  }
 }
 ```
 
-**Flow:**
-1. User tries to run `npm run dev`
-2. PreToolUse hook matches
-3. Script outputs error and exits with code 1
-4. Execution is BLOCKED
-5. User is told to use tmux
+### Example 2: File Protection (PreToolUse)
 
-### Example 2: Format Code After Edit (PostToolUse)
+Block edits to sensitive files:
 
 ```json
 {
-  "matcher": "(tool == \"Edit\" || tool == \"Write\") && (tool_input.file_path matches \"\\\\.ts$\" || tool_input.file_path matches \"\\\\.tsx$\")",
-  "hooks": [
-    {
-      "type": "command",
-      "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/smart-formatter.js\""
-    }
-  ],
-  "description": "Auto-format TypeScript/TSX files with prettier"
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -c \"import json, sys; data=json.load(sys.stdin); path=data.get('tool_input',{}).get('file_path',''); sys.exit(2 if any(p in path for p in ['.env', 'package-lock.json', '.git/']) else 0)\""
+          }
+        ],
+        "description": "Block edits to sensitive files"
+      }
+    ]
+  }
 }
 ```
 
-**Flow:**
-1. User edits a .ts or .tsx file
-2. Tool execution completes
-3. PostToolUse hook matches
-4. smart-formatter.js script runs
-5. File is formatted
-6. User continues (no blocking)
-
-### Example 3: Session Initialization (SessionStart)
+### Example 3: Custom Desktop Notification
 
 ```json
 {
-  "matcher": "*",
-  "hooks": [
-    {
-      "type": "command",
-      "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/session-start.cjs\""
-    }
-  ],
-  "description": "Load previous context and detect package manager on new session"
+  "hooks": {
+    "Notification": [
+      {
+        "matcher": "permission_prompt",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "notify-send 'Claude Code' 'Awaiting your permission'"
+          }
+        ]
+      }
+    ]
+  }
 }
 ```
 
-**Flow:**
-1. New session starts
-2. SessionStart hook fires
-3. session-start.cjs runs
-4. Loads previous session state
-5. Detects package manager
-6. Sets up environment
-
-### Example 4: Security Check on Java Files (PostToolUse)
+### Example 4: Session Initialization (SessionStart)
 
 ```json
 {
-  "matcher": "(tool == \"Edit\" || tool == \"Write\") && tool_input.file_path matches \"\\\\.java$\"",
-  "hooks": [
-    {
-      "type": "command",
-      "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/java-security.js\""
-    }
-  ],
-  "description": "Run security checks on Java files (SQL injection, hardcoded credentials)"
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/session-start.cjs\""
+          }
+        ],
+        "description": "Load previous context and detect package manager"
+      }
+    ]
+  }
 }
 ```
 
-**Flow:**
-1. Java file is edited or created
-2. PostToolUse hook matches
-3. java-security.js runs security checks
-4. Reports any vulnerabilities found
-5. Non-blocking (user can continue)
-
-### Example 5: Warn About Console.log (Stop)
+### Example 5: Intelligent Stop Hook (Prompt-Based)
 
 ```json
 {
-  "matcher": "*",
-  "hooks": [
-    {
-      "type": "command",
-      "command": "node -e \"const fs=require('fs');let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const i=JSON.parse(d);const files=(i.files_modified||[]).filter(f=>/(ts|js)x?$/.test(f));let found=false;for(const f of files){if(fs.existsSync(f)&&fs.readFileSync(f,'utf8').includes('console.log')){console.error('[Hook] ⚠️  console.log in '+f);found=true}}console.log(d)})\""
-    }
-  ],
-  "description": "Check for console.log statements before sending response"
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Evaluate if Claude should stop working. Context: $ARGUMENTS\n\nCheck if:\n1. All user-requested tasks are complete\n2. Any errors need addressing\n3. Follow-up work is needed\n\nRespond with JSON: {\"ok\": true} to allow stopping, or {\"ok\": false, \"reason\": \"explanation\"} to continue.",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
 }
 ```
 
-**Flow:**
-1. Claude prepares response
-2. Stop hook fires
-3. Script checks modified files for console.log
-4. Warns user if found
-5. Response is sent (non-blocking)
+### Example 6: Bash Command Validation (Python)
+
+```python
+#!/usr/bin/env python3
+import json, sys, re
+
+RULES = [
+    (r"\bgrep\b(?!.*\|)", "Use 'rg' (ripgrep) instead of 'grep'"),
+    (r"\bfind\s+\S+\s+-name\b", "Use 'rg --files -g pattern' instead of 'find -name'"),
+]
+
+data = json.load(sys.stdin)
+command = data.get("tool_input", {}).get("command", "")
+
+issues = [msg for pattern, msg in RULES if re.search(pattern, command)]
+if issues:
+    for msg in issues:
+        print(f"• {msg}", file=sys.stderr)
+    sys.exit(2)  # Block with feedback to Claude
+```
+
+### Example 7: Auto-Approve Documentation Reads
+
+```python
+#!/usr/bin/env python3
+import json, sys
+
+data = json.load(sys.stdin)
+tool_name = data.get("tool_name", "")
+file_path = data.get("tool_input", {}).get("file_path", "")
+
+if tool_name == "Read" and file_path.endswith((".md", ".txt", ".json")):
+    output = {
+        "hookSpecificOutput": {
+            "hookEventName": "PreToolUse",
+            "permissionDecision": "allow",
+            "permissionDecisionReason": "Documentation file auto-approved"
+        },
+        "suppressOutput": True
+    }
+    print(json.dumps(output))
+sys.exit(0)
+```
 
 ## Hook Script Template
 
@@ -584,48 +930,91 @@ process.stdin.on('end', () => {
   try {
     const input = JSON.parse(data);
 
-    // Log to stderr (visible to user)
+    // Block operation with feedback to Claude (PreToolUse/PermissionRequest)
     if (shouldBlock(input)) {
-      console.error('[Hook] ERROR: Operation not allowed');
-      process.stdout.write(data);  // Pass through unchanged
-      process.exit(1);              // Exit with error code (blocks PreToolUse)
+      console.error('Operation not allowed: reason here');  // stderr goes to Claude
+      process.exit(2);  // Exit code 2 = blocking error
     }
 
-    // Perform side effects
+    // Perform side effects (PostToolUse, SessionStart, etc.)
     performAction(input);
 
-    // Pass through or modified JSON
-    process.stdout.write(data);
-    process.exit(0);                // Success
+    // JSON output for structured control
+    const output = {
+      hookSpecificOutput: {
+        hookEventName: input.hook_event_name,
+        additionalContext: "Hook completed successfully"
+      }
+    };
+    console.log(JSON.stringify(output));
+    process.exit(0);  // Success
   } catch (error) {
     console.error('[Hook] Script error:', error.message);
-    process.stdout.write(data);
-    process.exit(0);  // Don't crash the workflow
+    process.exit(1);  // Non-blocking error
   }
 });
 
 function shouldBlock(input) {
-  // Your logic here
+  // Your validation logic here
   return false;
 }
 
 function performAction(input) {
-  // Your side effects here
+  // Your side effects here (formatting, logging, etc.)
 }
+```
+
+**Python Template:**
+
+```python
+#!/usr/bin/env python3
+import json
+import sys
+
+try:
+    data = json.load(sys.stdin)
+
+    # Block with feedback to Claude
+    if should_block(data):
+        print("Operation not allowed: reason", file=sys.stderr)
+        sys.exit(2)  # Blocking error
+
+    # Perform action
+    perform_action(data)
+
+    # JSON output for structured control
+    output = {
+        "hookSpecificOutput": {
+            "hookEventName": data.get("hook_event_name"),
+            "additionalContext": "Hook completed"
+        }
+    }
+    print(json.dumps(output))
+    sys.exit(0)
+
+except Exception as e:
+    print(f"Hook error: {e}", file=sys.stderr)
+    sys.exit(1)  # Non-blocking error
+
+def should_block(data):
+    return False
+
+def perform_action(data):
+    pass
 ```
 
 ## Environment Variables in Hooks
 
-**Available in all hooks:**
+| Variable | Availability | Description |
+|----------|--------------|-------------|
+| `CLAUDE_PROJECT_DIR` | All hooks | Absolute path to project root |
+| `CLAUDE_PLUGIN_ROOT` | Plugin hooks | Absolute path to plugin directory |
+| `CLAUDE_ENV_FILE` | SessionStart, Setup | File path for persisting env vars |
+| `CLAUDE_CODE_REMOTE` | All hooks | `"true"` if remote (web), empty if local CLI |
+| `HOME` | All hooks | User home directory |
+| `PWD` | All hooks | Current working directory |
 
-| Variable | Value |
-|----------|-------|
-| `${CLAUDE_PLUGIN_ROOT}` | Absolute plugin directory |
-| `${CLAUDE_SESSION_ID}` | Current session ID |
-| `HOME` | User home directory |
-| `PWD` | Current working directory |
-
-**Usage:**
+**Usage in commands:**
 
 ```json
 {
@@ -633,21 +1022,30 @@ function performAction(input) {
 }
 ```
 
-## Hook Execution Order and Parallelization
-
-**Within a Hook Type:**
-- Hooks execute sequentially (in order)
-- Each hook waits for previous to complete
-- All hooks must complete before tool execution (PreToolUse)
-
-**Example with Multiple Hooks:**
-
 ```json
 {
+  "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/format.sh"
+}
+```
+
+## Hook Execution Order and Parallelization
+
+**Key Behaviors:**
+- **Parallelization**: All matching hooks run in parallel
+- **Deduplication**: Identical hook commands are deduplicated automatically
+- **Timeout**: 60-second default limit (configurable per hook)
+- **Environment**: Runs in current directory with Claude Code's environment
+
+**Multiple hooks from different sources:**
+
+```json
+// User settings + Project settings + Plugin hooks
+// All matching hooks from all sources run in parallel
+{
   "PreToolUse": [
-    { "matcher": "*", "hooks": [...] },  // Hook 1 executes
-    { "matcher": "*", "hooks": [...] },  // Hook 2 executes after Hook 1
-    { "matcher": "*", "hooks": [...] }   // Hook 3 executes after Hook 2
+    { "matcher": "Bash", "hooks": [...] },  // All these run
+    { "matcher": "Bash", "hooks": [...] },  // in parallel
+    { "matcher": "*", "hooks": [...] }      // if they match
   ]
 }
 ```
@@ -676,50 +1074,148 @@ if (!fs.existsSync('.git')) {
 }
 ```
 
+## Security Considerations
+
+**USE AT YOUR OWN RISK**: Hooks execute arbitrary shell commands automatically with your environment's credentials.
+
+### Security Best Practices
+
+1. **Validate and sanitize inputs** - Never trust input data blindly
+2. **Always quote shell variables** - Use `"$VAR"` not `$VAR`
+3. **Block path traversal** - Check for `..` in file paths
+4. **Use absolute paths** - Specify full paths (use `$CLAUDE_PROJECT_DIR`)
+5. **Skip sensitive files** - Avoid `.env`, `.git/`, keys, credentials
+6. **Review before enabling** - Always understand hook code before adding
+
+### Configuration Safety
+
+Direct edits to hooks in settings files don't take effect immediately:
+
+- Claude Code captures a **snapshot** of hooks at startup
+- Uses this snapshot throughout the session
+- **Warns** if hooks are modified externally
+- Requires review in `/hooks` menu for changes to apply
+
+This prevents malicious hook modifications from affecting your current session.
+
+### Enterprise Controls
+
+Administrators can use `allowManagedHooksOnly` to block user, project, and plugin hooks.
+
 ## Debugging Hooks
 
-**Enable logging:**
+### Basic Troubleshooting
 
-```javascript
-// In hook script
-const debug = process.env.CLAUDE_HOOK_DEBUG === 'true';
-if (debug) console.error('[DEBUG]', input);
+1. **Check configuration** - Run `/hooks` to see registered hooks
+2. **Verify syntax** - Ensure JSON settings are valid
+3. **Test commands** - Run hook commands manually first
+4. **Check permissions** - Make sure scripts are executable
+5. **Review logs** - Use `claude --debug` to see hook execution
+
+### Common Issues
+
+| Issue | Solution |
+|-------|----------|
+| Quotes not escaped | Use `\"` inside JSON strings |
+| Wrong matcher | Check tool names match exactly (case-sensitive) |
+| Command not found | Use full paths for scripts |
+| Hook not running | Check matcher regex pattern |
+
+### Debug Mode
+
+Run `claude --debug` to see detailed hook execution:
+
+```
+[DEBUG] Executing hooks for PostToolUse:Write
+[DEBUG] Getting matching hook commands for PostToolUse with query: Write
+[DEBUG] Found 1 hook matchers in settings
+[DEBUG] Matched 1 hooks for query "Write"
+[DEBUG] Found 1 hook commands to execute
+[DEBUG] Executing hook command: <command> with timeout 60000ms
+[DEBUG] Hook command completed with status 0: <stdout>
 ```
 
-**Test hook script directly:**
+### Test Hook Scripts Directly
 
 ```bash
-# Create test input
-echo '{"tool":"Edit","tool_input":{"file_path":"test.ts"}}' | \
+# Test PreToolUse hook
+echo '{"tool_name":"Edit","tool_input":{"file_path":"test.ts"}}' | \
   node scripts/hooks/my-hook.cjs
+
+# Test with jq for pretty output
+echo '{"tool_name":"Bash","tool_input":{"command":"npm test"}}' | \
+  python3 my-hook.py | jq .
 ```
+
+## Hooks in Skills and Agents
+
+Hooks can be defined in skill and agent frontmatter for component-scoped lifecycle:
+
+**Skill Example:**
+```yaml
+---
+name: secure-operations
+description: Perform operations with security checks
+hooks:
+  PreToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: "./scripts/security-check.sh"
+---
+```
+
+**Agent Example:**
+```yaml
+---
+name: code-reviewer
+description: Review code changes
+hooks:
+  PostToolUse:
+    - matcher: "Edit|Write"
+      hooks:
+        - type: command
+          command: "./scripts/run-linter.sh"
+---
+```
+
+**Supported events for component hooks:** PreToolUse, PostToolUse, Stop
+
+**Skill-only option:** `once: true` - Run hook only once per session
 
 ## Complete Reference Checklist
 
 ### Creating a Hook
 
-- [ ] File: `hooks/hooks.json`
+- [ ] File: `hooks/hooks.json` or settings file
 - [ ] Valid JSON structure
-- [ ] Hook type: PreToolUse/PostToolUse/SessionStart/etc
-- [ ] Matcher: Valid CEL expression
-- [ ] Commands: Valid Node.js commands
-- [ ] Description: Clear explanation
-- [ ] Exit codes: Correct for hook type
+- [ ] Hook type: One of 12 supported types
+- [ ] Matcher: Valid regex pattern (for tool hooks)
+- [ ] Commands: Valid shell commands
+- [ ] Exit codes: Correct for hook type (0, 2, or other)
 - [ ] JSON input/output handling
 - [ ] Performance: < 1 second ideal
 - [ ] Error handling: Graceful failures
+- [ ] Security: No sensitive data exposure
 
 ### Matcher Checklist
 
-- [ ] Syntax: Valid CEL expression
+- [ ] Syntax: Valid regex pattern
 - [ ] Tool name: Correct (Bash, Edit, etc)
-- [ ] Input fields: Correct for tool
-- [ ] Regex escaping: Proper backslash escaping
-- [ ] Negation: Using correct syntax
+- [ ] Case sensitivity: Matchers are case-sensitive
+- [ ] MCP tools: Use `mcp__server__tool` format
 - [ ] Testing: Verified matcher works
+
+### Output Checklist
+
+- [ ] Exit code 0 for success (stdout parsed as JSON)
+- [ ] Exit code 2 for blocking errors (stderr to Claude)
+- [ ] JSON output uses correct `hookSpecificOutput` structure
+- [ ] Decision fields match hook type
+- [ ] `additionalContext` for adding information
 
 ---
 
-**Last Updated:** 2025-01-27
-**Version:** 2.0.0
-**Status:** Complete Specification
+**Last Updated:** 2026-01-28
+**Version:** 3.0.0
+**Status:** Complete Specification - Based on Official Claude Code Docs

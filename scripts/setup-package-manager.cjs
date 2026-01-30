@@ -12,6 +12,7 @@
  *   node scripts/setup-package-manager.js --project bun
  */
 
+const fs = require('fs');
 const {
   PACKAGE_MANAGERS,
   getPackageManager,
@@ -24,6 +25,26 @@ const {
 } = require('./lib/package-manager.cjs');
 const { log } = require('./lib/utils.cjs');
 
+/**
+ * Update CLAUDE_ENV_FILE with the new package manager setting.
+ * This ensures mid-session changes are reflected in the environment.
+ */
+function updateClaudeEnvFile(pmName, source) {
+  if (process.env.CLAUDE_ENV_FILE) {
+    try {
+      const envLines = [
+        `export DETECTED_PKG_MANAGER="${pmName}"`,
+        `export PKG_MANAGER_SOURCE="${source}"`
+      ];
+      fs.appendFileSync(process.env.CLAUDE_ENV_FILE, envLines.join('\n') + '\n');
+      log('[SetupPM] Updated CLAUDE_ENV_FILE with new package manager');
+    } catch (err) {
+      // Non-fatal - env file update is best-effort
+      log(`[SetupPM] Could not update CLAUDE_ENV_FILE: ${err.message}`);
+    }
+  }
+}
+
 function showHelp() {
   console.log(`
 Package Manager Setup for Claude Code
@@ -33,8 +54,8 @@ Usage:
 
 Options:
   --detect        Detect and show current package manager
-  --global <pm>   Set global preference (saves to ~/.claude/package-manager.json)
-  --project <pm>  Set project preference (saves to .claude/package-manager.json)
+  --global <pm>   Set global preference (saves to ~/.claude/everything-claude-code.package-manager.json)
+  --project <pm>  Set project preference (saves to .claude/everything-claude-code.package-manager.json)
   --list          List available package managers
   --help          Show this help message
 
@@ -128,8 +149,9 @@ function setGlobal(pmName) {
 
   try {
     setPreferredPackageManager(pmName);
+    updateClaudeEnvFile(pmName, 'global');
     console.log(`\n✓ Global preference set to: ${pmName}`);
-    console.log('  Saved to: ~/.claude/package-manager.json');
+    console.log('  Saved to: ~/.claude/everything-claude-code.package-manager.json');
     console.log('');
   } catch (err) {
     console.error(`Error: ${err.message}`);
@@ -146,8 +168,9 @@ function setProject(pmName) {
 
   try {
     setProjectPackageManager(pmName);
+    updateClaudeEnvFile(pmName, 'project');
     console.log(`\n✓ Project preference set to: ${pmName}`);
-    console.log('  Saved to: .claude/package-manager.json');
+    console.log('  Saved to: .claude/everything-claude-code.package-manager.json');
     console.log('');
   } catch (err) {
     console.error(`Error: ${err.message}`);

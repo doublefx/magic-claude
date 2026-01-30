@@ -14,7 +14,6 @@
  */
 
 const path = require('path');
-const fs = require('fs');
 const {
   getTempDir,
   readFile,
@@ -22,7 +21,7 @@ const {
   log
 } = require('../lib/utils.cjs');
 
-async function main() {
+function main() {
   // Track tool call count (increment in a temp file)
   // Use a session-specific counter file based on PID from parent process
   // or session ID from environment

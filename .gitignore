@@ -34,3 +34,14 @@ private/
 # Session templates (not committed)
 examples/sessions/*.tmp
 /plugin.json
+
+# Development-only files (not shipped with plugin)
+tests/
+vitest.config.js
+eslint.config.js
+knip.json
+package.json
+package-lock.json
+docs/prd/
+scripts/hooks/post-edit-lint.cjs
+scripts/lib/deprecation-checker.cjs

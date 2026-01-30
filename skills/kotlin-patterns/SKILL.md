@@ -1,6 +1,7 @@
 ---
 name: kotlin-patterns
 description: Kotlin patterns and idioms. Covers coroutines, null safety, extension functions, data classes, sealed classes, and Java interop.
+user-invocable: false
 ---
 
 # Kotlin Patterns and Idioms

@@ -85,7 +85,7 @@ class HookTestHarness {
     };
 
     await fs.writeFile(
-      path.join(claudeDir, 'project-type.json'),
+      path.join(claudeDir, 'everything-claude-code.project-type.json'),
       JSON.stringify(cacheContent, null, 2)
     );
   }

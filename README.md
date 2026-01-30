@@ -195,10 +195,10 @@ This plugin now fully supports **Windows, macOS, and Linux**. All hooks and scri
 The plugin automatically detects your preferred package manager (npm, pnpm, yarn, or bun) with the following priority:
 
 1. **Environment variable**: `CLAUDE_PACKAGE_MANAGER`
-2. **Project config**: `.claude/package-manager.json`
+2. **Project config**: `.claude/everything-claude-code.package-manager.json`
 3. **package.json**: `packageManager` field
 4. **Lock file**: Detection from package-lock.json, yarn.lock, pnpm-lock.yaml, or bun.lockb
-5. **Global config**: `~/.claude/package-manager.json`
+5. **Global config**: `~/.claude/everything-claude-code.package-manager.json`
 6. **Fallback**: First available package manager
 
 To set your preferred package manager:

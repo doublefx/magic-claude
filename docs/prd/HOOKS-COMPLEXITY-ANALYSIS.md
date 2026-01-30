@@ -260,7 +260,7 @@ Work with Anthropic to add expression evaluation to Claude Code:
 |------|-------------|--------|---------------------|
 | **P1-00** | **Investigate hook system capabilities** | **S** | **Document what matchers support (functions, methods, expressions)** |
 | P1-01 | Create project type detection script | L | Detects multiple types, supports monorepos |
-| P1-02 | Implement manifest hash-based caching | M | Stores in `.claude/project-type.json` |
+| P1-02 | Implement manifest hash-based caching | M | Stores in `.claude/everything-claude-code.project-type.json` |
 | **P1-03** | **Implement chosen hook strategy** | **M-L** | **Based on P1-00 findings (expression eval OR separate files OR runtime filtering)** |
 | P1-04 | Refactor existing hooks | L | JS/TS hooks only fire on nodejs projects |
 | P1-05 | SessionStart hook for detection | S | Auto-detects project type |

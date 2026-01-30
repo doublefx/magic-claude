@@ -372,7 +372,7 @@ console.log(generateTestCommand('rust'));
 **Issue**: Plugin uses wrong package manager for a package
 
 **Solutions**:
-1. Add `.claude/package-manager.json` to package directory:
+1. Add `.claude/everything-claude-code.package-manager.json` to package directory:
    ```json
    {
      "packageManager": "pnpm"

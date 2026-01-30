@@ -58,7 +58,7 @@
 
 ### Acceptance Criteria
 - ✅ Detects nodejs, maven, gradle, python, go from manifest files
-- ✅ Stores in `.claude/project-type.json` with TTL
+- ✅ Stores in `.claude/everything-claude-code.project-type.json` with TTL
 - ✅ Supports `project_type contains "python"` in matchers
 - ✅ JS/TS hooks only fire on nodejs projects
 - ✅ Auto-detects project type on session start

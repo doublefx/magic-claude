@@ -9,12 +9,12 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
+    include: ['tests/**/*.test.{js,cjs,mjs}', 'tests/**/*.spec.{js,cjs,mjs}'],
     exclude: [
       '**/node_modules/**',
       '**/dist/**',
       '**/.{idea,git,cache,output,temp}/**',
-      '**/*.manual.js',
-      '**/*.cjs'
+      '**/*.manual.js'
     ],
     coverage: {
       provider: 'v8',

@@ -29,7 +29,7 @@ The plugin automatically detects your project type(s) by scanning for manifest f
 
 1. **Scan current directory** for known manifest files
 2. **Calculate manifest hash** from file modification times
-3. **Check cache** (`.claude/project-type.json`)
+3. **Check cache** (`.claude/everything-claude-code.project-type.json`)
 4. **Return cached types** if hash matches (fast path)
 5. **Detect types** from scratch if cache miss or invalid
 6. **Write cache** for next invocation
@@ -60,7 +60,7 @@ console.log(types2); // ['maven', 'java']
 
 ### Cache Mechanism
 
-**Cache File**: `.claude/project-type.json`
+**Cache File**: `.claude/everything-claude-code.project-type.json`
 
 **Cache Schema**:
 ```json

@@ -289,11 +289,11 @@ Speedup: 4x
 
 **Project Detection Cache**:
 ```bash
-# Cache automatically created at .claude/project-type.json
+# Cache automatically created at .claude/everything-claude-code.project-type.json
 # No manual action needed!
 
 # Force cache rebuild (rarely needed)
-rm .claude/project-type.json
+rm .claude/everything-claude-code.project-type.json
 ```
 
 **Tool Caching**:

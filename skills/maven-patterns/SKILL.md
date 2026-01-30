@@ -1,6 +1,7 @@
 ---
 name: maven-patterns
 description: Maven POM patterns, multi-module project structures, dependency management, lifecycle best practices, and common plugin configurations for enterprise Java projects.
+user-invocable: false
 ---
 
 # Maven Patterns & Best Practices

@@ -9,9 +9,8 @@
  * - Phase 3: Multi-ecosystem support (mixed-language monorepos)
  */
 
-const fs = require('fs');
 const path = require('path');
-const { getClaudeDir, getUserLearnedSkillsDir, getProjectLearnedSkillsDir, readFile } = require('./utils.cjs');
+const { getUserLearnedSkillsDir, getProjectLearnedSkillsDir } = require('./utils.cjs');
 const { getPackageManager } = require('./package-manager.cjs');
 const { detectWorkspace } = require('./workspace/detection.cjs');
 const { enrichPackagesWithEcosystems, detectPackageEcosystem } = require('./workspace/ecosystems.cjs');

@@ -1,14 +1,32 @@
 ---
 description: Extract reusable patterns from the current session and save them as skills for future use
+arguments:
+  - name: pattern
+    description: Optional description of the specific pattern to extract (e.g., "redis connection pooling fix")
+    required: false
 ---
 
 # /learn - Extract Reusable Patterns
 
 Analyze the current session and extract any patterns worth saving as skills.
 
+## Usage
+
+```bash
+# Extract patterns automatically (analyze full session)
+/learn
+
+# Extract a specific pattern
+/learn "redis connection pooling fix"
+/learn "Next.js middleware authentication pattern"
+/learn "error handling workaround"
+```
+
 ## Trigger
 
 Run `/learn` at any point during a session when you've solved a non-trivial problem.
+
+If you specify a pattern description, focus the extraction on that specific area.
 
 ## What to Extract
 

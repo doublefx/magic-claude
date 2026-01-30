@@ -1,6 +1,7 @@
 ---
 name: gradle-patterns
 description: Gradle Kotlin DSL patterns, version catalogs, multi-project builds, configuration cache, dependency locking, and Gradle 9+ best practices for modern JVM projects.
+user-invocable: false
 ---
 
 # Gradle Patterns & Best Practices

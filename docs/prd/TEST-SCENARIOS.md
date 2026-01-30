@@ -51,7 +51,7 @@
 
 | Test Case | Scenario | Expected Behavior | Priority |
 |-----------|----------|-------------------|----------|
-| Initial detection | No cache exists | Detect, write to `.claude/project-type.json` | P0 |
+| Initial detection | No cache exists | Detect, write to `.claude/everything-claude-code.project-type.json` | P0 |
 | Cache hit | Cache valid, TTL not expired | Return cached result | P1 |
 | Cache expiration | TTL expired | Re-detect, update cache | P1 |
 | Cache invalidation | `pom.xml` modified after cache | Re-detect on next check | P0 |

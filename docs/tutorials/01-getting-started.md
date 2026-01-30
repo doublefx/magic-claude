@@ -269,7 +269,7 @@ ls pom.xml         # Maven
 ls build.gradle.kts  # Gradle
 
 # If manifest exists but not detected, clear cache
-rm .claude/project-type.json
+rm .claude/everything-claude-code.project-type.json
 
 # Restart session
 ```

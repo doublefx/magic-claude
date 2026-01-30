@@ -11,7 +11,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { commandExists, getClaudeDir, readFile, writeFile, log, runCommand } = require('./utils.cjs');
+const { commandExists, getClaudeDir, readFile, writeFile } = require('./utils.cjs');
 
 // Lazy-load WorkspaceContext to avoid circular dependencies
 let _workspaceContext = null;
@@ -77,7 +77,7 @@ const DETECTION_PRIORITY = ['pnpm', 'bun', 'yarn', 'npm'];
 
 // Config file path
 function getConfigPath() {
-  return path.join(getClaudeDir(), 'package-manager.json');
+  return path.join(getClaudeDir(), 'everything-claude-code.package-manager.json');
 }
 
 /**
@@ -164,10 +164,10 @@ function getAvailablePackageManagers() {
  *
  * Detection priority:
  * 1. Environment variable CLAUDE_PACKAGE_MANAGER
- * 2. Project-specific config (in .claude/package-manager.json)
+ * 2. Project-specific config (in .claude/everything-claude-code.package-manager.json)
  * 3. package.json packageManager field
  * 4. Lock file detection
- * 5. Global user preference (in ~/.claude/package-manager.json)
+ * 5. Global user preference (in ~/.claude/everything-claude-code.package-manager.json)
  * 6. First available package manager (by priority)
  *
  * @param {object} options - { projectDir, fallbackOrder }
@@ -187,7 +187,7 @@ function getPackageManager(options = {}) {
   }
 
   // 2. Check project-specific config
-  const projectConfigPath = path.join(projectDir, '.claude', 'package-manager.json');
+  const projectConfigPath = path.join(projectDir, '.claude', 'everything-claude-code.package-manager.json');
   const projectConfig = readFile(projectConfigPath);
   if (projectConfig) {
     try {
@@ -279,7 +279,7 @@ function setProjectPackageManager(pmName, projectDir = process.cwd()) {
   }
 
   const configDir = path.join(projectDir, '.claude');
-  const configPath = path.join(configDir, 'package-manager.json');
+  const configPath = path.join(configDir, 'everything-claude-code.package-manager.json');
 
   const config = {
     packageManager: pmName,
@@ -339,7 +339,7 @@ function getSelectionPrompt() {
 
   message += '\nTo set your preferred package manager:\n';
   message += '  - Global: Set CLAUDE_PACKAGE_MANAGER environment variable\n';
-  message += '  - Or add to ~/.claude/package-manager.json: {"packageManager": "pnpm"}\n';
+  message += '  - Or add to ~/.claude/everything-claude-code.package-manager.json: {"packageManager": "pnpm"}\n';
   message += '  - Or add to package.json: {"packageManager": "pnpm@8"}\n';
 
   return message;

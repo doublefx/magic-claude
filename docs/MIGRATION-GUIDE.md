@@ -315,7 +315,7 @@ cp agents/python-reviewer.md ~/.claude/agents/
 **Fix**:
 ```bash
 # Clear cache
-rm .claude/project-type.json
+rm .claude/everything-claude-code.project-type.json
 
 # Verify manifest files exist
 ls package.json      # Node.js

@@ -199,10 +199,10 @@ async function initializeWorkspaceRoot(workspaceType, subPackages, preferredPM =
     setAt: new Date().toISOString()
   };
   writeFile(
-    path.join(claudeDir, 'package-manager.json'),
+    path.join(claudeDir, 'everything-claude-code.package-manager.json'),
     JSON.stringify(pmConfig, null, 2)
   );
-  console.log('✓ Created .claude/package-manager.json');
+  console.log('✓ Created .claude/everything-claude-code.package-manager.json');
 
   // 4. Create basic .prettierrc
   const prettierrc = {

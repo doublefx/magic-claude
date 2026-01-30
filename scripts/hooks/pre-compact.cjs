@@ -19,7 +19,7 @@ const {
   log
 } = require('../lib/utils.cjs');
 
-async function main() {
+function main() {
   const sessionsDir = getSessionsDir();
   const compactionLog = path.join(sessionsDir, 'compaction-log.txt');
 

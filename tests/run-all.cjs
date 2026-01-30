@@ -20,7 +20,9 @@ const testFiles = [
   'lib/config-hierarchy.test.cjs',
   'lib/tool-detection.test.cjs',
   'lib/workspace-commands.test.cjs',
-  'hooks/hooks.test.cjs'
+  'lib/serena.test.cjs',
+  'hooks/hooks.test.cjs',
+  'hooks/serena-hooks.test.cjs'
 ];
 
 console.log('╔══════════════════════════════════════════════════════════╗');

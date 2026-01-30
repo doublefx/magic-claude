@@ -1,0 +1,18 @@
+#!/bin/bash
+# Serena Git Hook: post-checkout
+# Reminds to sync memories after branch switch
+#
+# Arguments:
+#   $1 - previous HEAD
+#   $2 - new HEAD
+#   $3 - 1 if branch checkout, 0 if file checkout
+
+# Only trigger on branch checkout
+if [ "$3" = "1" ]; then
+  echo "[Serena] Branch switched. Check if memories need updating."
+  echo "         Run /git-sync to update memories."
+
+  # Log for later processing
+  LOG_FILE=".git/serena-sync-reminder.log"
+  echo "$(date -u '+%Y-%m-%d %H:%M:%S UTC') - post-checkout (branch)" >> "$LOG_FILE"
+fi

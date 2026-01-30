@@ -276,6 +276,93 @@ model: opus
 [If needed]
 ```
 
+## Output Styles Best Practices
+
+Output styles allow you to adapt Claude Code for uses beyond software engineering while keeping core capabilities (file operations, scripts, TODOs).
+
+### 1. Built-in Output Styles
+
+| Style | Purpose | When to Use |
+|-------|---------|-------------|
+| **Default** | Standard software engineering | General development work |
+| **Explanatory** | Educational with "Insights" | Learning implementation patterns |
+| **Learning** | Collaborative with `TODO(human)` markers | Teaching/mentoring scenarios |
+
+### 2. Creating Custom Output Styles
+
+Store custom styles as Markdown files:
+- User level: `~/.claude/output-styles/`
+- Project level: `.claude/output-styles/`
+
+```markdown
+---
+name: My Custom Style
+description: Brief description shown in /output-style menu
+keep-coding-instructions: false
+---
+
+# Custom Style Instructions
+
+You are an interactive CLI tool that [describe behavior]...
+
+## Specific Behaviors
+
+[Define response patterns, formatting, tone...]
+```
+
+### 3. Frontmatter Options
+
+| Field | Purpose | Default |
+|-------|---------|---------|
+| `name` | Display name | Inherits from filename |
+| `description` | Description for `/output-style` UI | None |
+| `keep-coding-instructions` | Keep coding-related system prompts | `false` |
+
+### 4. When to Use Output Styles vs Other Features
+
+**Output Styles vs CLAUDE.md:**
+- Output styles modify/replace system prompt sections
+- CLAUDE.md adds content as user message after system prompt
+- Use output styles for fundamental behavior changes
+
+**Output Styles vs Agents:**
+- Output styles affect main agent loop globally
+- Agents are invoked for specific tasks with own model/tools
+- Use agents for delegated specialized work
+
+**Output Styles vs Skills:**
+- Output styles are always active once selected
+- Skills are task-specific, invoked on demand
+- Use output styles for consistent formatting; skills for workflows
+
+### 5. Switching Output Styles
+
+```bash
+# Interactive menu
+/output-style
+
+# Direct switch
+/output-style explanatory
+/output-style learning
+/output-style default
+
+# Programmatic (in settings)
+# .claude/settings.local.json: { "outputStyle": "explanatory" }
+```
+
+### 6. Best Practices for Custom Styles
+
+**Do:**
+- Keep instructions clear and focused
+- Test with various prompts before deploying
+- Use `keep-coding-instructions: true` for developer-focused styles
+- Provide specific behavioral guidance
+
+**Don't:**
+- Create styles that conflict with core safety
+- Make styles too verbose (impacts context window)
+- Forget that styles exclude efficient output instructions
+
 ## Skills Best Practices
 
 ### 1. Progressive Disclosure

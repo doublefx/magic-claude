@@ -1,0 +1,10 @@
+#!/bin/bash
+# Serena Git Hook: post-merge
+# Reminds to sync memories after merge/pull
+
+echo "[Serena] External changes detected after merge."
+echo "         Run /git-sync to update memories."
+
+# Log for later processing
+LOG_FILE=".git/serena-sync-reminder.log"
+echo "$(date -u '+%Y-%m-%d %H:%M:%S UTC') - post-merge" >> "$LOG_FILE"

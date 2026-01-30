@@ -51,6 +51,15 @@ When installed as a plugin, use these slash commands:
 /learn             # Extract patterns mid-session
 /checkpoint        # Save verification state
 /verify            # Run verification loop
+
+# Serena Integration (if Serena MCP installed)
+/before-exploring  # MANDATORY before code exploration - checks memories first
+/after-exploring   # Document findings in Serena memory
+/serena-setup      # Complete Serena configuration
+/serena-status     # Configuration diagnostics
+/serena-cleanup    # Safe cleanup and removal
+/git-sync          # Sync memories with git changes
+/memory-lifecycle  # Memory health and consolidation
 ```
 
 ### Setup Command Decision Guide
@@ -88,10 +97,10 @@ All automation is Node.js-based (no shell scripts) for Windows/macOS/Linux compa
 
 **Package Manager Detection Priority:**
 1. `CLAUDE_PACKAGE_MANAGER` environment variable
-2. Project config (`.claude/package-manager.json`)
+2. Project config (`.claude/everything-claude-code.package-manager.json`)
 3. `package.json` `packageManager` field
 4. Lock file detection (package-lock.json, pnpm-lock.yaml, yarn.lock, bun.lockb)
-5. Global user preference (`~/.claude/package-manager.json`)
+5. Global user preference (`~/.claude/everything-claude-code.package-manager.json`)
 6. First available package manager (priority: pnpm, bun, yarn, npm)
 
 ### Hook System
@@ -101,6 +110,7 @@ Hooks execute Node.js scripts on tool events. Key hooks in `hooks/hooks.json`:
 **PreToolUse:**
 - Block dev servers outside tmux (ensures log access)
 - Suggest tmux for long-running commands
+- **Suggest code review before git commit** (safety net)
 - Block random .md file creation (keeps docs consolidated)
 - Strategic compaction suggestions
 
@@ -113,6 +123,7 @@ Hooks execute Node.js scripts on tool events. Key hooks in `hooks/hooks.json`:
 **SessionStart:**
 - Load previous session context (memory persistence)
 - Auto-detect package manager
+- **Detect setup needs and inject context for proactive help**
 
 **SessionEnd:**
 - Persist session state
@@ -120,11 +131,17 @@ Hooks execute Node.js scripts on tool events. Key hooks in `hooks/hooks.json`:
 
 **PreCompact:**
 - Save state before context compaction
+- Evaluate session for extractable patterns
 
 **Stop:**
 - Check for console.log in modified files
+- **Detect task completion and suggest code review**
 
 All hooks use inline Node.js via `node -e` or reference scripts in `scripts/hooks/` via `${CLAUDE_PLUGIN_ROOT}`.
+
+**Hook Message Visibility:**
+- PostToolUse hooks can inject `additionalContext` that appears in your context - **surface these messages to the user** when they contain actionable recommendations (e.g., code review suggestions)
+- Other hooks (SessionStart, Stop, PreToolUse) log to stderr - these appear in your context as `[Hook]` prefixed messages - **inform the user** when these contain important recommendations
 
 ### Agent Orchestration
 
@@ -146,21 +163,70 @@ Specialized agents in `agents/` directory:
 
 **Use parallel Task execution** for independent operations - launch multiple agents in a single message.
 
-### Skills System
+### Skills System (Proactive)
+
+**Skills = Proactive** (Claude-invoked when context suggests)
+**Commands = Explicit** (User-invoked via slash commands)
 
 Skills define reusable workflows and domain knowledge in `skills/` directory:
 
-- **coding-standards/** - Language best practices (TypeScript, JavaScript patterns)
-- **backend-patterns/** - API design, database, caching patterns
-- **frontend-patterns/** - React, Next.js patterns
-- **tdd-workflow/** - Test-driven development methodology
-- **security-review/** - Security checklist
-- **continuous-learning/** - Auto-extract patterns from sessions (Longform Guide)
-- **strategic-compact/** - Manual compaction suggestions (Longform Guide)
-- **eval-harness/** - Verification loop evaluation (Longform Guide)
-- **verification-loop/** - Continuous verification (Longform Guide)
+**Proactive Skills** (Claude invokes automatically):
+- **proactive-review/** - Code quality checks at task completion/pre-commit
+- **proactive-planning/** - Planning for complex tasks before coding
+- **proactive-tdd/** - TDD enforcement when implementing features
+
+**Domain Knowledge Skills** (Context reference):
+- **coding-standards/** - Language best practices (with `context: fork`)
+- **backend-patterns/** - API design, database patterns (with `context: fork`)
+- **frontend-patterns/** - React, Next.js patterns (with `context: fork`)
+- **security-review/** - Security checklist (with `context: fork`)
+- **tdd-workflow/** - TDD methodology reference (with `context: fork`)
+
+**Workflow Skills**:
+- **continuous-learning/** - Auto-extract patterns from sessions
+- **strategic-compact/** - Manual compaction suggestions
+- **eval-harness/** - Verification loop evaluation
+- **verification-loop/** - Continuous verification
+
+Skills with `context: fork` run in isolated subagent context to preserve main conversation.
 
 Skills are directories with `SKILL.md` or single `.md` files.
+
+### Serena MCP Integration (Optional)
+
+If Serena MCP plugin is installed, the plugin provides **memory-first workflow**:
+
+**Core Concept**: Check Serena memories before exploring code. If memories have the answer, return immediately (saves tokens!).
+
+**Workflow**:
+1. `/before-exploring` - ALWAYS use before code exploration (checks memories first)
+2. Explore if needed (memories insufficient)
+3. `/after-exploring` - Document significant findings
+
+**Skills** (7 total):
+- **before-exploring/** - Memory-first exploration (runs in MAIN context)
+- **after-exploring/** - Document findings (forked context)
+- **serena-setup/** - Complete setup workflow
+- **serena-status/** - Configuration diagnostics
+- **serena-cleanup/** - Safe cleanup and removal
+- **git-sync/** - Sync memories with git changes
+- **memory-lifecycle/** - Health checks and consolidation
+
+**Hooks** (8 scripts):
+- `serena-memory-check.cjs` - PreToolUse: Force memory check before Serena tools
+- `serena-task-check.cjs` - PreToolUse: Force memory check before Explore agents
+- `serena-document-reminder.cjs` - PostToolUse: Remind to document findings
+- `serena-task-reminder.cjs` - PostToolUse: Remind after Task agents
+- `serena-evaluate-memories.cjs` - PostToolUse: Evaluate on task completion
+- `serena-pre-compact.cjs` - PreCompact: Preserve knowledge before compaction
+- `serena-subagent-start.cjs` - SubagentStart: Track exploration agents
+- `serena-subagent-stop.cjs` - SubagentStop: Enforce documentation
+
+**Configuration**: All Serena hooks check `SERENA_INSTALLED` and `SERENA_ENABLED` - graceful degradation if not installed.
+
+**JetBrains Recommendation**: For polyglot/monorepo projects, JetBrains plugin provides better performance ($5/mo or $50/yr).
+
+See `docs/serena/` for naming conventions and lifecycle management.
 
 ## Workspace & Monorepo Support
 

@@ -13,14 +13,12 @@ import {
   hasValidExtension
 } from './safe-exec.js';
 import path from 'path';
-import { createInterface } from 'readline';
-import { stdin as input, stdout as output } from 'process';
 
 /**
  * Read tool context from stdin (Claude Code hook protocol)
  * @returns {Promise<object|null>} Parsed tool context or null on error
  */
-export async function readHookInput() {
+export function readHookInput() {
   return new Promise((resolve) => {
     let data = '';
     process.stdin.setEncoding('utf8');
@@ -63,7 +61,7 @@ export function readHookInputSync() {
     // Use blocking read
     try {
       bytesRead = fs.readSync(0, buffer, 0, buffer.length);
-    } catch (e) {
+    } catch (_e) {
       // If stdin is not available, return null
       return null;
     }
