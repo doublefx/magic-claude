@@ -207,22 +207,35 @@ Trade-offs:
 
 ---
 
-#### build-error-resolver
-**Command**: `/build-error-resolver`
+#### ts-build-resolver
+**Command**: `/build-fix` (auto-dispatched)
 **Model**: Sonnet
-**Description**: Diagnose and fix build errors
+**Description**: TypeScript/JavaScript build error resolution for React, Next.js, Node.js
 
 **When to Use**:
-- Build failing
-- Compilation errors
-- Dependency conflicts
-- Configuration issues
+- `npm run build` or `npx tsc --noEmit` fails
+- TypeScript type errors, import resolution, ESLint failures
+- React hook errors, Next.js build issues
 
-**What It Does**:
-- Analyzes error logs
-- Identifies root cause
-- Suggests fixes
-- Provides step-by-step resolution
+#### jvm-build-resolver
+**Command**: `/build-fix` (auto-dispatched)
+**Model**: Sonnet
+**Description**: JVM build error resolution for Java, Kotlin, Groovy with Maven or Gradle
+
+**When to Use**:
+- `mvn compile` / `gradle build` fails
+- Java/Kotlin compiler errors, dependency conflicts
+- Annotation processor issues, JPMS module errors
+
+#### python-build-resolver
+**Command**: `/build-fix` (auto-dispatched)
+**Model**: Sonnet
+**Description**: Python build error resolution for pyright, mypy, ruff, pytest, pip/uv
+
+**When to Use**:
+- `pyright` / `mypy` / `ruff check` fails
+- Import errors, dependency resolution failures
+- Build system errors, framework configuration issues
 
 ---
 
@@ -852,7 +865,7 @@ pytest
 
 ## Summary
 
-**16 Agents**:
+**19 Agents**:
 - 9 general-purpose agents
 - 4 language-specific agents
 - 2 build tool agents

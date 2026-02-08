@@ -788,7 +788,9 @@ You MUST follow the **tdd-workflow** skill for TDD tasks.
 | `security-reviewer` | opus | Security analysis | Read, Bash, Grep |
 | `planner` | opus | Feature planning | Read, Write, Grep |
 | `architect` | opus | System architecture | Read, Grep |
-| `build-error-resolver` | sonnet | Fix build errors | Read, Bash, Grep, Edit |
+| `ts-build-resolver` | sonnet | Fix TypeScript/JS build errors | Read, Write, Edit, Bash, Grep, Glob |
+| `jvm-build-resolver` | sonnet | Fix Java/Kotlin/Groovy build errors | Read, Write, Edit, Bash, Grep, Glob |
+| `python-build-resolver` | sonnet | Fix Python build/type/lint errors | Read, Write, Edit, Bash, Grep, Glob |
 | `e2e-runner` | sonnet | E2E test generation | Read, Write, Edit, Bash |
 | `setup-agent` | sonnet | Project setup and configuration | Read, Write, Edit, Bash, Grep, Glob |
 | `gradle-expert` | sonnet | Gradle build system specialist | Read, Write, Edit, Bash, Grep |
@@ -1452,7 +1454,9 @@ agents/
 ├── security-reviewer.md     # Security (Opus)
 ├── ci-cd-architect.md       # CI/CD pipeline design (Opus)
 ├── tdd-guide.md             # TDD (Sonnet)
-├── build-error-resolver.md  # Build fixes (Sonnet)
+├── ts-build-resolver.md     # TS/JS build fixes (Sonnet)
+├── jvm-build-resolver.md    # JVM build fixes (Sonnet)
+├── python-build-resolver.md # Python build fixes (Sonnet)
 ├── e2e-runner.md            # E2E tests (Sonnet)
 ├── setup-agent.md           # Project setup (Sonnet)
 ├── gradle-expert.md         # Gradle specialist (Sonnet)

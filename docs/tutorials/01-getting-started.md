@@ -76,9 +76,10 @@ In Claude Code, ask:
 "What agents are available?"
 ```
 
-You should see all 16 agents:
+You should see all 19 agents:
 - General: planner, architect, tdd-guide, code-reviewer, etc.
 - Language-specific: python-reviewer, java-reviewer, kotlin-reviewer
+- Build resolvers: ts-build-resolver, jvm-build-resolver, python-build-resolver
 - Build tools: maven-expert, gradle-expert
 - CI/CD: ci-cd-architect
 

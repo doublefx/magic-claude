@@ -41,7 +41,7 @@ For complex tasks requiring deep reasoning:
 ## Build Troubleshooting
 
 If build fails:
-1. Use **build-error-resolver** agent
-2. Analyze error messages
+1. Use `/build-fix` command (auto-detects ecosystem)
+2. Dispatches to **ts-build-resolver**, **jvm-build-resolver**, or **python-build-resolver**
 3. Fix incrementally
 4. Verify after each fix

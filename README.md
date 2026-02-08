@@ -60,7 +60,7 @@ Beyond JavaScript/TypeScript, this plugin now provides **production-grade suppor
 - **Kotlin**: ktfmt/ktlint formatting, Detekt static analysis, Gradle Kotlin DSL
 - **Groovy**: CodeNarc, Gradle scripting support
 
-**16 Specialized Agents** including `python-reviewer`, `java-reviewer`, `kotlin-reviewer`, `maven-expert`, `gradle-expert`, and `ci-cd-architect`.
+**19 Specialized Agents** including `python-reviewer`, `java-reviewer`, `kotlin-reviewer`, `maven-expert`, `gradle-expert`, `ci-cd-architect`, and ecosystem-specific build resolvers.
 
 **16 Domain Skills** including language-specific patterns for Python, Kotlin, Maven, Gradle, and CI/CD best practices.
 
@@ -226,13 +226,15 @@ magic-claude/
 |   |-- plugin.json         # Plugin metadata and component paths
 |   |-- marketplace.json    # Marketplace catalog for /plugin marketplace add
 |
-|-- agents/           # Specialized subagents for delegation (16 total)
+|-- agents/           # Specialized subagents for delegation (19 total)
 |   |-- planner.md           # Feature implementation planning
 |   |-- architect.md         # System design decisions
 |   |-- tdd-guide.md         # Test-driven development
 |   |-- code-reviewer.md     # Quality and security review
 |   |-- security-reviewer.md # Vulnerability analysis
-|   |-- build-error-resolver.md
+|   |-- ts-build-resolver.md    # TypeScript/JS build errors
+|   |-- jvm-build-resolver.md   # Java/Kotlin/Groovy build errors
+|   |-- python-build-resolver.md # Python build/type/lint errors
 |   |-- e2e-runner.md        # Playwright E2E testing
 |   |-- refactor-cleaner.md  # Dead code cleanup
 |   |-- doc-updater.md       # Documentation sync
@@ -535,7 +537,7 @@ npm test -- --watch
 ### Core Documentation
 
 - **[FEATURES.md](docs/FEATURES.md)** - Complete feature documentation with examples
-- **[AGENT-CATALOG.md](docs/AGENT-CATALOG.md)** - All 16 agents with use cases
+- **[AGENT-CATALOG.md](docs/AGENT-CATALOG.md)** - All 19 agents with use cases
 - **[PERFORMANCE.md](docs/PERFORMANCE.md)** - Benchmarks and optimization tips
 
 ### Language-Specific Guides

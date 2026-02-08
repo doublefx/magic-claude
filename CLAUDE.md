@@ -160,7 +160,9 @@ Specialized agents in `agents/` directory:
 | tdd-guide | sonnet | Test-driven development enforcement |
 | code-reviewer | opus | Quality and security review |
 | security-reviewer | opus | Vulnerability analysis |
-| build-error-resolver | sonnet | Fix build errors |
+| ts-build-resolver | sonnet | Fix TypeScript/JS build errors |
+| jvm-build-resolver | sonnet | Fix Java/Kotlin/Groovy build errors |
+| python-build-resolver | sonnet | Fix Python build/type/lint errors |
 | e2e-runner | sonnet | Playwright E2E testing |
 | refactor-cleaner | haiku | Dead code cleanup |
 | doc-updater | haiku | Documentation sync |
@@ -463,7 +465,7 @@ Skills are directories with `SKILL.md` containing:
 ## File Conventions
 
 - Lowercase with hyphens: `code-reviewer.md`, `tdd-workflow/`
-- Descriptive names: `build-error-resolver.md` not `error.md`
+- Descriptive names: `ts-build-resolver.md` not `error.md`
 - Match agent/skill name to filename
 
 ## Context Window Management

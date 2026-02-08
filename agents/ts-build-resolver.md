@@ -1,15 +1,15 @@
 ---
-name: build-error-resolver
-description: Build and TypeScript error resolution specialist. Use PROACTIVELY when build fails or type errors occur. Fixes build/type errors only with minimal diffs, no architectural edits. Focuses on getting the build green quickly.
+name: ts-build-resolver
+description: TypeScript/JavaScript build error resolution specialist for React, Next.js, and Node.js projects. Use PROACTIVELY when npm/pnpm builds or tsc type checks fail. Fixes build/type errors only with minimal diffs, no architectural edits.
 tools: Read, Write, Edit, Bash, Grep, Glob
 model: sonnet
-skills: serena-code-navigation
+skills: frontend-patterns, coding-standards, serena-code-navigation
 permissionMode: acceptEdits
 hooks:
   Stop:
     - hooks:
         - type: prompt
-          prompt: "Evaluate if the build-error-resolver agent completed its work. Check the transcript: $ARGUMENTS. Verify: 1) The build or type check command was run after fixes. 2) The final run shows zero errors or a successful build. 3) Only minimal, targeted fixes were made (no refactoring or feature additions). If the build still has errors or no verification run was performed, respond {\"ok\": false, \"reason\": \"Build not verified green: [details]\"}. Otherwise respond {\"ok\": true}."
+          prompt: "Evaluate if the ts-build-resolver agent completed its work. Check the transcript: $ARGUMENTS. Verify: 1) The build or type check command was run after fixes. 2) The final run shows zero errors or a successful build. 3) Only minimal, targeted fixes were made (no refactoring or feature additions). If the build still has errors or no verification run was performed, respond {\"ok\": false, \"reason\": \"Build not verified green: [details]\"}. Otherwise respond {\"ok\": true}."
           timeout: 30
 ---
 

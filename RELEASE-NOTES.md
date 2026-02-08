@@ -11,7 +11,7 @@
 Magic Claude is an **enterprise polyglot Claude Code plugin** providing specialized agents, skills, hooks, commands, and rules for multi-language development workflows.
 
 **Key Capabilities**:
-- 17 specialized agents for code review, planning, TDD, security, and CI/CD
+- 19 specialized agents for code review, planning, TDD, security, build fixing, and CI/CD
 - 23 skills covering domain knowledge, proactive workflows, and Serena MCP integration
 - 18 slash commands for setup, development, documentation, and verification
 - 16 hooks for auto-formatting, security scanning, context injection, and session persistence
@@ -50,7 +50,7 @@ git clone https://github.com/doublefx/magic-claude.git
 
 ---
 
-## Agents (17)
+## Agents (19)
 
 | Agent | Model | Purpose |
 |-------|-------|---------|
@@ -59,7 +59,9 @@ git clone https://github.com/doublefx/magic-claude.git
 | tdd-guide | sonnet | Test-driven development enforcement |
 | code-reviewer | opus | Quality and security review |
 | security-reviewer | opus | Vulnerability analysis |
-| build-error-resolver | sonnet | Fix build errors |
+| ts-build-resolver | sonnet | Fix TypeScript/JS build errors |
+| jvm-build-resolver | sonnet | Fix Java/Kotlin/Groovy build errors |
+| python-build-resolver | sonnet | Fix Python build/type/lint errors |
 | e2e-runner | sonnet | Playwright E2E testing |
 | refactor-cleaner | haiku | Dead code cleanup |
 | doc-updater | haiku | Documentation sync |
