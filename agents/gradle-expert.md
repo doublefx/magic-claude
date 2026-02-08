@@ -3,7 +3,7 @@ name: gradle-expert
 description: Gradle build tool specialist. Expertise in Gradle 9+ features, version catalogs, configuration cache, dependency locking, Kotlin DSL, build performance optimization, and task configuration.
 tools: Read, Grep, Glob, Bash
 model: sonnet
-skills: gradle-patterns
+skills: gradle-patterns, serena-code-navigation
 ---
 
 # Gradle Expert Agent

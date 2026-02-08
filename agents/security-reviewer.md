@@ -3,7 +3,13 @@ name: security-reviewer
 description: Security vulnerability detection and remediation specialist. Use PROACTIVELY after writing code that handles user input, authentication, API endpoints, or sensitive data. Flags secrets, SSRF, injection, unsafe crypto, and OWASP Top 10 vulnerabilities.
 tools: Read, Write, Edit, Bash, Grep, Glob
 model: opus
-skills: security-review
+skills: security-review, serena-code-navigation
+hooks:
+  Stop:
+    - hooks:
+        - type: prompt
+          prompt: "Evaluate if the security-reviewer agent completed a thorough security review. Check the transcript: $ARGUMENTS. Verify: 1) Source code was actually read and analyzed (not just generic advice). 2) Secret/credential scanning was performed (grep for API keys, tokens, passwords). 3) OWASP Top 10 categories were considered. 4) Findings include severity levels and specific remediation steps. If secrets scanning was skipped or no specific findings were reported, respond {\"ok\": false, \"reason\": \"Security review incomplete: [details]\"}. Otherwise respond {\"ok\": true}."
+          timeout: 30
 ---
 
 # Security Reviewer

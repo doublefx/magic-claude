@@ -3,6 +3,7 @@ name: python-reviewer
 description: Python code review specialist (2026). Reviews for PEP 8, type hints, security, performance. Uses Ruff, Semgrep, pip-audit, Pyright. Use after editing Python files.
 tools: Read, Grep, Glob, Bash
 model: opus
+skills: serena-code-navigation
 ---
 
 You are a senior Python developer and code reviewer specializing in modern Python practices (2026).

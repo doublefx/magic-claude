@@ -3,7 +3,14 @@ name: refactor-cleaner
 description: Dead code cleanup and consolidation specialist. Use PROACTIVELY for removing unused code, duplicates, and refactoring. Runs analysis tools (knip, depcheck, ts-prune) to identify dead code and safely removes it.
 tools: Read, Write, Edit, Bash, Grep, Glob
 model: haiku
+skills: serena-code-navigation
 permissionMode: acceptEdits
+hooks:
+  Stop:
+    - hooks:
+        - type: prompt
+          prompt: "Evaluate if the refactor-cleaner agent completed safely. Check the transcript: $ARGUMENTS. Verify: 1) Dead code was identified using analysis tools or grep (not just guessing). 2) Tests were run after deletions to confirm nothing broke. 3) Removed items were documented or reported. If tests were not run after removing code, respond {\"ok\": false, \"reason\": \"Cleanup not verified safe: tests not run after deletions\"}. Otherwise respond {\"ok\": true}."
+          timeout: 30
 ---
 
 # Refactor & Dead Code Cleaner
