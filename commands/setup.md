@@ -16,13 +16,12 @@ allowed-tools: Read, Write, Edit, Bash, Bash(mcp-cli *), Grep, Glob, AskUserQues
 TaskCreate for each step:
 1. "Detect workspace structure"
 2. "Initialize workspace if needed"
-3. "Configure package manager" (create .claude/everything-claude-code.package-manager.json)
+3. "Detect package manager" (from lock files)
 4. "Detect project ecosystems"
 5. "Verify development tools"
 6. "Install dependencies" (ask user first)
-7. "Create project configuration files"
-8. "Run Serena setup" (if installed - INVOKE /serena-setup skill)
-9. "Save setup status"
+7. "Run Serena setup" (if installed - INVOKE /serena-setup skill)
+8. "Verify setup complete" (.serena/project.yml exists)
 
 Mark each task in_progress before starting, completed when done.
 Do NOT skip tasks - if a step is not applicable, mark it completed with a note.
@@ -47,12 +46,9 @@ When Serena MCP is detected (check `mcp-cli info plugin_serena_serena/get_curren
 
 **YOU MUST invoke the `/serena-setup` skill using the Skill tool.**
 
-This skill contains the complete 11-step workflow for:
+This skill contains the complete workflow for:
 - Activating project in Serena
-- Running onboarding
-- Creating memories from ALL documentation
-- Configuring project.yml
-- Migrating and minimizing CLAUDE.md
+- Configuring project.yml (languages, ignored paths)
 - Installing git hooks (append to existing, don't overwrite)
 
 ## Usage
@@ -169,11 +165,8 @@ For workspaces without root package.json:
 workspace-root/
 ├── package.json           # Created
 ├── pnpm-workspace.yaml    # Created (or workspaces in package.json)
-├── .claude/
-│   ├── everything-claude-code.package-manager.json  # Package manager preference
-│   ├── everything-claude-code.project-type.json     # Detected project types cache
-│   ├── everything-claude-code.ecosystems.json       # Detected ecosystems per package
-│   └── everything-claude-code.setup-status.json     # Setup completion status
+├── .serena/
+│   └── project.yml        # Created by Serena (source of truth for setup status)
 ├── .prettierrc            # Created
 ├── .gitignore             # Created if missing
 └── packages/
@@ -181,11 +174,10 @@ workspace-root/
     └── web/
 ```
 
-**Config file update triggers:**
-- `package-manager.json` - Updated via `/setup-pm --project <pm>`
-- `project-type.json` - Auto-invalidates when manifest files change
-- `ecosystems.json` - Regenerated on `/setup`, delete to force refresh
-- `setup-status.json` - Updated by `/setup` and `/serena-setup`
+**Configuration stored in Serena memories** (no JSON config files):
+- Package manager preference → `project_config_context` memory
+- Project types and ecosystems → `project_config_context` memory
+- Setup status → `.serena/project.yml` existence
 
 ## Which Command Should I Use?
 

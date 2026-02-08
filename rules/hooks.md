@@ -2,25 +2,31 @@
 
 ## Hook Types
 
+- **UserPromptSubmit**: Before prompt processing (context injection)
+- **PermissionRequest**: Auto-approve safe commands
 - **PreToolUse**: Before tool execution (validation, parameter modification)
 - **PostToolUse**: After tool execution (auto-format, checks)
-- **Stop**: When session ends (final verification)
+- **PreCompact**: Before context compaction (save state)
+- **SessionStart**: On new session (load context, detect environment)
+- **SessionEnd**: On session end (persist state, extract patterns)
+- **Stop**: After each response (final verification)
+- **Notification**: Desktop notifications when Claude needs input
 
-## Current Hooks (in ~/.claude/settings.json)
+## Task Management
 
-### PreToolUse
-- **tmux reminder**: Suggests tmux for long-running commands (npm, pnpm, yarn, cargo, etc.)
-- **git push review**: Opens Zed for review before push
-- **doc blocker**: Blocks creation of unnecessary .md/.txt files
+Use TaskCreate/TaskUpdate/TaskList/TaskGet tools to:
+- Track progress on multi-step tasks
+- Verify understanding of instructions
+- Enable real-time steering
+- Show granular implementation steps
+- Manage dependencies between tasks
 
-### PostToolUse
-- **PR creation**: Logs PR URL and GitHub Actions status
-- **Prettier**: Auto-formats JS/TS files after edit
-- **TypeScript check**: Runs tsc after editing .ts/.tsx files
-- **console.log warning**: Warns about console.log in edited files
-
-### Stop
-- **console.log audit**: Checks all modified files for console.log before session ends
+Task list reveals:
+- Out of order steps
+- Missing items
+- Extra unnecessary items
+- Wrong granularity
+- Misinterpreted requirements
 
 ## Auto-Accept Permissions
 
@@ -29,18 +35,3 @@ Use with caution:
 - Disable for exploratory work
 - Never use dangerously-skip-permissions flag
 - Configure `allowedTools` in `~/.claude.json` instead
-
-## TodoWrite Best Practices
-
-Use TodoWrite tool to:
-- Track progress on multi-step tasks
-- Verify understanding of instructions
-- Enable real-time steering
-- Show granular implementation steps
-
-Todo list reveals:
-- Out of order steps
-- Missing items
-- Extra unnecessary items
-- Wrong granularity
-- Misinterpreted requirements

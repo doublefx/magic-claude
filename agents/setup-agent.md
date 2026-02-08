@@ -128,11 +128,9 @@ Check if Serena MCP is installed:
 Skill(skill: "serena-setup")
 ```
 
-The serena-setup skill contains the complete 11-step workflow for:
-- Activating project, running onboarding
-- Creating memories from ALL documentation
+The serena-setup skill contains the complete workflow for:
+- Activating project in Serena
 - Configuring project.yml (languages, ignored_paths - DO NOT touch initial_prompt)
-- Backup and minimize CLAUDE.md (migrate content to memories)
 - Ask about git hooks installation (append to existing hooks, don't overwrite)
 
 ### Step 9: Save Setup Status

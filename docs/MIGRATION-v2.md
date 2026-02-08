@@ -386,6 +386,8 @@ console.log(generateTestCommand('rust'));
    ```
 3. Set `CLAUDE_PACKAGE_MANAGER` environment variable
 
+> **Note**: In v3.0+, JSON config files are no longer used. See [MIGRATION-v3.md](./MIGRATION-v3.md).
+
 ### Configuration Not Merging
 
 **Issue**: Package config doesn't override workspace config

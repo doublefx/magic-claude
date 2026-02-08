@@ -1,6 +1,6 @@
 # Features Documentation
 
-**Version**: 2.0.0
+**Version**: 3.0.0
 **Last Updated**: 2026-01-25
 
 ---
@@ -28,11 +28,10 @@ The plugin automatically detects your project type(s) by scanning for manifest f
 **Detection Algorithm**:
 
 1. **Scan current directory** for known manifest files
-2. **Calculate manifest hash** from file modification times
-3. **Check cache** (`.claude/everything-claude-code.project-type.json`)
-4. **Return cached types** if hash matches (fast path)
-5. **Detect types** from scratch if cache miss or invalid
-6. **Write cache** for next invocation
+2. **Detect types** from manifest indicators
+3. **Return detected types**
+
+**Note:** Detection is fast and runs on-demand. No caching needed - Serena memories store project configuration if configured.
 
 ### Supported Project Types
 
@@ -58,33 +57,23 @@ const types2 = detectProjectType('/path/to/project');
 console.log(types2); // ['maven', 'java']
 ```
 
-### Cache Mechanism
+### Configuration Storage
 
-**Cache File**: `.claude/everything-claude-code.project-type.json`
+**Serena Integration (if installed):**
+- Project configuration stored in `project_config_context` memory
+- Package manager preference, ecosystems, project types
+- Persistent across sessions
 
-**Cache Schema**:
-```json
-{
-  "types": ["nodejs", "python"],
-  "hash": "abc123def456789...",
-  "detected_at": "2026-01-25T10:30:00Z",
-  "cwd": "/home/user/my-project"
-}
-```
-
-**Cache Invalidation**:
-- Manifest file modified (mtime changes)
-- Manifest file added or deleted
-- Cache older than 24 hours
-- Cache file corrupted or missing
+**Without Serena:**
+- Detection runs on-demand (fast, <200ms)
+- No persistent storage needed
 
 ### Performance
 
-| Scenario | Time | Cache Hit Rate |
-|----------|------|----------------|
-| With valid cache | <50ms | 95%+ |
-| Without cache | <200ms | - |
-| Monorepo (3 types) | <80ms | 90%+ |
+| Scenario | Time |
+|----------|------|
+| Direct detection | <200ms |
+| Monorepo (3 types) | <300ms |
 
 ### Monorepo Support
 

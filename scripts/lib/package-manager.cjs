@@ -1,17 +1,16 @@
 /**
- * Package Manager Detection and Selection
- * Automatically detects the preferred package manager or lets user choose
+ * Package Manager Detection
+ *
+ * Simplified approach - no JSON config files:
+ * - Detects from environment variable, package.json field, or lock files
+ * - No persistent config - Serena memories can store preferences
  *
  * Supports: npm, pnpm, yarn, bun
- *
- * NOTE: This module is workspace-aware. When operating in a monorepo,
- * it can detect package managers per-package. Use WorkspaceContext
- * for advanced workspace operations.
  */
 
 const fs = require('fs');
 const path = require('path');
-const { commandExists, getClaudeDir, readFile, writeFile } = require('./utils.cjs');
+const { commandExists, readFile } = require('./utils.cjs');
 
 // Lazy-load WorkspaceContext to avoid circular dependencies
 let _workspaceContext = null;
@@ -21,7 +20,6 @@ function getWorkspaceContextSafe() {
       const { getWorkspaceContext } = require('./workspace-context.cjs');
       _workspaceContext = getWorkspaceContext();
     } catch {
-      // WorkspaceContext not available, graceful degradation
       _workspaceContext = null;
     }
   }
@@ -74,36 +72,6 @@ const PACKAGE_MANAGERS = {
 
 // Priority order for detection
 const DETECTION_PRIORITY = ['pnpm', 'bun', 'yarn', 'npm'];
-
-// Config file path
-function getConfigPath() {
-  return path.join(getClaudeDir(), 'everything-claude-code.package-manager.json');
-}
-
-/**
- * Load saved package manager configuration
- */
-function loadConfig() {
-  const configPath = getConfigPath();
-  const content = readFile(configPath);
-
-  if (content) {
-    try {
-      return JSON.parse(content);
-    } catch {
-      return null;
-    }
-  }
-  return null;
-}
-
-/**
- * Save package manager configuration
- */
-function saveConfig(config) {
-  const configPath = getConfigPath();
-  writeFile(configPath, JSON.stringify(config, null, 2));
-}
 
 /**
  * Detect package manager from lock file in project directory
@@ -162,13 +130,11 @@ function getAvailablePackageManagers() {
 /**
  * Get the package manager to use for current project
  *
- * Detection priority:
+ * Simplified detection priority (no JSON config files):
  * 1. Environment variable CLAUDE_PACKAGE_MANAGER
- * 2. Project-specific config (in .claude/everything-claude-code.package-manager.json)
- * 3. package.json packageManager field
- * 4. Lock file detection
- * 5. Global user preference (in ~/.claude/everything-claude-code.package-manager.json)
- * 6. First available package manager (by priority)
+ * 2. package.json packageManager field
+ * 3. Lock file detection
+ * 4. First available package manager (by priority)
  *
  * @param {object} options - { projectDir, fallbackOrder }
  * @returns {object} - { name, config, source }
@@ -186,25 +152,7 @@ function getPackageManager(options = {}) {
     };
   }
 
-  // 2. Check project-specific config
-  const projectConfigPath = path.join(projectDir, '.claude', 'everything-claude-code.package-manager.json');
-  const projectConfig = readFile(projectConfigPath);
-  if (projectConfig) {
-    try {
-      const config = JSON.parse(projectConfig);
-      if (config.packageManager && PACKAGE_MANAGERS[config.packageManager]) {
-        return {
-          name: config.packageManager,
-          config: PACKAGE_MANAGERS[config.packageManager],
-          source: 'project-config'
-        };
-      }
-    } catch {
-      // Invalid config
-    }
-  }
-
-  // 3. Check package.json packageManager field
+  // 2. Check package.json packageManager field
   const fromPackageJson = detectFromPackageJson(projectDir);
   if (fromPackageJson) {
     return {
@@ -214,7 +162,7 @@ function getPackageManager(options = {}) {
     };
   }
 
-  // 4. Check lock file
+  // 3. Check lock file
   const fromLockFile = detectFromLockFile(projectDir);
   if (fromLockFile) {
     return {
@@ -224,17 +172,7 @@ function getPackageManager(options = {}) {
     };
   }
 
-  // 5. Check global user preference
-  const globalConfig = loadConfig();
-  if (globalConfig && globalConfig.packageManager && PACKAGE_MANAGERS[globalConfig.packageManager]) {
-    return {
-      name: globalConfig.packageManager,
-      config: PACKAGE_MANAGERS[globalConfig.packageManager],
-      source: 'global-config'
-    };
-  }
-
-  // 6. Use first available package manager
+  // 4. Use first available package manager
   const available = getAvailablePackageManagers();
   for (const pmName of fallbackOrder) {
     if (available.includes(pmName)) {
@@ -252,42 +190,6 @@ function getPackageManager(options = {}) {
     config: PACKAGE_MANAGERS.npm,
     source: 'default'
   };
-}
-
-/**
- * Set user's preferred package manager (global)
- */
-function setPreferredPackageManager(pmName) {
-  if (!PACKAGE_MANAGERS[pmName]) {
-    throw new Error(`Unknown package manager: ${pmName}`);
-  }
-
-  const config = loadConfig() || {};
-  config.packageManager = pmName;
-  config.setAt = new Date().toISOString();
-  saveConfig(config);
-
-  return config;
-}
-
-/**
- * Set project's preferred package manager
- */
-function setProjectPackageManager(pmName, projectDir = process.cwd()) {
-  if (!PACKAGE_MANAGERS[pmName]) {
-    throw new Error(`Unknown package manager: ${pmName}`);
-  }
-
-  const configDir = path.join(projectDir, '.claude');
-  const configPath = path.join(configDir, 'everything-claude-code.package-manager.json');
-
-  const config = {
-    packageManager: pmName,
-    setAt: new Date().toISOString()
-  };
-
-  writeFile(configPath, JSON.stringify(config, null, 2));
-  return config;
 }
 
 /**
@@ -323,7 +225,7 @@ function getExecCommand(binary, args = '', options = {}) {
 }
 
 /**
- * Interactive prompt for package manager selection
+ * Get selection prompt message
  * Returns a message for Claude to show to user
  */
 function getSelectionPrompt() {
@@ -338,9 +240,9 @@ function getSelectionPrompt() {
   }
 
   message += '\nTo set your preferred package manager:\n';
-  message += '  - Global: Set CLAUDE_PACKAGE_MANAGER environment variable\n';
-  message += '  - Or add to ~/.claude/everything-claude-code.package-manager.json: {"packageManager": "pnpm"}\n';
+  message += '  - Set CLAUDE_PACKAGE_MANAGER environment variable\n';
   message += '  - Or add to package.json: {"packageManager": "pnpm@8"}\n';
+  message += '  - Or store preference in Serena memory\n';
 
   return message;
 }
@@ -381,7 +283,6 @@ function getCommandPattern(action) {
       'bun run build'
     );
   } else {
-    // Generic run command
     patterns.push(
       `npm run ${action}`,
       `pnpm( run)? ${action}`,
@@ -395,10 +296,6 @@ function getCommandPattern(action) {
 
 /**
  * Get package manager for a specific file in a workspace
- * Workspace-aware: Detects which package owns the file and returns its package manager
- *
- * @param {string} filePath - Absolute file path
- * @returns {object} - { name, config, source, package }
  */
 function getPackageManagerForFile(filePath) {
   const workspace = getWorkspaceContextSafe();
@@ -407,7 +304,6 @@ function getPackageManagerForFile(filePath) {
     const pkg = workspace.findPackageForFile(filePath);
 
     if (pkg) {
-      // Get package manager for this specific package
       const pm = getPackageManager({ projectDir: pkg.path });
       return {
         ...pm,
@@ -417,17 +313,12 @@ function getPackageManagerForFile(filePath) {
     }
   }
 
-  // Not in workspace or file not in any package
   const fileDir = path.dirname(filePath);
   return getPackageManager({ projectDir: fileDir });
 }
 
 /**
  * Get package manager for a specific package in a workspace
- * Workspace-aware: Finds the package by name and returns its package manager
- *
- * @param {string} packageName - Package name
- * @returns {object|null} - { name, config, source, package } or null if not found
  */
 function getPackageManagerForPackage(packageName) {
   const workspace = getWorkspaceContextSafe();
@@ -453,15 +344,11 @@ function getPackageManagerForPackage(packageName) {
 
 /**
  * Get all package managers used in a workspace
- * Workspace-aware: Detects package manager for each package in workspace
- *
- * @returns {Array} - Array of { packageName, packagePath, name, config, source }
  */
 function getAllWorkspacePackageManagers() {
   const workspace = getWorkspaceContextSafe();
 
   if (!workspace || !workspace.isWorkspace()) {
-    // Not in workspace, return current package manager
     const pm = getPackageManager();
     return [{
       packageName: null,
@@ -488,7 +375,6 @@ function getAllWorkspacePackageManagers() {
 
 /**
  * Check if we're in a workspace/monorepo
- * @returns {boolean}
  */
 function isInWorkspace() {
   const workspace = getWorkspaceContextSafe();
@@ -499,8 +385,6 @@ module.exports = {
   PACKAGE_MANAGERS,
   DETECTION_PRIORITY,
   getPackageManager,
-  setPreferredPackageManager,
-  setProjectPackageManager,
   getAvailablePackageManagers,
   detectFromLockFile,
   detectFromPackageJson,

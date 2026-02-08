@@ -46,15 +46,21 @@ When installed as a plugin, use these slash commands:
 /build-fix         # Fix build errors
 /e2e               # E2E test generation
 /refactor-clean    # Dead code removal
+/orchestrate       # Sequential multi-agent workflow
+/test-coverage     # Analyze and fill test coverage gaps
+/ci-cd             # CI/CD pipeline generation
+
+# Documentation
+/update-codemaps   # Update architecture codemaps
+/update-docs       # Sync docs from source-of-truth
 
 # Learning & Verification
 /learn             # Extract patterns mid-session
 /checkpoint        # Save verification state
 /verify            # Run verification loop
+/eval              # Eval-driven development workflow
 
 # Serena Integration (if Serena MCP installed)
-/before-exploring  # MANDATORY before code exploration - checks memories first
-/after-exploring   # Document findings in Serena memory
 /serena-setup      # Complete Serena configuration
 /serena-status     # Configuration diagnostics
 /serena-cleanup    # Safe cleanup and removal
@@ -91,33 +97,34 @@ All components are auto-loaded when installed via `/plugin install`.
 
 All automation is Node.js-based (no shell scripts) for Windows/macOS/Linux compatibility:
 
-- **scripts/lib/utils.js** - Cross-platform utilities (file operations, path handling, system detection)
-- **scripts/lib/package-manager.js** - Package manager detection with 6-tier priority system
+- **scripts/lib/utils.cjs** - Cross-platform utilities (file operations, path handling, system detection)
+- **scripts/lib/package-manager.cjs** - Package manager detection with 4-tier priority system
 - **scripts/hooks/** - Hook implementations (session-start, session-end, pre-compact, etc.)
 
 **Package Manager Detection Priority:**
 1. `CLAUDE_PACKAGE_MANAGER` environment variable
-2. Project config (`.claude/everything-claude-code.package-manager.json`)
-3. `package.json` `packageManager` field
-4. Lock file detection (package-lock.json, pnpm-lock.yaml, yarn.lock, bun.lockb)
-5. Global user preference (`~/.claude/everything-claude-code.package-manager.json`)
-6. First available package manager (priority: pnpm, bun, yarn, npm)
+2. `package.json` `packageManager` field
+3. Lock file detection (package-lock.json, pnpm-lock.yaml, yarn.lock, bun.lockb)
+4. First available package manager (priority: pnpm, bun, yarn, npm)
+
+**Note:** No JSON config files needed - detection is automatic from the project context.
 
 ### Hook System
 
 Hooks execute Node.js scripts on tool events. Key hooks in `hooks/hooks.json`:
 
 **PreToolUse:**
-- Block dev servers outside tmux (ensures log access)
-- Suggest tmux for long-running commands
 - **Suggest code review before git commit** (safety net)
-- Block random .md file creation (keeps docs consolidated)
-- Strategic compaction suggestions
+- Strategic compaction suggestions at logical intervals
 
 **PostToolUse:**
-- Auto-format JS/TS files with Prettier
+- Auto-format files by project type (Python: ruff, Java: google-java-format, Kotlin: ktfmt, JS/TS: prettier)
+- Java security scanning (SpotBugs + FindSecurityBugs)
+- Python security scanning (Semgrep + pip-audit)
+- Maven/Gradle best practice advice
 - TypeScript type checking on .ts/.tsx edits
 - Warn about console.log statements
+- Suggest code review when tasks complete
 - Log PR URLs after creation
 
 **SessionStart:**
@@ -158,6 +165,14 @@ Specialized agents in `agents/` directory:
 | e2e-runner | sonnet | Playwright E2E testing |
 | refactor-cleaner | haiku | Dead code cleanup |
 | doc-updater | haiku | Documentation sync |
+| setup-agent | sonnet | Project setup and configuration |
+| gradle-expert | sonnet | Gradle build optimization |
+| maven-expert | sonnet | Maven dependency management |
+| ci-cd-architect | opus | CI/CD pipeline design |
+| python-reviewer | opus | Python code quality and security |
+| java-reviewer | opus | Java code quality and security |
+| groovy-reviewer | opus | Groovy/Spock/Gradle scripts |
+| kotlin-reviewer | opus | Kotlin idioms and null safety |
 
 **Use agents proactively** - no user prompt needed for complex features, code reviews, or architectural decisions.
 
@@ -194,35 +209,16 @@ Skills are directories with `SKILL.md` or single `.md` files.
 
 ### Serena MCP Integration (Optional)
 
-If Serena MCP plugin is installed, the plugin provides **memory-first workflow**:
+If Serena MCP plugin is installed, the plugin provides Serena management skills:
 
-**Core Concept**: Check Serena memories before exploring code. If memories have the answer, return immediately (saves tokens!).
-
-**Workflow**:
-1. `/before-exploring` - ALWAYS use before code exploration (checks memories first)
-2. Explore if needed (memories insufficient)
-3. `/after-exploring` - Document significant findings
-
-**Skills** (7 total):
-- **before-exploring/** - Memory-first exploration (runs in MAIN context)
-- **after-exploring/** - Document findings (forked context)
+**Skills** (5 total):
 - **serena-setup/** - Complete setup workflow
 - **serena-status/** - Configuration diagnostics
 - **serena-cleanup/** - Safe cleanup and removal
 - **git-sync/** - Sync memories with git changes
 - **memory-lifecycle/** - Health checks and consolidation
 
-**Hooks** (8 scripts):
-- `serena-memory-check.cjs` - PreToolUse: Force memory check before Serena tools
-- `serena-task-check.cjs` - PreToolUse: Force memory check before Explore agents
-- `serena-document-reminder.cjs` - PostToolUse: Remind to document findings
-- `serena-task-reminder.cjs` - PostToolUse: Remind after Task agents
-- `serena-evaluate-memories.cjs` - PostToolUse: Evaluate on task completion
-- `serena-pre-compact.cjs` - PreCompact: Preserve knowledge before compaction
-- `serena-subagent-start.cjs` - SubagentStart: Track exploration agents
-- `serena-subagent-stop.cjs` - SubagentStop: Enforce documentation
-
-**Configuration**: All Serena hooks check `SERENA_INSTALLED` and `SERENA_ENABLED` - graceful degradation if not installed.
+**Configuration**: Serena hooks check `SERENA_INSTALLED` and `SERENA_ENABLED` - graceful degradation if not installed.
 
 **JetBrains Recommendation**: For polyglot/monorepo projects, JetBrains plugin provides better performance ($5/mo or $50/yr).
 
