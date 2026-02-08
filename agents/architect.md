@@ -3,7 +3,7 @@ name: architect
 description: Software architecture specialist for system design, scalability, and technical decision-making. Use PROACTIVELY when planning new features, refactoring large systems, or making architectural decisions.
 tools: Read, Grep, Glob, Bash(mcp-cli *)
 model: opus
-skills: serena-code-navigation
+skills: claude-mem-context, serena-code-navigation
 permissionMode: plan
 ---
 

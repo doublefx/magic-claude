@@ -1106,8 +1106,7 @@ commands/
 │   ├── code-review.md
 │   └── checkpoint.md
 └── automation/              # Automation scripts
-    ├── ci-cd.cjs
-    └── update-codemaps.md
+    └── ci-cd.cjs
 ```
 
 ### Skills Directory

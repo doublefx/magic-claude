@@ -13,7 +13,7 @@ Magic Claude is an **enterprise polyglot Claude Code plugin** providing speciali
 **Key Capabilities**:
 - 19 specialized agents for code review, planning, TDD, security, build fixing, and CI/CD
 - 23 skills covering domain knowledge, proactive workflows, and Serena MCP integration
-- 18 slash commands for setup, development, documentation, and verification
+- 17 slash commands for setup, development, documentation, and verification
 - 16 hooks for auto-formatting, security scanning, context injection, and session persistence
 - 49 production-ready templates for CI/CD, Docker, Kubernetes, Helm, and security
 - Workspace and monorepo support (pnpm, Nx, Lerna, Yarn, Turborepo)
@@ -74,7 +74,7 @@ git clone https://github.com/doublefx/magic-claude.git
 | groovy-reviewer | opus | Groovy/Spock/Gradle scripts |
 | kotlin-reviewer | opus | Kotlin idioms and null safety |
 
-## Skills (23)
+## Skills (24)
 
 **Proactive (3)**: proactive-planning, proactive-review, proactive-tdd
 
@@ -84,11 +84,13 @@ git clone https://github.com/doublefx/magic-claude.git
 
 **Serena Integration (4)**: serena-setup, serena-status, serena-cleanup, git-sync
 
-## Commands (18)
+**MCP Integration (1)**: claude-mem-context
+
+## Commands (17)
 
 **Setup**: `/setup`, `/setup-pm`, `/setup-ecosystem`
 **Development**: `/tdd`, `/plan`, `/code-review`, `/build-fix`, `/e2e`, `/refactor-clean`, `/orchestrate`, `/test-coverage`, `/ci-cd`, `/eval`
-**Documentation**: `/update-codemaps`, `/update-docs`
+**Documentation**: `/update-docs`
 **Learning & Verification**: `/learn`, `/checkpoint`, `/verify`
 
 ## Hooks (16)

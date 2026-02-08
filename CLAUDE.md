@@ -51,7 +51,6 @@ When installed as a plugin, use these slash commands:
 /ci-cd             # CI/CD pipeline generation
 
 # Documentation
-/update-codemaps   # Update architecture codemaps
 /update-docs       # Sync docs from source-of-truth
 
 # Learning & Verification
@@ -223,6 +222,10 @@ If Serena MCP plugin is installed, the plugin provides Serena management skills:
 **JetBrains Recommendation**: For polyglot/monorepo projects, JetBrains plugin provides better performance ($5/mo or $50/yr).
 
 See `skills/serena-setup/` and `skills/serena-status/` for configuration details.
+
+### claude-mem Integration (Optional)
+
+If claude-mem MCP is installed, agents with the `claude-mem-context` skill can query cross-session historical context (past decisions, bug patterns, architecture rationale).
 
 ## Workspace & Monorepo Support
 

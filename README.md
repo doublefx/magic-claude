@@ -246,7 +246,7 @@ magic-claude/
 |   |-- gradle-expert.md     # Gradle build optimization
 |   |-- ci-cd-architect.md   # CI/CD pipeline generation
 |
-|-- skills/           # Workflow definitions and domain knowledge (16 total)
+|-- skills/           # Workflow definitions and domain knowledge (17 total)
 |   |-- coding-standards/           # Language best practices
 |   |-- backend-patterns/           # API, database, caching patterns
 |   |-- frontend-patterns/          # React, Next.js patterns
@@ -262,9 +262,10 @@ magic-claude/
 |   |-- gradle-patterns/            # Gradle build optimization
 |   |-- ci-cd-patterns/             # CI/CD and deployment patterns
 |   |-- clickhouse-io/              # ClickHouse database patterns
+|   |-- claude-mem-context/          # Cross-session historical context
 |   |-- project-guidelines-example/ # Template for project-specific guidelines
 |
-|-- commands/         # Slash commands for quick execution (15 total)
+|-- commands/         # Slash commands for quick execution (14 total)
 |   |-- tdd.md              # /tdd - Test-driven development
 |   |-- plan.md             # /plan - Implementation planning
 |   |-- e2e.md              # /e2e - E2E test generation
@@ -278,7 +279,6 @@ magic-claude/
 |   |-- eval.md             # /eval - Run evaluation harness
 |   |-- orchestrate.md      # /orchestrate - Multi-agent orchestration
 |   |-- test-coverage.md    # /test-coverage - Coverage reporting
-|   |-- update-codemaps.md  # /update-codemaps - Update code maps
 |   |-- update-docs.md      # /update-docs - Sync documentation
 |
 |-- rules/            # Always-follow guidelines (copy to ~/.claude/rules/)
