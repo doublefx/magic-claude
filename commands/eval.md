@@ -1,5 +1,6 @@
 ---
 description: Manage eval-driven development workflow - define capability/regression evals before coding, then verify implementation meets criteria
+argument-hint: "[define|check|report|list] [feature-name]"
 ---
 
 # Eval Command

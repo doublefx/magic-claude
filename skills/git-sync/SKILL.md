@@ -1,9 +1,19 @@
 ---
-description: Synchronize Serena memories with external git changes. Processes sync reminder logs, identifies affected memories, and updates them with new code state.
+description: Analyze external git changes and report their impact on codebase understanding. Processes sync reminder logs, identifies affected areas, and produces an actionable change impact report.
 context: fork
+agent: Explore
+allowed-tools: Read, Grep, Glob, Bash(git *)
 ---
 
-# /git-sync - Synchronize Memories with Git Changes
+# /git-sync - Analyze Git Changes and Report Impact
+
+## Current Git State
+
+Recent commits:
+!`git log --oneline -10`
+
+Sync reminder log:
+!`cat .git/serena-sync-reminder.log 2>/dev/null || echo "No sync log found"`
 
 ## When to Use
 
@@ -17,12 +27,12 @@ context: fork
 
 ### Step 1: Check for Pending Syncs
 
-**Read sync reminder log**:
+**Read sync reminder log** (if it exists):
 ```bash
-cat .git/serena-sync-reminder.log
+cat .git/serena-sync-reminder.log 2>/dev/null
 ```
 
-**Parse entries**:
+**Parse entries** to understand what happened:
 ```
 2026-01-29 10:30:00 UTC - pull origin main
 2026-01-29 11:15:00 UTC - merge feature/auth
@@ -30,14 +40,14 @@ cat .git/serena-sync-reminder.log
 
 ### Step 2: Analyze Git Changes
 
-**Get changed files since last sync**:
+**Get changed files since last known state**:
 ```bash
 git diff --name-only HEAD@{1}..HEAD
 ```
 
-Or if tracking last sync date:
+Or for broader analysis:
 ```bash
-git log --since="${LAST_SYNC_DATE}" --name-only --pretty=format:
+git log --since="1 day ago" --name-only --pretty=format:
 ```
 
 **Categorize changes**:
@@ -46,118 +56,74 @@ git log --since="${LAST_SYNC_DATE}" --name-only --pretty=format:
 - Deleted files
 - Renamed files
 
-### Step 3: Identify Affected Memories
+### Step 3: Assess Impact by Area
 
-**Map changes to memories**:
+**Map changes to codebase areas**:
 
-| Changed Path | Likely Affected Memories |
-|--------------|-------------------------|
-| `src/api/*` | `backend_api_*` |
-| `src/auth/*` | `auth_*`, `security_*` |
-| `src/components/*` | `frontend_*`, `ui_*` |
-| `tests/*` | `testing_*` |
-| `config/*` | `*_configuration` |
-| `docs/*` | `*_guide`, `*_overview` |
+| Changed Path | Impact Area |
+|--------------|-------------|
+| `src/api/*` | Backend API contracts, endpoints |
+| `src/auth/*` | Authentication, authorization flows |
+| `src/components/*` | Frontend UI, component interfaces |
+| `tests/*` | Test patterns, coverage |
+| `config/*` | Configuration, environment |
+| `docs/*` | Documentation accuracy |
+| `*.sql`, `migrations/*` | Database schema, queries |
+| `package.json`, lock files | Dependencies |
 
-**Read current memories**:
-```
-Use Serena MCP: list_memories()
-```
-
-**Check "Watched Paths" in memory metadata** (if present):
-```markdown
-**Watched Paths**: src/api/**, src/services/auth/**
-```
-
-### Step 4: Review and Update Memories
-
-For each affected memory:
-
-**1. Read current memory content**:
-```
-Use Serena MCP: read_memory("memory_name")
-```
-
-**2. Check if changes invalidate content**:
+**For each affected area, check**:
 - Function signatures changed?
 - Files moved/renamed?
 - Logic significantly altered?
 - New patterns introduced?
+- Breaking API changes?
 
-**3. Update confidence if needed**:
+### Step 4: Classify Change Severity
 
-| Change Type | Confidence Impact |
-|-------------|-------------------|
-| Minor refactor | Keep current |
-| API changes | Drop to Medium |
-| Major restructure | Drop to Low/Needs Review |
-| File deleted | Mark as Deprecated |
+| Change Type | Severity | Action Needed |
+|-------------|----------|---------------|
+| Minor refactor (same behavior) | Low | No action |
+| API signature changes | Medium | Review dependent code |
+| Major restructure | High | Re-explore affected modules |
+| File/module deleted | High | Check for broken references |
+| New dependency added | Medium | Understand its purpose |
+| Schema migration | High | Verify data model understanding |
 
-**4. Update memory content**:
-```
-Use Serena MCP: edit_memory("name", "old_text", "new_text")
-```
-
-Update:
-- `Last Updated` date
-- `Confidence` level
-- `Last Code Sync` timestamp
-- Outdated code references
-
-### Step 5: Handle Deprecated Content
-
-**If referenced files deleted**:
-```markdown
-**Status**: Deprecated
-**Superseded By**: [new_memory_name if applicable]
-**Deprecation Reason**: Referenced files removed in commit abc123
-```
-
-**If content significantly outdated**:
-- Mark as `Needs Review`
-- Add note about what changed
-- Consider rewriting with `/after-exploring`
-
-### Step 6: Clear Sync Log
+### Step 5: Clear Sync Log
 
 After processing:
-```bash
-> .git/serena-sync-reminder.log
-```
-
-Or truncate to keep history:
 ```bash
 echo "# Synced $(date -u '+%Y-%m-%d %H:%M:%S UTC')" > .git/serena-sync-reminder.log
 ```
 
-### Step 7: Report Sync Results
+### Step 6: Produce Change Impact Report
+
+Output a structured report:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Git Sync Complete
+  Git Sync - Change Impact Report
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Changes Analyzed:
-- Files changed: 12
-- Added: 3
-- Modified: 8
-- Deleted: 1
+- Files changed: N
+- Added: N
+- Modified: N
+- Deleted: N
 
-Memories Affected:
-- Updated: 4
-  - backend_api_authentication_workflow (confidence → Medium)
-  - auth_session_management_specifics (content updated)
-  - testing_integration_guide (added new test patterns)
-  - database_schema_overview (referenced file moved)
+Impact by Area:
+- [area]: [severity] - [brief description of what changed]
+  Example: Backend API: HIGH - Authentication endpoint signatures changed
+  Example: Tests: LOW - New test helpers added, no existing tests modified
 
-- Deprecated: 1
-  - legacy_auth_flow_workflow (files removed)
-
-- Unchanged: 10
+Action Items:
+- [HIGH] Re-explore src/auth/ - major refactor of session management
+- [MEDIUM] Review API contracts - new endpoints added
+- [LOW] No action needed for test utility additions
 
 Recommendations:
-- Review backend_api_authentication_workflow (Medium confidence)
-- Consider rewriting database_schema_overview (/after-exploring)
+- Re-read [specific files] before making changes in [area]
+- [specific breaking change] may affect [dependent code]
 
 Next sync reminder: After next pull/merge
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -165,19 +131,19 @@ Next sync reminder: After next pull/merge
 
 ## Automatic Sync Detection
 
-Git hooks installed by `/serena-setup` trigger reminders:
+Git hooks (installed by `/serena-setup` or manually) trigger reminders:
 
 ```bash
 # In .git/hooks/post-merge
 #!/bin/bash
 echo "$(date -u '+%Y-%m-%d %H:%M:%S UTC') - $GIT_REFLOG_ACTION" >> .git/serena-sync-reminder.log
-echo "[Serena] External changes detected. Run /git-sync to update memories."
+echo "External changes detected. Run /git-sync to analyze impact."
 ```
 
 ## Best Practices
 
-1. **Sync after every pull** - keeps memories current
-2. **Don't ignore warnings** - stale memories cause confusion
-3. **Update confidence honestly** - Low confidence is better than wrong High
-4. **Deprecate don't delete** - keep history for reference
-5. **Re-explore if major changes** - use `/before-exploring` → `/after-exploring`
+1. **Sync after every pull** - keeps understanding current
+2. **Don't ignore HIGH severity** - stale understanding causes wrong decisions
+3. **Re-explore affected modules** - read the actual code, don't assume
+4. **Check breaking changes** - API signature changes affect callers
+5. **Review new patterns** - new dependencies or patterns may need adoption

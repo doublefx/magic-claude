@@ -1,5 +1,6 @@
 ---
 description: Generate and run end-to-end tests with Playwright. Creates test journeys, runs tests, captures screenshots/videos/traces, and uploads artifacts.
+argument-hint: "[test description or user flow]"
 ---
 
 # E2E Command

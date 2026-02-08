@@ -6,6 +6,11 @@ description: Run comprehensive verification on current codebase state - build, t
 
 Run comprehensive verification on current codebase state.
 
+## Current State
+
+Git status:
+!`git status --short`
+
 ## Instructions
 
 Execute verification in this exact order:

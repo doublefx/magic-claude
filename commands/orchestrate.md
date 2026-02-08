@@ -1,5 +1,6 @@
 ---
 description: Sequential agent workflow for complex tasks - orchestrates multiple specialized agents with structured handoffs
+argument-hint: "[workflow-type] [task description]"
 ---
 
 # Orchestrate Command

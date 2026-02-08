@@ -2,6 +2,8 @@
 name: tdd-workflow
 description: Use this skill when writing new features, fixing bugs, or refactoring code. Enforces test-driven development with 80%+ coverage including unit, integration, and E2E tests.
 context: fork
+agent: general-purpose
+allowed-tools: Read, Write, Edit, Grep, Glob, Bash(npm test *), Bash(npx vitest *), Bash(npx jest *), Bash(node tests/*)
 ---
 
 # Test-Driven Development Workflow

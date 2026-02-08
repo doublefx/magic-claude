@@ -4,9 +4,15 @@ description: Comprehensive security and quality review of uncommitted changes wi
 
 # Code Review
 
-Comprehensive security and quality review of uncommitted changes:
+## Current Changes
 
-1. Get changed files: git diff --name-only HEAD
+Changed files:
+!`git diff --name-only HEAD`
+
+Staged diff:
+!`git diff --staged`
+
+Comprehensive security and quality review of uncommitted changes:
 
 2. For each changed file, check for:
 
