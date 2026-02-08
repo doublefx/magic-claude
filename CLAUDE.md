@@ -64,8 +64,7 @@ When installed as a plugin, use these slash commands:
 /serena-setup      # Complete Serena configuration
 /serena-status     # Configuration diagnostics
 /serena-cleanup    # Safe cleanup and removal
-/git-sync          # Sync memories with git changes
-/memory-lifecycle  # Memory health and consolidation
+/git-sync          # Analyze git changes and report impact
 ```
 
 ### Setup Command Decision Guide
@@ -215,8 +214,7 @@ If Serena MCP plugin is installed, the plugin provides Serena management skills:
 - **serena-setup/** - Complete setup workflow
 - **serena-status/** - Configuration diagnostics
 - **serena-cleanup/** - Safe cleanup and removal
-- **git-sync/** - Sync memories with git changes
-- **memory-lifecycle/** - Health checks and consolidation
+- **git-sync/** - Analyze git changes and report impact
 
 **Configuration**: Serena hooks check `SERENA_INSTALLED` and `SERENA_ENABLED` - graceful degradation if not installed.
 

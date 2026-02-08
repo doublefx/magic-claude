@@ -141,11 +141,6 @@ Run: /serena-setup (will offer to install)
 Run: /git-sync to process external changes
 ```
 
-**Low confidence memories**:
-```
-Run: /memory-lifecycle to review and update
-```
-
 **JetBrains not available**:
 ```
 1. Open project in JetBrains IDE
