@@ -1,6 +1,6 @@
 # CI/CD Pipeline Generation Guide
 
-This guide explains how to use the CI/CD pipeline generation features in Everything Claude Code to create modern, production-ready CI/CD pipelines for your projects.
+This guide explains how to use the CI/CD pipeline generation features in Magic Claude to create modern, production-ready CI/CD pipelines for your projects.
 
 ## Table of Contents
 

@@ -1,28 +1,30 @@
 {
-  "name": "everything-claude-code",
+  "name": "magic-claude",
   "owner": {
-    "name": "Affaan Mustafa",
-    "email": "affaan@example.com"
+    "name": "doublefx",
+    "url": "https://github.com/doublefx"
   },
   "metadata": {
-    "description": "Battle-tested Claude Code configurations from an Anthropic hackathon winner"
+    "description": "Enterprise Stack Extension - Claude Code plugin for Python, Java, Kotlin, Gradle, Maven, and CI/CD pipelines"
   },
   "plugins": [
     {
-      "name": "everything-claude-code",
+      "name": "magic-claude",
       "source": "./",
-      "description": "Complete collection of agents, skills, hooks, commands, and rules evolved over 10+ months of intensive daily use",
+      "description": "Complete collection of agents, skills, hooks, commands, and rules evolved over months of intensive daily use",
       "author": {
-        "name": "Affaan Mustafa"
+        "name": "doublefx",
+        "url": "https://github.com/doublefx"
       },
-      "homepage": "https://github.com/affaan-m/everything-claude-code",
-      "repository": "https://github.com/affaan-m/everything-claude-code",
+      "homepage": "https://github.com/doublefx/magic-claude",
+      "repository": "https://github.com/doublefx/magic-claude",
       "license": "MIT",
       "keywords": [
         "agents",
         "skills",
         "hooks",
         "commands",
+        "rules",
         "tdd",
         "code-review",
         "security",
@@ -34,6 +36,7 @@
         "skills",
         "hooks",
         "commands",
+        "rules",
         "tdd",
         "code-review",
         "security",

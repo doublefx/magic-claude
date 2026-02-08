@@ -12,10 +12,10 @@
 
 ```bash
 # 1. Add the marketplace
-/plugin marketplace add affaan-m/everything-claude-code
+/plugin marketplace add doublefx/magic-claude
 
 # 2. Install the plugin
-/plugin install everything-claude-code@everything-claude-code
+/plugin install magic-claude@magic-claude
 
 # 3. Verify installation
 # You should see no errors in the output
@@ -25,8 +25,8 @@
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/affaan-m/everything-claude-code.git
-cd everything-claude-code
+git clone https://github.com/doublefx/magic-claude.git
+cd magic-claude
 
 # 2. Copy components
 cp agents/*.md ~/.claude/agents/
@@ -235,7 +235,7 @@ Rules are always-follow guidelines:
 ls ~/.claude/agents/python-reviewer.md
 
 # If missing, reinstall
-/plugin update everything-claude-code@everything-claude-code
+/plugin update magic-claude@magic-claude
 ```
 
 ### Issue 2: Hooks Not Running
@@ -269,7 +269,7 @@ ls pom.xml         # Maven
 ls build.gradle.kts  # Gradle
 
 # If manifest exists but not detected, clear cache
-rm .claude/everything-claude-code.project-type.json
+rm .claude/magic-claude.project-type.json
 
 # Restart session
 ```

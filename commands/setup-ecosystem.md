@@ -165,7 +165,7 @@ Preferred package manager [pnpm]: pnpm
 
 ✓ Created package.json
 ✓ Created pnpm-workspace.yaml
-✓ Created .claude/everything-claude-code.package-manager.json
+✓ Created .claude/magic-claude.package-manager.json
 ✓ Created .prettierrc
 ✓ Created .gitignore
 

@@ -1,4 +1,4 @@
-# Contributing to Everything Claude Code
+# Contributing to Magic Claude
 
 Thanks for wanting to contribute. This repo is meant to be a community resource for Claude Code users.
 
@@ -60,8 +60,8 @@ New or improved MCP server configs:
 ### 1. Fork the repo
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/everything-claude-code.git
-cd everything-claude-code
+git clone https://github.com/YOUR_USERNAME/magic-claude.git
+cd magic-claude
 ```
 
 ### 2. Create a branch
@@ -184,7 +184,7 @@ Then open a PR with:
 
 ## Questions?
 
-Open an issue or reach out on X: [@affaanmustafa](https://x.com/affaanmustafa)
+Open an issue on [GitHub](https://github.com/doublefx/magic-claude/issues).
 
 ---
 

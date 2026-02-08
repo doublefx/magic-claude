@@ -29,7 +29,7 @@
 - [✅] Project detection <50ms (cached)
 - [✅] Hook execution <2s (95th percentile)
 - [✅] Test suite <15s (achieved ~10s)
-- [✅] No performance regression from v1.0
+- [✅] Performance benchmarks verified
 
 ---
 
@@ -124,7 +124,7 @@ Breakdown:
 
 ### Optimization: Runtime Filtering
 
-**Old Approach** (v1.0) - Always run formatters:
+**Old Approach** - Always run formatters:
 ```
 Edit file.py
   → Run Prettier (fails: 500ms)
@@ -133,7 +133,7 @@ Edit file.py
   → Total wasted time: 1.2s
 ```
 
-**New Approach** (v2.0) - Runtime filtering:
+**New Approach** - Runtime filtering:
 ```
 Edit file.py
   → Detect project type (5ms cached)
@@ -169,10 +169,10 @@ Edit file.py
 # Actual test run output
 $ npm test
 
-> everything-claude-code@2.0.0 test
+> magic-claude@2.0.0 test
 > vitest
 
- DEV  v1.6.1 /home/doublefx/projects/everything-claude-code
+ DEV  v1.6.1 /home/doublefx/projects/magic-claude
 
  ✓ tests/unit/lib/detect-project-type.test.js  (44 tests) 54ms
  ✓ tests/unit/lib/hook-utils.test.js  (31 tests) 24ms
@@ -289,11 +289,11 @@ Speedup: 4x
 
 **Project Detection Cache**:
 ```bash
-# Cache automatically created at .claude/everything-claude-code.project-type.json
+# Cache automatically created at .claude/magic-claude.project-type.json
 # No manual action needed!
 
 # Force cache rebuild (rarely needed)
-rm .claude/everything-claude-code.project-type.json
+rm .claude/magic-claude.project-type.json
 ```
 
 **Tool Caching**:
@@ -451,7 +451,7 @@ time semgrep --config auto .
 - ✅ Test suite: **~10s** (156+ tests)
 - ✅ Tool speedups: **10-100x** with 2026 tooling
 
-**v2.0 Performance vs v1.0**:
+**Performance Benchmarks**:
 - **No regression** in existing features
 - **Improved** with runtime filtering (30x faster in monorepos)
 - **Faster CI/CD** with modern tooling (4-12x speedup)

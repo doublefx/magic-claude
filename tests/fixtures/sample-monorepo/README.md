@@ -1,6 +1,6 @@
 # Sample Monorepo
 
-This is a sample monorepo for testing the everything-claude-code plugin.
+This is a sample monorepo for testing the magic-claude plugin.
 
 ## Structure
 

@@ -26,7 +26,7 @@ const testFiles = [
 ];
 
 console.log('╔══════════════════════════════════════════════════════════╗');
-console.log('║           Everything Claude Code - Test Suite            ║');
+console.log('║           Magic Claude - Test Suite            ║');
 console.log('╚══════════════════════════════════════════════════════════╝');
 console.log();
 

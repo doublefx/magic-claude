@@ -54,8 +54,8 @@ Usage:
 
 Options:
   --detect        Detect and show current package manager
-  --global <pm>   Set global preference (saves to ~/.claude/everything-claude-code.package-manager.json)
-  --project <pm>  Set project preference (saves to .claude/everything-claude-code.package-manager.json)
+  --global <pm>   Set global preference (saves to ~/.claude/magic-claude.package-manager.json)
+  --project <pm>  Set project preference (saves to .claude/magic-claude.package-manager.json)
   --list          List available package managers
   --help          Show this help message
 
@@ -151,7 +151,7 @@ function setGlobal(pmName) {
     setPreferredPackageManager(pmName);
     updateClaudeEnvFile(pmName, 'global');
     console.log(`\n✓ Global preference set to: ${pmName}`);
-    console.log('  Saved to: ~/.claude/everything-claude-code.package-manager.json');
+    console.log('  Saved to: ~/.claude/magic-claude.package-manager.json');
     console.log('');
   } catch (err) {
     console.error(`Error: ${err.message}`);
@@ -170,7 +170,7 @@ function setProject(pmName) {
     setProjectPackageManager(pmName);
     updateClaudeEnvFile(pmName, 'project');
     console.log(`\n✓ Project preference set to: ${pmName}`);
-    console.log('  Saved to: .claude/everything-claude-code.package-manager.json');
+    console.log('  Saved to: .claude/magic-claude.package-manager.json');
     console.log('');
   } catch (err) {
     console.error(`Error: ${err.message}`);

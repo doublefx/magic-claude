@@ -8,7 +8,7 @@
 
 ## Overview
 
-This tutorial covers the complete Python development workflow with v2.0:
+This tutorial covers the complete Python development workflow with Magic Claude:
 - Modern 2026 tooling (Ruff, uv, Pyright, Semgrep)
 - Auto-formatting and linting
 - Security scanning
@@ -496,4 +496,4 @@ git push
 
 ---
 
-**Congratulations!** You now have a complete modern Python development workflow with v2.0.
+**Congratulations!** You now have a complete modern Python development workflow with Magic Claude.

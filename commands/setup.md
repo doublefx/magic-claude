@@ -81,7 +81,7 @@ This skill contains the complete workflow for:
 ### Initialization Phase
 - Creates workspace root package.json (if missing)
 - Sets up workspace configuration
-- Creates .claude/everything-claude-code.package-manager.json
+- Creates .claude/magic-claude.package-manager.json
 - Adds .prettierrc, .gitignore
 
 ### Installation Phase

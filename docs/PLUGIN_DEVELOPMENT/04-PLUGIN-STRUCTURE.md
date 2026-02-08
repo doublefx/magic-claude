@@ -125,7 +125,7 @@ my-plugin/
 
 ```json
 {
-  "name": "everything-claude-code",
+  "name": "magic-claude",
   "version": "2.0.0-enterprise",
   "description": "Enterprise Stack Extension - Complete collection of battle-tested Claude Code configs",
   "author": {
@@ -134,8 +134,8 @@ my-plugin/
     "url": "https://github.com/doublefx"
   },
   "license": "MIT",
-  "homepage": "https://github.com/doublefx/everything-claude-code",
-  "repository": "https://github.com/doublefx/everything-claude-code",
+  "homepage": "https://github.com/doublefx/magic-claude",
+  "repository": "https://github.com/doublefx/magic-claude",
   "keywords": [
     "claude-code",
     "agents",

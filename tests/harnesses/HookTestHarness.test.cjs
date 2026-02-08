@@ -146,7 +146,7 @@ stdin.on('end', () => {
       const result = await harness.executeHook(hookPath, context);
 
       expect(result.stderr).toContain('CLAUDE_PLUGIN_ROOT=');
-      expect(result.stderr).toContain('everything-claude-code');
+      expect(result.stderr).toContain('magic-claude');
     });
   });
 

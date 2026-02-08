@@ -99,7 +99,7 @@ When working in `ml/`, detection returns: `['python']`
 
 ### Overview
 
-Instead of using complex hook matchers, v2.0 uses **runtime filtering** inside hook scripts. This provides:
+Magic Claude uses **runtime filtering** inside hook scripts. This provides:
 
 - **Flexibility**: Full JavaScript logic for filtering
 - **Maintainability**: Easy to understand and modify
@@ -108,7 +108,7 @@ Instead of using complex hook matchers, v2.0 uses **runtime filtering** inside h
 
 ### How It Works
 
-**Old Approach (v1.0)** - Matcher-based:
+**Old Approach** - Matcher-based:
 ```json
 {
   "matcher": "tool == \"Edit\" && tool_input.file_path matches \"\\.(py)$\"",
@@ -124,7 +124,7 @@ Instead of using complex hook matchers, v2.0 uses **runtime filtering** inside h
 - Complex matcher syntax
 - Limited logic (no function calls in matchers)
 
-**New Approach (v2.0)** - Runtime filtering:
+**New Approach** - Runtime filtering:
 ```json
 {
   "matcher": "tool == \"Edit\" || tool == \"Write\"",
@@ -878,7 +878,7 @@ vim src/database.py
 
 ## Summary
 
-v2.0 provides:
+Magic Claude provides:
 
 - **Intelligent project detection** with caching (<50ms)
 - **Runtime hook filtering** for multi-language projects

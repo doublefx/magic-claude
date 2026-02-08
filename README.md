@@ -1,6 +1,6 @@
-# Everything Claude Code
+# Magic Claude
 
-[![Stars](https://img.shields.io/github/stars/affaan-m/everything-claude-code?style=flat)](https://github.com/affaan-m/everything-claude-code/stargazers)
+[![Stars](https://img.shields.io/github/stars/doublefx/magic-claude?style=flat)](https://github.com/doublefx/magic-claude/stargazers)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Shell](https://img.shields.io/badge/-Shell-4EAA25?logo=gnu-bash&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white)
@@ -9,11 +9,9 @@
 ![Kotlin](https://img.shields.io/badge/-Kotlin-7F52FF?logo=kotlin&logoColor=white)
 ![Markdown](https://img.shields.io/badge/-Markdown-000000?logo=markdown&logoColor=white)
 
-**The complete collection of Claude Code configs from an Anthropic hackathon winner.**
+**Enterprise polyglot Claude Code plugin for Python, Java, Kotlin, Gradle, Maven, and CI/CD pipelines.**
 
-Production-ready agents, skills, hooks, commands, rules, and MCP configurations evolved over 10+ months of intensive daily use building real products.
-
-**NEW in v2.0**: Enterprise polyglot support (Python, Java, Kotlin, Groovy), modern 2026 tooling (Ruff, uv, Semgrep), intelligent runtime hook filtering, and one-command CI/CD pipeline generation for GitHub/GitLab/Bitbucket.
+Production-ready agents, skills, hooks, commands, rules, and templates with enterprise polyglot support, modern 2026 tooling (Ruff, uv, Semgrep), intelligent runtime hook filtering, and one-command CI/CD pipeline generation for GitHub/GitLab/Bitbucket.
 
 ---
 
@@ -25,12 +23,12 @@ This repo is the raw code only. The guides explain everything.
 <tr>
 <td width="50%">
 <a href="https://x.com/affaanmustafa/status/2012378465664745795">
-<img src="https://github.com/user-attachments/assets/1a471488-59cc-425b-8345-5245c7efbcef" alt="The Shorthand Guide to Everything Claude Code" />
+<img src="https://github.com/user-attachments/assets/1a471488-59cc-425b-8345-5245c7efbcef" alt="The Shorthand Guide to Magic Claude" />
 </a>
 </td>
 <td width="50%">
 <a href="https://x.com/affaanmustafa/status/2014040193557471352">
-<img src="https://github.com/user-attachments/assets/c9ca43bc-b149-427f-b551-af6840c368f0" alt="The Longform Guide to Everything Claude Code" />
+<img src="https://github.com/user-attachments/assets/c9ca43bc-b149-427f-b551-af6840c368f0" alt="The Longform Guide to Magic Claude" />
 </a>
 </td>
 </tr>
@@ -51,7 +49,7 @@ This repo is the raw code only. The guides explain everything.
 
 ---
 
-## What's New in v2.0
+## Highlights
 
 ### Enterprise Polyglot Support
 
@@ -193,10 +191,10 @@ This plugin now fully supports **Windows, macOS, and Linux**. All hooks and scri
 The plugin automatically detects your preferred package manager (npm, pnpm, yarn, or bun) with the following priority:
 
 1. **Environment variable**: `CLAUDE_PACKAGE_MANAGER`
-2. **Project config**: `.claude/everything-claude-code.package-manager.json`
+2. **Project config**: `.claude/magic-claude.package-manager.json`
 3. **package.json**: `packageManager` field
 4. **Lock file**: Detection from package-lock.json, yarn.lock, pnpm-lock.yaml, or bun.lockb
-5. **Global config**: `~/.claude/everything-claude-code.package-manager.json`
+5. **Global config**: `~/.claude/magic-claude.package-manager.json`
 6. **Fallback**: First available package manager
 
 To set your preferred package manager:
@@ -223,7 +221,7 @@ node scripts/setup-package-manager.cjs --detect
 This repo is a **Claude Code plugin** - install it directly or copy components manually.
 
 ```
-everything-claude-code/
+magic-claude/
 |-- .claude-plugin/   # Plugin and marketplace manifests
 |   |-- plugin.json         # Plugin metadata and component paths
 |   |-- marketplace.json    # Marketplace catalog for /plugin marketplace add
@@ -238,13 +236,13 @@ everything-claude-code/
 |   |-- e2e-runner.md        # Playwright E2E testing
 |   |-- refactor-cleaner.md  # Dead code cleanup
 |   |-- doc-updater.md       # Documentation sync
-|   |-- python-reviewer.md   # Python code review (NEW v2.0)
-|   |-- java-reviewer.md     # Java code review (NEW v2.0)
-|   |-- kotlin-reviewer.md   # Kotlin code review (NEW v2.0)
-|   |-- groovy-reviewer.md   # Groovy code review (NEW v2.0)
-|   |-- maven-expert.md      # Maven build optimization (NEW v2.0)
-|   |-- gradle-expert.md     # Gradle build optimization (NEW v2.0)
-|   |-- ci-cd-architect.md   # CI/CD pipeline generation (NEW v2.0)
+|   |-- python-reviewer.md   # Python code review
+|   |-- java-reviewer.md     # Java code review
+|   |-- kotlin-reviewer.md   # Kotlin code review
+|   |-- groovy-reviewer.md   # Groovy code review
+|   |-- maven-expert.md      # Maven build optimization
+|   |-- gradle-expert.md     # Gradle build optimization
+|   |-- ci-cd-architect.md   # CI/CD pipeline generation
 |
 |-- skills/           # Workflow definitions and domain knowledge (16 total)
 |   |-- coding-standards/           # Language best practices
@@ -256,11 +254,11 @@ everything-claude-code/
 |   |-- security-review/            # Security checklist
 |   |-- eval-harness/               # Verification loop evaluation (Longform Guide)
 |   |-- verification-loop/          # Continuous verification (Longform Guide)
-|   |-- python-patterns/            # Python best practices and idioms (NEW v2.0)
-|   |-- kotlin-patterns/            # Kotlin modern patterns (NEW v2.0)
-|   |-- maven-patterns/             # Maven project management (NEW v2.0)
-|   |-- gradle-patterns/            # Gradle build optimization (NEW v2.0)
-|   |-- ci-cd-patterns/             # CI/CD and deployment patterns (NEW v2.0)
+|   |-- python-patterns/            # Python best practices and idioms
+|   |-- kotlin-patterns/            # Kotlin modern patterns
+|   |-- maven-patterns/             # Maven project management
+|   |-- gradle-patterns/            # Gradle build optimization
+|   |-- ci-cd-patterns/             # CI/CD and deployment patterns
 |   |-- clickhouse-io/              # ClickHouse database patterns
 |   |-- project-guidelines-example/ # Template for project-specific guidelines
 |
@@ -298,21 +296,21 @@ everything-claude-code/
 |   |-- lib/                     # Shared utilities
 |   |   |-- utils.js             # Cross-platform file/path/system utilities
 |   |   |-- package-manager.js   # Package manager detection and selection
-|   |   |-- detect-project-type.js  # Polyglot project detection (NEW v2.0)
-|   |   |-- hook-utils.js           # Hook helper utilities (NEW v2.0)
+|   |   |-- detect-project-type.js  # Polyglot project detection
+|   |   |-- hook-utils.js           # Hook helper utilities
 |   |-- hooks/                   # Hook implementations (9 total)
 |   |   |-- session-start.js     # Load context on session start
 |   |   |-- session-end.js       # Save state on session end
 |   |   |-- pre-compact.js       # Pre-compaction state saving
 |   |   |-- suggest-compact.js   # Strategic compaction suggestions
 |   |   |-- evaluate-session.js  # Extract patterns from sessions
-|   |   |-- smart-formatter.js   # Universal auto-formatter (NEW v2.0)
-|   |   |-- python-security.js   # Python security scanning (NEW v2.0)
-|   |   |-- java-security.js     # Java security scanning (NEW v2.0)
-|   |   |-- maven-advisor.js     # Maven/Gradle best practices (NEW v2.0)
+|   |   |-- smart-formatter.js   # Universal auto-formatter
+|   |   |-- python-security.js   # Python security scanning
+|   |   |-- java-security.js     # Java security scanning
+|   |   |-- maven-advisor.js     # Maven/Gradle best practices
 |   |-- setup-package-manager.cjs # Interactive PM setup
 |
-|-- templates/        # CI/CD and deployment templates (NEW v2.0, 44 files)
+|-- templates/        # CI/CD and deployment templates
 |   |-- github-actions/          # GitHub Actions workflows (6 files)
 |   |-- gitlab-ci/               # GitLab CI pipelines (6 files)
 |   |-- bitbucket-pipelines/     # Bitbucket Pipelines (4 files)
@@ -356,10 +354,10 @@ The easiest way to use this repo - install as a Claude Code plugin:
 
 ```bash
 # Add this repo as a marketplace
-/plugin marketplace add affaan-m/everything-claude-code
+/plugin marketplace add doublefx/magic-claude
 
 # Install the plugin
-/plugin install everything-claude-code@everything-claude-code
+/plugin install magic-claude@magic-claude
 ```
 
 Or add directly to your `~/.claude/settings.json`:
@@ -367,15 +365,15 @@ Or add directly to your `~/.claude/settings.json`:
 ```json
 {
   "extraKnownMarketplaces": {
-    "everything-claude-code": {
+    "magic-claude": {
       "source": {
         "source": "github",
-        "repo": "affaan-m/everything-claude-code"
+        "repo": "doublefx/magic-claude"
       }
     }
   },
   "enabledPlugins": {
-    "everything-claude-code@everything-claude-code": true
+    "magic-claude@magic-claude": true
   }
 }
 ```
@@ -419,19 +417,19 @@ If you prefer manual control over what's installed:
 
 ```bash
 # Clone the repo
-git clone https://github.com/affaan-m/everything-claude-code.git
+git clone https://github.com/doublefx/magic-claude.git
 
 # Copy agents to your Claude config
-cp everything-claude-code/agents/*.md ~/.claude/agents/
+cp magic-claude/agents/*.md ~/.claude/agents/
 
 # Copy rules
-cp everything-claude-code/rules/*.md ~/.claude/rules/
+cp magic-claude/rules/*.md ~/.claude/rules/
 
 # Copy commands
-cp everything-claude-code/commands/*.md ~/.claude/commands/
+cp magic-claude/commands/*.md ~/.claude/commands/
 
 # Copy skills
-cp -r everything-claude-code/skills/* ~/.claude/skills/
+cp -r magic-claude/skills/* ~/.claude/skills/
 ```
 
 #### Add hooks to settings.json
@@ -575,7 +573,7 @@ Step-by-step walkthroughs for common scenarios:
 
 ### Release Notes
 
-- **[RELEASE-NOTES.md](RELEASE-NOTES.md)** - What's new in v2.0
+- **[RELEASE-NOTES.md](RELEASE-NOTES.md)** - Release Notes
 
 ---
 
@@ -625,12 +623,6 @@ Please contribute! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ---
 
-## Background
-
-I've been using Claude Code since the experimental rollout. Won the Anthropic x Forum Ventures hackathon in Sep 2025 building [zenith.chat](https://zenith.chat) with [@DRodriguezFX](https://x.com/DRodriguezFX) - entirely using Claude Code.
-
-These configs are battle-tested across multiple production applications.
-
 ---
 
 ## Important Notes
@@ -658,16 +650,15 @@ These configs work for my workflow. You should:
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=affaan-m/everything-claude-code&type=Date)](https://star-history.com/#affaan-m/everything-claude-code&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=doublefx/magic-claude&type=Date)](https://star-history.com/#doublefx/magic-claude&Date)
 
 ---
 
 ## Links
 
-- **Shorthand Guide (Start Here):** [The Shorthand Guide to Everything Claude Code](https://x.com/affaanmustafa/status/2012378465664745795)
-- **Longform Guide (Advanced):** [The Longform Guide to Everything Claude Code](https://x.com/affaanmustafa/status/2014040193557471352)
-- **Follow:** [@affaanmustafa](https://x.com/affaanmustafa)
-- **zenith.chat:** [zenith.chat](https://zenith.chat)
+- **Shorthand Guide (Start Here):** [The Shorthand Guide to Magic Claude](https://x.com/affaanmustafa/status/2012378465664745795)
+- **Longform Guide (Advanced):** [The Longform Guide to Magic Claude](https://x.com/affaanmustafa/status/2014040193557471352)
+- **GitHub:** [doublefx/magic-claude](https://github.com/doublefx/magic-claude)
 
 ---
 

@@ -167,7 +167,7 @@ For each hook type (`post-merge`, `post-rebase`, `post-checkout`, `post-rewrite`
    # Append to existing hook (preserve original functionality)
    cat >> .git/hooks/post-merge << 'EOF'
 
-   # --- Serena sync reminder (added by everything-claude-code) ---
+   # --- Serena sync reminder (added by magic-claude) ---
    echo "[Serena] External changes detected. Run /git-sync to update memories."
    echo "$(date -u '+%Y-%m-%d %H:%M:%S UTC') - post-merge" >> .git/serena-sync-reminder.log
    # --- End Serena section ---
@@ -178,7 +178,7 @@ For each hook type (`post-merge`, `post-rebase`, `post-checkout`, `post-rewrite`
    ```bash
    cat > .git/hooks/post-merge << 'EOF'
    #!/bin/bash
-   # Serena sync reminder (added by everything-claude-code)
+   # Serena sync reminder (added by magic-claude)
    echo "[Serena] External changes detected. Run /git-sync to update memories."
    echo "$(date -u '+%Y-%m-%d %H:%M:%S UTC') - post-merge" >> .git/serena-sync-reminder.log
    EOF

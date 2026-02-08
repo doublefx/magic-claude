@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**everything-claude-code** is a Claude Code plugin repository containing battle-tested agents, skills, hooks, commands, and rules. The plugin provides specialized subagents for delegation, workflow definitions, automation hooks, and always-follow guidelines evolved over 10+ months of production use.
+**magic-claude** is a Claude Code plugin repository containing battle-tested agents, skills, hooks, commands, and rules. The plugin provides specialized subagents for delegation, workflow definitions, automation hooks, and always-follow guidelines evolved over 10+ months of production use.
 
 **Tech Stack:**
 - Node.js scripts (cross-platform compatibility)
@@ -317,7 +317,7 @@ const {
   getAllWorkspacePackageManagers
 } = require('./scripts/lib/package-manager.cjs');
 
-// Workspace-aware functions (v2.0)
+// Workspace-aware functions
 if (isInWorkspace()) {
   const allPMs = getAllWorkspacePackageManagers();
   // [{ packageName, packagePath, ecosystem, name, config, source }, ...]
@@ -326,7 +326,7 @@ if (isInWorkspace()) {
   // { name, config, source, package, packagePath }
 }
 
-// Original functions (v1.0) - still work unchanged
+// Original functions - still work unchanged
 const pm = getPackageManager();
 // { name, config, source }
 ```

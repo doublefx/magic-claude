@@ -8,7 +8,7 @@
 
 ## Overview
 
-This tutorial covers advanced v2.0 features:
+This tutorial covers advanced features:
 - Monorepo and polyglot project support
 - Custom hooks and rules
 - Performance optimization
@@ -306,7 +306,7 @@ Claude will load `.claude/rules/api-standards.md` and check compliance.
 
 ```bash
 # Check cache
-cat .claude/everything-claude-code.project-type.json
+cat .claude/magic-claude.project-type.json
 
 # Output:
 # {
@@ -584,4 +584,4 @@ You've completed all tutorials!
 
 ---
 
-**Congratulations!** You're now an expert in Everything Claude Code v2.0!
+**Congratulations!** You're now an expert in Magic Claude!

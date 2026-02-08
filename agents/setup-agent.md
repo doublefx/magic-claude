@@ -37,7 +37,7 @@ If workspace detected but no root package.json:
 ### Step 3: Configure Package Manager
 - Detect current package manager from lock files
 - Ask user preference if no lock file
-- Create `.claude/everything-claude-code.package-manager.json` with preference
+- Create `.claude/magic-claude.package-manager.json` with preference
 - Report detection source and priority
 
 ### Step 4: Detect Project Ecosystems
@@ -69,10 +69,10 @@ If yes, run appropriate install command for each detected ecosystem.
 
 ### Step 7: Create Project Configuration
 Ensure `.claude/` directory exists with:
-- `everything-claude-code.package-manager.json` (from step 3)
-- `everything-claude-code.setup-status.json`
-- `everything-claude-code.project-type.json` (cache detected types)
-- `everything-claude-code.ecosystems.json` (cache detected ecosystems from step 4)
+- `magic-claude.package-manager.json` (from step 3)
+- `magic-claude.setup-status.json`
+- `magic-claude.project-type.json` (cache detected types)
+- `magic-claude.ecosystems.json` (cache detected ecosystems from step 4)
 
 **ecosystems.json schema (minimum required + optional enrichment):**
 ```json
@@ -134,7 +134,7 @@ The serena-setup skill contains the complete workflow for:
 - Ask about git hooks installation (append to existing hooks, don't overwrite)
 
 ### Step 9: Save Setup Status
-Write `.claude/everything-claude-code.setup-status.json`:
+Write `.claude/magic-claude.setup-status.json`:
 ```json
 {
   "completed_at": "ISO timestamp",

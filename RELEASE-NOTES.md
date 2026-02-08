@@ -1,419 +1,170 @@
-# Release Notes v2.0.0
+# Release Notes v1.0.0
 
-**Release Date**: 2026-01-25
-**Type**: Major Release
+**Release Date**: 2026-02-08
+**Type**: Initial Release
 **Status**: Production Ready
 
 ---
 
 ## Overview
 
-Everything Claude Code v2.0 is a **major upgrade** that transforms the plugin from a JavaScript/TypeScript-focused tool into a **complete enterprise polyglot development platform**.
+Magic Claude is an **enterprise polyglot Claude Code plugin** providing specialized agents, skills, hooks, commands, and rules for multi-language development workflows.
 
-**Headline Features**:
-- 🐍 Python support (Ruff, uv, Pyright, Semgrep)
-- ☕ Java support (google-java-format, SpotBugs, Maven/Gradle)
-- 🎯 Kotlin support (ktfmt, Detekt, Gradle)
-- 🚀 One-command CI/CD generation (GitHub/GitLab/Bitbucket)
-- 🧠 Intelligent runtime hook filtering
-- 📦 44 production-ready templates
-- 🎪 7 new specialized agents
-- 📚 5 new domain skills
-
----
-
-## What's New
-
-### 🌟 Enterprise Polyglot Support
-
-**Python** (Modern 2026 Tooling):
-- **Ruff**: 100x faster than black/flake8 for formatting and linting
-- **uv**: 30x faster than pip for package management
-- **Pyright**: 3x faster than mypy for type checking
-- **Semgrep**: Advanced security scanning (OWASP Top 10, SANS Top 25)
-- **Agent**: `/python-reviewer` for Python code review
-- **Skill**: `python-patterns` for modern Python idioms
-
-**Java** (Maven & Gradle):
-- **google-java-format**: Google Java Style formatting
-- **SpotBugs**: Security and bug detection
-- **Maven/Gradle**: Full build tool integration
-- **Agents**: `/java-reviewer`, `/maven-expert`, `/gradle-expert`
-- **Skills**: `maven-patterns`, `gradle-patterns`
-
-**Kotlin**:
-- **ktfmt**: Google Kotlin Style formatting
-- **Detekt**: Static analysis and linting
-- **Gradle Kotlin DSL**: First-class support
-- **Agent**: `/kotlin-reviewer`
-- **Skill**: `kotlin-patterns`
-
-**Groovy**:
-- **CodeNarc**: Linting for Groovy
-- **Gradle Scripts**: Build script support
-- **Agent**: `/groovy-reviewer`
-
-### 🎯 Intelligent Runtime Hook Filtering
-
-**Problem Solved**: In v1.0, all hooks ran for all projects, causing slowdowns and spurious warnings.
-
-**Solution**: Runtime filtering inside hook scripts:
-- Hooks detect project type (cached, <50ms)
-- Only relevant tools run
-- No cross-language interference in monorepos
-
-**Example**:
-```
-Edit Python file in a Python project:
-✅ Ruff runs (Python detected)
-❌ Prettier skipped (Node.js not detected)
-❌ google-java-format skipped (Java not detected)
-
-Result: 30x faster (1200ms → 40ms)
-```
-
-### 🚀 One-Command CI/CD Pipeline Generation
-
-Generate production-ready CI/CD pipelines with a single command:
-
-**Command**:
-```bash
-/ci-cd <platform> <language>
-```
-
-**Platforms** (44 templates total):
-- **GitHub Actions** (6 templates)
-- **GitLab CI** (6 templates)
-- **Bitbucket Pipelines** (4 templates)
-- **Docker** (5 Dockerfiles)
-- **Kubernetes** (6 manifests)
-- **Helm** (1 complete chart)
-- **Security** (6 config files)
-
-**Features**:
-- Dependency caching
-- Matrix builds (multi-version testing)
-- Security scanning (Semgrep, Gitleaks, Trivy)
-- Docker multi-stage builds
-- Kubernetes deployments
-- Helm charts
-
-**Example**:
-```bash
-/ci-cd github-actions python
-# Generates: .github/workflows/ci.yml
-# Includes: Testing, linting, security, Docker build
-```
-
-### 🧠 New Agents (7 total, 16 overall)
-
-1. **python-reviewer**: Python code review with modern best practices
-2. **java-reviewer**: Java code review with Spring Boot patterns
-3. **kotlin-reviewer**: Kotlin code review with coroutines expertise
-4. **groovy-reviewer**: Groovy code review (Gradle scripts)
-5. **maven-expert**: Maven build optimization and best practices
-6. **gradle-expert**: Gradle build optimization and Kotlin DSL
-7. **ci-cd-architect**: CI/CD pipeline design and generation
-
-**Existing Agents** (9 from v1.0):
-- planner, architect, tdd-guide, code-reviewer, security-reviewer
-- build-error-resolver, e2e-runner, refactor-cleaner, doc-updater
-
-### 📚 New Skills (5 total, 16 overall)
-
-1. **python-patterns**: Modern Python 3.10+ patterns (FastAPI, Django)
-2. **kotlin-patterns**: Kotlin 1.9+ patterns (coroutines, sealed classes)
-3. **maven-patterns**: Maven project management and multi-module projects
-4. **gradle-patterns**: Gradle optimization and Kotlin DSL
-5. **ci-cd-patterns**: CI/CD best practices and deployment patterns
-
-**Existing Skills** (11 from v1.0):
-- coding-standards, backend-patterns, frontend-patterns, continuous-learning
-- strategic-compact, tdd-workflow, security-review, eval-harness
-- verification-loop, clickhouse-io, project-guidelines-example
-
-### 🔧 New Hooks (4 total, 9 overall)
-
-1. **smart-formatter.js**: Universal auto-formatter (Python/Java/Kotlin/Node.js)
-2. **python-security.js**: Semgrep security scanning for Python
-3. **java-security.js**: SpotBugs security scanning for Java
-4. **maven-advisor.js**: Real-time Maven/Gradle command optimization
-
-**Refactored**: Consolidated multiple inline formatters into `smart-formatter.js`
-
-### 🔒 Security Fixes
-
-**Critical Security Improvements** (commit 3a47770):
-
-1. **Command Injection Prevention (2 CRITICAL)**
-   - Fixed command injection vulnerabilities in all hooks
-   - Created `safe-exec.js` library for secure command execution
-   - Replaced `execSync(\`command ${arg}\`)` with `execFileSync(command, [args])`
-   - All file paths and user inputs now validated before execution
-
-2. **Plugin Spec Compliance (3 HIGH)**
-   - Added missing `version`, `agents`, `hooks`, `rules` fields to plugin.json
-   - Added input validation to `ci-cd.js` command
-   - Improved error handling in hooks to guarantee context pass-through
-
-**Files Updated**:
-- `scripts/lib/safe-exec.js` (NEW) - Safe command execution library
-- `scripts/hooks/smart-formatter.cjs` - Now uses safe execution
-- `scripts/hooks/python-security.cjs` - Enhanced error handling
-- `scripts/hooks/java-security.cjs` - Safe command execution
-- `commands/ci-cd.js` - Input validation added
-- `.claude-plugin/plugin.json` - Compliance fixes
-
-**Security Scanning**:
-- ✅ Semgrep: No critical or high severity issues
-- ✅ npm audit: No vulnerabilities
-- ✅ Gitleaks: No secrets detected
-
-All security fixes have been tested and verified in production.
-
-### 📦 New Templates (44 files)
-
-**CI/CD Templates**:
-- GitHub Actions: 6 workflows
-- GitLab CI: 6 pipelines
-- Bitbucket: 4 pipelines
-
-**Docker**:
-- 4 language-specific Dockerfiles
-- Multi-stage builds with security best practices
-
-**Kubernetes**:
-- 6 production-ready manifests
-- 1 complete Helm chart (9 templates)
-
-**Security**:
-- Semgrep, Gitleaks, Trivy configurations
-
-### ⚡ Performance Improvements
-
-**Tool Speedups** (2026 vs 2024):
-- Ruff (Python formatter): **100x faster**
-- uv (Python package manager): **30x faster**
-- Pyright (Python type checker): **3x faster**
-- google-java-format: **2.7x faster**
-- ktfmt (Kotlin formatter): **2.7x faster**
-- Gradle with caching: **12x faster**
-
-**Plugin Performance**:
-- Project detection (cached): **<50ms** (95%+ hit rate)
-- Hook execution: **<2s** (95th percentile)
-- Test suite (150 tests): **~10s**
-
-**CI/CD Pipeline Performance**:
-- Python pipeline: **4.2x faster** (74s → 17s)
-- Maven parallel builds: **2.5x faster**
-- Gradle cached builds: **12x faster**
-
-### 🧪 Test Suite Expansion
-
-**v1.0**: ~30 tests
-**v2.0**: 150 tests (5x increase)
-
-**Coverage**:
-- Unit tests: 80+ tests (lib, hooks)
-- Integration tests: 50+ tests (Python, Java, Kotlin, build tools)
-- E2E tests: 20+ tests (CI/CD generation, monorepo)
-- Test harnesses: Reusable test infrastructure
-
-**Coverage**: 90%+ across all modules
+**Key Capabilities**:
+- 17 specialized agents for code review, planning, TDD, security, and CI/CD
+- 24 skills covering domain knowledge, proactive workflows, and Serena MCP integration
+- 18 slash commands for setup, development, documentation, and verification
+- 16 hooks for auto-formatting, security scanning, context injection, and session persistence
+- 49 production-ready templates for CI/CD, Docker, Kubernetes, Helm, and security
+- Workspace and monorepo support (pnpm, Nx, Lerna, Yarn, Turborepo)
+- Multi-ecosystem detection (Node.js, JVM, Python, Rust)
+- Cross-platform compatibility (Windows, macOS, Linux)
 
 ---
 
-## Breaking Changes
+## Installation
 
-### ✅ None!
+```bash
+/plugin install magic-claude
+```
 
-v2.0 is **99% backwards compatible** with v1.0.
+Or clone directly:
 
-**What Still Works**:
-- All v1.0 agents
-- All v1.0 skills
-- All v1.0 commands
-- All v1.0 hooks
-- Package manager detection
-- Memory persistence
-- Verification loops
-
-**What Changed Internally** (no user impact):
-- Formatter hooks consolidated into `smart-formatter.js`
-- Runtime filtering added (hooks now detect project type)
-- Test infrastructure upgraded (30 → 156+ tests)
+```bash
+git clone https://github.com/doublefx/magic-claude.git
+```
 
 ---
 
-## Migration Guide
+## Language Support
 
-Upgrading from v1.0 to v2.0 is **seamless**:
+**JavaScript / TypeScript**: Prettier, ESLint, TypeScript type checking
 
-### Via Plugin Marketplace
+**Python**: Ruff (100x faster formatting), uv (30x faster packages), Pyright, Semgrep security scanning
 
-```bash
-/plugin update everything-claude-code@everything-claude-code
-```
+**Java**: google-java-format, SpotBugs security scanning, Maven and Gradle integration
 
-### Via Manual Installation
+**Kotlin**: ktfmt, Detekt static analysis, Gradle Kotlin DSL
 
-```bash
-cd /path/to/everything-claude-code
-git pull origin main
-cp agents/*.md ~/.claude/agents/
-cp commands/*.md ~/.claude/commands/
-cp -r skills/* ~/.claude/skills/
-```
-
-**Time Required**: 2-5 minutes
-**Breaking Changes**: None
-**Rollback**: Available via git revert
+**Groovy**: CodeNarc linting, Gradle build script support
 
 ---
 
-## New Documentation
+## Agents (17)
 
-**Core Docs**:
-- [FEATURES.md](docs/FEATURES.md) - Complete feature documentation
-- [AGENT-CATALOG.md](docs/AGENT-CATALOG.md) - All 16 agents with examples
-- [PERFORMANCE.md](docs/PERFORMANCE.md) - Benchmarks and optimization tips
+| Agent | Model | Purpose |
+|-------|-------|---------|
+| planner | opus | Feature implementation planning |
+| architect | opus | System design decisions |
+| tdd-guide | sonnet | Test-driven development enforcement |
+| code-reviewer | opus | Quality and security review |
+| security-reviewer | opus | Vulnerability analysis |
+| build-error-resolver | sonnet | Fix build errors |
+| e2e-runner | sonnet | Playwright E2E testing |
+| refactor-cleaner | haiku | Dead code cleanup |
+| doc-updater | haiku | Documentation sync |
+| setup-agent | sonnet | Project setup and configuration |
+| gradle-expert | sonnet | Gradle build optimization |
+| maven-expert | sonnet | Maven dependency management |
+| ci-cd-architect | opus | CI/CD pipeline design |
+| python-reviewer | opus | Python code quality and security |
+| java-reviewer | opus | Java code quality and security |
+| groovy-reviewer | opus | Groovy/Spock/Gradle scripts |
+| kotlin-reviewer | opus | Kotlin idioms and null safety |
 
-**Tutorials** (5 guides):
-- [01-getting-started.md](docs/tutorials/01-getting-started.md) - Installation and basics
-- [02-python-development.md](docs/tutorials/02-python-development.md) - Complete Python workflow
-- [03-java-development.md](docs/tutorials/03-java-development.md) - Complete Java workflow
-- [04-cicd-generation.md](docs/tutorials/04-cicd-generation.md) - CI/CD pipeline setup
-- [05-advanced-features.md](docs/tutorials/05-advanced-features.md) - Monorepos and customization
+## Skills (24)
 
-**Total Documentation**: 12,000+ lines across 13 files
+**Proactive (3)**: proactive-planning, proactive-review, proactive-tdd
+
+**Domain Knowledge (10)**: backend-patterns, frontend-patterns, coding-standards, security-review, tdd-workflow, python-patterns, maven-patterns, gradle-patterns, kotlin-patterns, ci-cd-patterns
+
+**Workflow (6)**: continuous-learning, eval-harness, strategic-compact, verification-loop, clickhouse-io, project-guidelines-example
+
+**Serena Integration (5)**: serena-setup, serena-status, serena-cleanup, git-sync, memory-lifecycle
+
+## Commands (18)
+
+**Setup**: `/setup`, `/setup-pm`, `/setup-ecosystem`
+**Development**: `/tdd`, `/plan`, `/code-review`, `/build-fix`, `/e2e`, `/refactor-clean`, `/orchestrate`, `/test-coverage`, `/ci-cd`, `/eval`
+**Documentation**: `/update-codemaps`, `/update-docs`
+**Learning & Verification**: `/learn`, `/checkpoint`, `/verify`
+
+## Hooks (16)
+
+- **UserPromptSubmit**: Branch/time/task context injection
+- **PermissionRequest**: Auto-approve safe bash commands
+- **PreToolUse**: Code review suggestions before commit, strategic compaction
+- **PreCompact**: State persistence, pattern evaluation
+- **SessionStart**: Context loading, package manager detection
+- **PostToolUse**: Auto-formatting, security scanning, type checking, console.log detection, PR logging
+- **Stop**: Console.log validation in modified files
+- **SessionEnd**: Session persistence, pattern extraction
+- **Notification**: Desktop notifications
+
+## Templates (49)
+
+- **CI/CD Pipelines** (16): GitHub Actions, GitLab CI, Bitbucket Pipelines for Node.js, Python, Java (Maven/Gradle)
+- **Docker** (5): Multi-stage Dockerfiles with security best practices
+- **Kubernetes** (6): Deployment, service, ingress, configmap, HPA, secrets
+- **Helm** (11): Complete application chart with all standard templates
+- **Security** (6): Semgrep, Gitleaks, Trivy configurations
+- **Serena** (5): Memory templates and git hooks
+
+---
+
+## Workspace & Monorepo Support
+
+- Auto-detects workspace type: pnpm, Nx, Lerna, Yarn, Turborepo
+- Per-package ecosystem identification (Node.js, JVM, Python, Rust)
+- Configuration hierarchy: global < workspace < package
+- Workspace-aware package manager resolution
+- Cross-platform command generation with wrapper detection
+
+---
+
+## Test Suite
+
+197 tests across 10 test suites, all passing.
+
+| Test Suite | Tests |
+|------------|-------|
+| lib/utils | 22 |
+| lib/package-manager | 27 |
+| lib/workspace-context | 20 |
+| lib/ecosystems | 26 |
+| lib/workspace-detection | 22 |
+| lib/workspace-ecosystems | 14 |
+| lib/config-hierarchy | 15 |
+| lib/tool-detection | 17 |
+| lib/workspace-commands | 21 |
+| lib/serena | 13 |
+| **Total** | **197** |
 
 ---
 
 ## Known Issues
 
-### None Critical
+1. **3 orphaned hook scripts**: `maven-advisor.js`, `post-edit-lint.cjs`, `python-security.js` exist on disk but are not wired in `hooks.json`. Pending activation or removal.
 
-**Minor Issues**:
-1. **First-time cache miss**: Project detection takes ~150ms on first run (then <50ms cached)
-   - **Impact**: Minimal
-   - **Workaround**: Cache automatically created
+2. **First-time cache miss**: Project type detection takes ~150ms on first run (then <50ms cached).
 
-2. **Tool installation required**: Auto-formatting requires tools installed (Ruff, google-java-format, etc.)
-   - **Impact**: Medium
-   - **Workaround**: Tools installation instructions in tutorials
-
-3. **E2E test dependency**: CI/CD generation tests require `js-yaml` package
-   - **Impact**: Low (dev-only)
-   - **Fix**: `npm install js-yaml` (pending automatic install)
+3. **Tool installation required**: Auto-formatting requires language tools installed (Ruff, google-java-format, etc.).
 
 ---
 
-## Roadmap (Phase 7+)
+## Roadmap
 
-**Future Enhancements** (community feedback welcome):
-
-**More Languages**:
-- Go (gofmt, golangci-lint, goreleaser)
-- Rust (rustfmt, clippy, cargo)
-- C#/.NET (dotnet format, Roslyn analyzers)
-- Ruby (RuboCop, Sorbet)
-
-**More Platforms**:
-- CircleCI configurations
-- Azure DevOps pipelines
-- Jenkins pipelines
-- Travis CI
-
-**Advanced CI/CD**:
-- Multi-cloud deployment (AWS, GCP, Azure)
+- Monorepo-aware hook filtering (per-package tool selection)
+- Go ecosystem support (gofmt, golangci-lint)
+- Rust ecosystem support (rustfmt, clippy)
+- C#/.NET support (dotnet format, Roslyn)
+- CircleCI and Azure DevOps pipeline templates
 - GitOps workflows (ArgoCD, Flux)
-- Progressive delivery (Flagger, Argo Rollouts)
-
-**ML/Data Engineering**:
-- MLflow integration
-- DVC (Data Version Control)
-- dbt (data build tool)
-- Airflow DAGs
-
-**Enterprise Features**:
-- SAML/SSO integration
-- Compliance reporting
-- Audit logging
-- Policy enforcement
 
 ---
 
-## Credits
-
-**Core Contributors**:
-- Affaan Mustafa ([@affaanmustafa](https://x.com/affaanmustafa)) - Original author, v1.0
-- Claude Sonnet 4.5 (AI) - v2.0 implementation and documentation
-
-**Community**:
-- Beta testers and early adopters
-- GitHub contributors
-- Claude Code team at Anthropic
-
-**Inspiration**:
-- Anthropic x Forum Ventures hackathon (Sep 2025)
-- [zenith.chat](https://zenith.chat) - Built entirely with Claude Code
+**Issues & Feedback**: [github.com/doublefx/magic-claude](https://github.com/doublefx/magic-claude/issues)
 
 ---
 
-## Upgrade Now
-
-```bash
-# Via plugin marketplace (recommended)
-/plugin update everything-claude-code@everything-claude-code
-
-# Via manual installation
-git pull origin main
-```
-
-**Questions?** Open an issue on [GitHub](https://github.com/affaan-m/everything-claude-code/issues)
-
-**Feedback?** We'd love to hear from you!
-
-**Star the repo** if v2.0 helps your workflow!
-
----
-
-## Statistics
-
-**Version Comparison**:
-
-| Metric | v1.0 | v2.0 | Change |
-|--------|------|------|--------|
-| Agents | 9 | 16 | +78% |
-| Skills | 11 | 16 | +45% |
-| Commands | 10 | 15 | +50% |
-| Hooks | 5 | 9 | +80% |
-| Templates | 0 | 44 | NEW |
-| Languages | 2 (JS/TS) | 6 (JS/TS/Python/Java/Kotlin/Groovy) | +200% |
-| Tests | ~30 | 150 | +400% |
-| Coverage | ~60% | ~90% | +50% |
-| Documentation | 2,000 lines | 12,000+ lines | +500% |
-| Performance | Baseline | 4-100x faster | See PERFORMANCE.md |
-
-**Project Scale**:
-- 122+ files created
-- ~50,000+ lines of code and documentation
-- 10+ weeks of development (orchestrated implementation)
-- Production-ready quality
-
----
-
-## Thank You
-
-Thank you to everyone who contributed feedback, bug reports, and feature requests during v1.0. v2.0 wouldn't be possible without the community.
-
-**Special thanks** to the Claude Code team at Anthropic for building an incredible development platform.
-
----
-
-**Enjoy v2.0!**
-
----
-
-*Release Notes Version: 1.0 | Published: 2026-01-25*
+*v1.0.0 | 2026-02-08*
