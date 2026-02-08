@@ -246,7 +246,7 @@ magic-claude/
 |   |-- gradle-expert.md     # Gradle build optimization
 |   |-- ci-cd-architect.md   # CI/CD pipeline generation
 |
-|-- skills/           # Workflow definitions and domain knowledge (17 total)
+|-- skills/           # Workflow definitions and domain knowledge (18 total)
 |   |-- coding-standards/           # Language best practices
 |   |-- backend-patterns/           # API, database, caching patterns
 |   |-- frontend-patterns/          # React, Next.js patterns
@@ -263,6 +263,7 @@ magic-claude/
 |   |-- ci-cd-patterns/             # CI/CD and deployment patterns
 |   |-- clickhouse-io/              # ClickHouse database patterns
 |   |-- claude-mem-context/          # Cross-session historical context
+|   |-- extend-plugin/              # Generate new plugin components
 |   |-- project-guidelines-example/ # Template for project-specific guidelines
 |
 |-- commands/         # Slash commands for quick execution (14 total)

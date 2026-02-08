@@ -12,7 +12,7 @@ Magic Claude is an **enterprise polyglot Claude Code plugin** providing speciali
 
 **Key Capabilities**:
 - 19 specialized agents for code review, planning, TDD, security, build fixing, and CI/CD
-- 23 skills covering domain knowledge, proactive workflows, and Serena MCP integration
+- 25 skills covering domain knowledge, proactive workflows, plugin extension, and Serena MCP integration
 - 17 slash commands for setup, development, documentation, and verification
 - 16 hooks for auto-formatting, security scanning, context injection, and session persistence
 - 49 production-ready templates for CI/CD, Docker, Kubernetes, Helm, and security
@@ -74,13 +74,13 @@ git clone https://github.com/doublefx/magic-claude.git
 | groovy-reviewer | opus | Groovy/Spock/Gradle scripts |
 | kotlin-reviewer | opus | Kotlin idioms and null safety |
 
-## Skills (24)
+## Skills (25)
 
 **Proactive (3)**: proactive-planning, proactive-review, proactive-tdd
 
 **Domain Knowledge (10)**: backend-patterns, frontend-patterns, coding-standards, security-review, tdd-workflow, python-patterns, maven-patterns, gradle-patterns, kotlin-patterns, ci-cd-patterns
 
-**Workflow (6)**: continuous-learning, eval-harness, strategic-compact, verification-loop, clickhouse-io, project-guidelines-example
+**Workflow (7)**: continuous-learning, eval-harness, strategic-compact, verification-loop, clickhouse-io, extend-plugin, project-guidelines-example
 
 **Serena Integration (4)**: serena-setup, serena-status, serena-cleanup, git-sync
 

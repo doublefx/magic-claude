@@ -59,6 +59,9 @@ When installed as a plugin, use these slash commands:
 /verify            # Run verification loop
 /eval              # Eval-driven development workflow
 
+# Plugin Extension
+/extend            # Generate new plugin components (agents, skills, hooks, commands, rules)
+
 # Serena Integration (if Serena MCP installed)
 /serena-setup      # Complete Serena configuration
 /serena-status     # Configuration diagnostics
@@ -202,6 +205,7 @@ Skills define reusable workflows and domain knowledge in `skills/` directory:
 - **strategic-compact/** - Manual compaction suggestions
 - **eval-harness/** - Verification loop evaluation
 - **verification-loop/** - Continuous verification
+- **extend-plugin/** - Generate new plugin components following existing patterns
 
 Skills with `context: fork` run in isolated subagent context to preserve main conversation.
 
