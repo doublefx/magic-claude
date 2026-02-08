@@ -45,26 +45,6 @@
           }
         ],
         "description": "Suggest manual compaction at logical intervals"
-      },
-      {
-        "matcher": "mcp__plugin_serena_serena__(?!read_memory|write_memory|list_memories|edit_memory|delete_memory|check_onboarding_performed|onboarding|activate_project|get_current_config|prepare_for_new_conversation|initial_instructions|think_about_collected_information|think_about_task_adherence|think_about_whether_you_are_done).*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/serena-memory-check.cjs\""
-          }
-        ],
-        "description": "[Serena] FORCE memory check before Serena exploration tools (configurable via serena.enabled)"
-      },
-      {
-        "matcher": "Task",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/serena-task-check.cjs\""
-          }
-        ],
-        "description": "[Serena] FORCE memory check before Task/Explore agents (configurable via serena.enabled)"
       }
     ],
     "PreCompact": [
@@ -78,13 +58,9 @@
           {
             "type": "command",
             "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/evaluate-session.cjs\""
-          },
-          {
-            "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/serena-pre-compact.cjs\""
           }
         ],
-        "description": "Save state, evaluate patterns, and preserve Serena memories before compaction"
+        "description": "Save state and evaluate patterns before compaction"
       }
     ],
     "SessionStart": [
@@ -109,36 +85,6 @@
           }
         ],
         "description": "Suggest code review when tasks are completed"
-      },
-      {
-        "matcher": "TaskUpdate",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/serena-evaluate-memories.cjs\""
-          }
-        ],
-        "description": "[Serena] Evaluate and update memories on task completion (configurable via serena.enabled)"
-      },
-      {
-        "matcher": "mcp__plugin_serena_serena__(?!read_memory|write_memory|list_memories|edit_memory|delete_memory|check_onboarding_performed|onboarding|activate_project|get_current_config|prepare_for_new_conversation|initial_instructions|think_about_collected_information|think_about_task_adherence|think_about_whether_you_are_done).*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/serena-document-reminder.cjs\""
-          }
-        ],
-        "description": "[Serena] Remind to document findings after Serena exploration (configurable via serena.enabled)"
-      },
-      {
-        "matcher": "Task",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/serena-task-reminder.cjs\""
-          }
-        ],
-        "description": "[Serena] Remind to document findings after Task agents (configurable via serena.enabled)"
       },
       {
         "matcher": "Bash",
@@ -169,6 +115,26 @@
           }
         ],
         "description": "Run security checks on Java files (filters for .java internally)"
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/python-security.js\""
+          }
+        ],
+        "description": "Run security checks on Python files (Semgrep + pip-audit, filters for .py internally)"
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/maven-advisor.js\""
+          }
+        ],
+        "description": "Maven/Gradle best practice advice (suggests mvn verify, Gradle wrapper usage)"
       },
       {
         "matcher": "Edit",
@@ -235,30 +201,6 @@
           }
         ],
         "description": "Cross-platform desktop notification when Claude needs input"
-      }
-    ],
-    "SubagentStart": [
-      {
-        "matcher": ".*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/serena-subagent-start.cjs\""
-          }
-        ],
-        "description": "[Serena] Track when exploration subagent starts (for later documentation)"
-      }
-    ],
-    "SubagentStop": [
-      {
-        "matcher": ".*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/serena-subagent-stop.cjs\""
-          }
-        ],
-        "description": "[Serena] Enforce documentation after exploration agent completes"
       }
     ]
   }

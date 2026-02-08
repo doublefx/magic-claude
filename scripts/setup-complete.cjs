@@ -2,18 +2,22 @@
 /**
  * Complete Project Setup Script
  *
- * Orchestrates full project setup:
+ * Simplified approach - Serena is the source of truth:
+ * - No JSON config files created
+ * - Setup completion = .serena/project.yml exists
+ * - Package manager detected from lock files
+ * - Project types detected on the fly
+ *
+ * Orchestrates:
  * 1. Workspace detection and initialization
- * 2. Package manager configuration
+ * 2. Package manager detection
  * 3. Ecosystem detection
- * 4. Tool verification
- * 5. Dependency installation
+ * 4. Serena integration (main setup work)
  */
 
 const path = require('path');
 const { execSync } = require('child_process');
 const fs = require('fs');
-const crypto = require('crypto');
 
 const PLUGIN_ROOT = process.env.CLAUDE_PLUGIN_ROOT || path.join(__dirname, '..');
 
@@ -26,7 +30,7 @@ const {
   detectLanguages
 } = require('./lib/serena.cjs');
 
-// Project type indicators (mirrors detect-project-type.js)
+// Project type indicators
 const PROJECT_INDICATORS = {
   nodejs: ['package.json', 'package-lock.json', 'yarn.lock', 'pnpm-lock.yaml', 'bun.lockb'],
   python: ['pyproject.toml', 'setup.py', 'requirements.txt', 'Pipfile', 'poetry.lock'],
@@ -34,15 +38,12 @@ const PROJECT_INDICATORS = {
   gradle: ['build.gradle', 'build.gradle.kts', 'settings.gradle', 'gradlew']
 };
 
-const MANIFEST_FILES = ['package.json', 'pyproject.toml', 'pom.xml', 'build.gradle', 'build.gradle.kts', 'requirements.txt', 'setup.py'];
-
 /**
- * Detect project types and create cache file
+ * Detect project types (no caching - just detection)
  */
-function detectAndCacheProjectTypes(cwd) {
+function detectProjectTypes(cwd) {
   const types = [];
 
-  // Detect types
   for (const [type, indicators] of Object.entries(PROJECT_INDICATORS)) {
     for (const indicator of indicators) {
       if (fs.existsSync(path.join(cwd, indicator))) {
@@ -54,45 +55,16 @@ function detectAndCacheProjectTypes(cwd) {
     }
   }
 
-  // Calculate manifest hash for cache invalidation
-  const hash = crypto.createHash('sha256');
-  let foundManifests = false;
-  for (const manifest of MANIFEST_FILES) {
-    const manifestPath = path.join(cwd, manifest);
-    try {
-      if (fs.existsSync(manifestPath)) {
-        const stats = fs.statSync(manifestPath);
-        hash.update(`${manifest}:${stats.mtimeMs}`);
-        foundManifests = true;
-      }
-    } catch {
-      continue;
-    }
-  }
-  if (!foundManifests) hash.update('no-manifests');
-  const manifestHash = hash.digest('hex');
+  return types;
+}
 
-  // Write cache file
-  const cacheDir = path.join(cwd, '.claude');
-  const cacheFile = path.join(cacheDir, 'everything-claude-code.project-type.json');
-
-  try {
-    if (!fs.existsSync(cacheDir)) {
-      fs.mkdirSync(cacheDir, { recursive: true });
-    }
-
-    const cacheData = {
-      types,
-      hash: manifestHash,
-      detected_at: new Date().toISOString(),
-      cwd
-    };
-
-    fs.writeFileSync(cacheFile, JSON.stringify(cacheData, null, 2), 'utf8');
-    return { types, cacheFile };
-  } catch (err) {
-    return { types, error: err.message };
-  }
+/**
+ * Check if Serena setup is complete (source of truth)
+ */
+function isSerenaSetupComplete() {
+  const cwd = process.cwd();
+  const serenaProjectFile = path.join(cwd, '.serena', 'project.yml');
+  return fs.existsSync(serenaProjectFile);
 }
 
 function showHelp() {
@@ -109,6 +81,9 @@ Options:
   --verbose         Show detailed output
   --help, -h        Show this help message
 
+Note: This script uses Serena as the source of truth for setup status.
+      No JSON config files are created - all configuration is in Serena memories.
+
 Examples:
   # Interactive setup in current directory
   node scripts/setup-complete.cjs
@@ -118,9 +93,6 @@ Examples:
 
   # Check only (dry run)
   node scripts/setup-complete.cjs --check
-
-  # Setup specific directory
-  node scripts/setup-complete.cjs /path/to/project
 `);
 }
 
@@ -153,7 +125,6 @@ async function main() {
 
   // Parse options
   const autoYes = args.includes('--yes') || args.includes('-y');
-  const noInstall = args.includes('--no-install');
   const checkOnly = args.includes('--check');
   const verbose = args.includes('--verbose');
   const showHelpFlag = args.includes('--help') || args.includes('-h');
@@ -179,56 +150,33 @@ async function main() {
     console.log('🔍 CHECK MODE - No modifications will be made\n');
   }
 
-  // Step 1: Workspace Detection & Initialization
+  // Step 1: Workspace Detection
   console.log('━━━ Step 1: Workspace Detection ━━━\n');
 
   const setupEcosystemArgs = ['--detect'];
   if (autoYes) setupEcosystemArgs.push('--yes');
-  if (checkOnly) {
-    // Just detect, don't initialize
-    runScript('setup-ecosystem.cjs', setupEcosystemArgs, { verbose });
-  } else {
-    // This will handle workspace initialization if needed
-    const success = runScript('setup-ecosystem.cjs', setupEcosystemArgs, { verbose });
-    if (!success && !autoYes) {
-      console.log('\n⚠️  Ecosystem setup had issues. Continue anyway? [y/N]');
-      // In real implementation, would wait for user input
-      // For now, continue
-    }
-  }
+  runScript('setup-ecosystem.cjs', setupEcosystemArgs, { verbose });
 
-  // Step 2: Package Manager Configuration
-  console.log('\n━━━ Step 2: Package Manager Configuration ━━━\n');
+  // Step 2: Package Manager Detection (from lock files, no config file)
+  console.log('\n━━━ Step 2: Package Manager Detection ━━━\n');
 
-  if (checkOnly) {
-    runScript('setup-package-manager.cjs', ['--detect'], { verbose });
-  } else {
-    // This will detect and potentially configure
-    runScript('setup-package-manager.cjs', ['--detect'], { verbose });
+  runScript('setup-package-manager.cjs', ['--detect'], { verbose });
 
-    // If no config exists and not auto-yes, could prompt to set one
-    // For now, detection is enough
-  }
-
-  // Step 3: Project Type Detection & Caching
+  // Step 3: Project Type Detection (no caching)
   console.log('\n━━━ Step 3: Project Type Detection ━━━\n');
 
-  const projectTypeResult = detectAndCacheProjectTypes(process.cwd());
-  if (projectTypeResult.types.length > 0) {
-    console.log(`✓ Detected project types: ${projectTypeResult.types.join(', ')}`);
-    if (projectTypeResult.cacheFile && !checkOnly) {
-      console.log(`  Cache: .claude/everything-claude-code.project-type.json`);
-    }
+  const projectTypes = detectProjectTypes(process.cwd());
+  if (projectTypes.length > 0) {
+    console.log(`✓ Detected project types: ${projectTypes.join(', ')}`);
   } else {
     console.log('○ No recognized project types detected');
   }
 
-  // Step 4: Serena Integration (optional)
+  // Step 4: Serena Integration
   console.log('\n━━━ Step 4: Serena Integration ━━━\n');
 
-  let serenaSetupComplete = false;
-  let serenaSetupNeeded = false;
   const serenaInstalled = isSerenaInstalled();
+  const serenaSetupComplete = isSerenaSetupComplete();
 
   if (serenaInstalled) {
     console.log('✓ Serena MCP plugin detected');
@@ -242,55 +190,48 @@ async function main() {
     // Check JetBrains
     const jetbrainsAvailable = isJetBrainsAvailable();
     if (jetbrainsAvailable) {
-      console.log('  ✓ JetBrains tools available (recommended for best performance)');
+      console.log('  ✓ JetBrains tools available');
     } else if (languages.length > 1) {
-      console.log('  💡 TIP: Multiple languages detected - consider JetBrains plugin ($5/mo or $50/yr)');
-      console.log('     for first-class multi-language support and external library indexing');
+      console.log('  💡 TIP: Multiple languages detected - consider JetBrains plugin');
     }
 
-    // Check project activation
-    if (isProjectActivated()) {
-      console.log('  ✓ Serena project already activated');
-      serenaSetupComplete = true;
-    } else if (!checkOnly && isSerenaEnabled()) {
+    // Check Serena setup status (via .serena/project.yml)
+    if (serenaSetupComplete) {
+      console.log('  ✓ Serena setup complete (.serena/project.yml exists)');
+    } else if (!checkOnly) {
       console.log('  → Serena setup needed');
-      serenaSetupNeeded = true;
+      console.log('\n  ⚠️  CLAUDE: Invoke /serena-setup skill to complete Serena integration.');
+      console.log('     This will:');
+      console.log('     - Activate project in Serena');
+      console.log('     - Configure project settings');
+      console.log('     - Install git hooks for sync reminders');
     }
 
-    // Cache Serena status
+    // Persist to env file for other hooks
     if (!checkOnly && process.env.CLAUDE_ENV_FILE) {
       try {
         const envLines = [
           `export SERENA_INSTALLED="true"`,
+          `export SERENA_SETUP_COMPLETE="${serenaSetupComplete}"`,
           `export SERENA_JETBRAINS_AVAILABLE="${jetbrainsAvailable}"`,
-          `export SERENA_LANGUAGES="${languages.join(',')}"`,
-          `export SERENA_SETUP_NEEDED="${serenaSetupNeeded}"`
+          `export SERENA_LANGUAGES="${languages.join(',')}"`
         ];
         fs.appendFileSync(process.env.CLAUDE_ENV_FILE, envLines.join('\n') + '\n');
       } catch {
         // Non-fatal
       }
     }
-
-    // Output instruction for Claude to invoke the skill
-    if (serenaSetupNeeded && !checkOnly) {
-      console.log('\n  ⚠️  CLAUDE: You MUST now invoke the /serena-setup skill to complete Serena integration.');
-      console.log('     Use the Skill tool with skill: "serena-setup"');
-    }
   } else {
     console.log('ℹ️  Serena MCP plugin not detected');
-    console.log('   Serena provides semantic code analysis and memory-first workflow.');
+    console.log('   Serena provides semantic code analysis and persistent memory.');
     console.log('   To install: /plugin install serena');
-    console.log('   Then run: /serena-setup');
   }
 
   // Step 5: Final Summary
   console.log('\n━━━ Setup Summary ━━━\n');
 
-  // Check if workspace
   const hasPackageJson = fs.existsSync(path.join(process.cwd(), 'package.json'));
   const hasPnpmWorkspace = fs.existsSync(path.join(process.cwd(), 'pnpm-workspace.yaml'));
-  const hasClaudeConfig = fs.existsSync(path.join(process.cwd(), '.claude'));
 
   if (hasPackageJson) {
     console.log('✓ package.json found');
@@ -300,55 +241,28 @@ async function main() {
     console.log('✓ Workspace configuration found');
   }
 
-  if (hasClaudeConfig) {
-    console.log('✓ Claude configuration found');
+  if (projectTypes.length > 0) {
+    console.log(`✓ Project types: ${projectTypes.join(', ')}`);
   }
 
-  // Project type cache
-  const projectTypeCacheExists = fs.existsSync(path.join(process.cwd(), '.claude', 'everything-claude-code.project-type.json'));
-  if (projectTypeCacheExists) {
-    console.log('✓ Project type cache created');
-  }
-
-  // Serena status
-  if (serenaInstalled) {
-    console.log('✓ Serena integration configured');
+  if (serenaInstalled && serenaSetupComplete) {
+    console.log('✓ Serena integration complete');
+  } else if (serenaInstalled) {
+    console.log('○ Serena setup pending - invoke /serena-setup');
   } else {
-    console.log('○ Serena integration skipped (not installed)');
+    console.log('○ Serena not installed');
   }
 
   if (!checkOnly) {
-    // Write persistent setup status
-    const setupStatusFile = path.join(process.cwd(), '.claude', 'everything-claude-code.setup-status.json');
-    try {
-      const claudeDir = path.join(process.cwd(), '.claude');
-      if (!fs.existsSync(claudeDir)) {
-        fs.mkdirSync(claudeDir, { recursive: true });
-      }
-
-      const setupStatus = {
-        completed_at: new Date().toISOString(),
-        project_types: projectTypeResult.types,
-        serena_installed: serenaInstalled,
-        serena_setup_complete: serenaSetupComplete,
-        serena_setup_needed: serenaSetupNeeded,
-        plugin_version: '2.1.0'
-      };
-
-      fs.writeFileSync(setupStatusFile, JSON.stringify(setupStatus, null, 2), 'utf8');
-      console.log('✓ Setup status saved to .claude/everything-claude-code.setup-status.json');
-    } catch (err) {
-      console.log(`⚠️  Could not save setup status: ${err.message}`);
-    }
-
-    console.log('\n✓ Setup complete!');
+    console.log('\n✓ Detection complete!');
     console.log('\nNext steps:');
-    console.log('  • Review generated configuration files');
-    console.log('  • Run /setup-ecosystem --detect to check tools');
+
     if (!serenaInstalled) {
-      console.log('  • Install Serena for memory-first workflow: /plugin install serena');
+      console.log('  • Install Serena for persistent memory: /plugin install serena');
+      console.log('  • Then run: /serena-setup');
     } else if (!serenaSetupComplete) {
-      console.log('  • Complete Serena setup: /serena-setup');
+      console.log('  • Complete Serena setup: /serena-setup (REQUIRED)');
+      console.log('    This creates Serena memories from your documentation');
     } else {
       console.log('  • Check Serena status: /serena-status');
     }

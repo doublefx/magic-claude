@@ -131,12 +131,6 @@ Run: /serena-setup
 Or: Use activate_project("project_name") directly
 ```
 
-**No memories**:
-```
-Run onboarding: Use onboarding()
-Or start exploring: /before-exploring
-```
-
 **Git hooks missing**:
 ```
 Run: /serena-setup (will offer to install)

@@ -1,5 +1,30 @@
 # Serena Memory Naming Conventions
 
+## Memory vs Skill: When to Use Which
+
+**Serena Memories** store knowledge about **what the code IS**:
+- Architecture and system design
+- Code patterns and conventions
+- Workflows and processes
+- Configuration and setup
+- Ideas and requirements (PRDs)
+- Exploration findings
+
+**Learned Skills** (via `/learn`) store knowledge about **how to SOLVE problems**:
+- Error resolution patterns
+- Debugging techniques
+- Workarounds for library/framework quirks
+- User corrections that should be remembered
+
+| Finding Type | Storage | Example |
+|--------------|---------|---------|
+| "The auth system uses OAuth2 with PKCE" | **Memory** | `auth_oauth_architecture` |
+| "Fix: Redis connection timeout by adding retry logic" | **Skill** | `.claude/skills/learned/redis-retry-pattern.md` |
+| "API uses REST with versioned endpoints" | **Memory** | `api_rest_design` |
+| "Workaround: Next.js hydration error fix" | **Skill** | `.claude/skills/learned/nextjs-hydration-fix.md` |
+| "Idea: Add full-text search to products" | **Memory** | `search_fulltext_idea` |
+| "PRD: User authentication v2" | **Memory** | `user_auth_v2_prd` |
+
 ## Pattern
 
 ```
@@ -11,8 +36,12 @@
 - `auth_oauth_flow_workflow`
 - `testing_e2e_playwright_guide`
 - `database_connection_configuration`
+- `search_fulltext_idea`
+- `user_auth_v2_prd`
 
 ## Valid Suffixes (Types)
+
+### Documentation Suffixes
 
 | Suffix | Purpose | Use When |
 |--------|---------|----------|
@@ -28,10 +57,28 @@
 | `_design` | Design decisions | Why things are built a certain way |
 | `_implementation` | Implementation details | How things work |
 
+### Exploration & Evolution Suffixes
+
+| Suffix | Purpose | Use When |
+|--------|---------|----------|
+| `_exploration` | Code exploration findings | After investigating codebase areas |
+| `_evolution` | Code change documentation | After significant code modifications |
+| `_context` | Project context | General project information (e.g., `project_config_context`) |
+
+### Planning & Ideas Suffixes
+
+| Suffix | Purpose | Use When |
+|--------|---------|----------|
+| `_idea` | Feature ideas | Capturing ideas for future implementation |
+| `_prd` | Product requirements | Storing PRDs and requirements documents |
+| `_proposal` | Design proposals | Architectural or feature proposals |
+| `_roadmap` | Future planning | Development roadmap and milestones |
+
 ## Scope Prefixes
 
 | Prefix | Scope | Examples |
 |--------|-------|----------|
+| `project_` | Project-level | `project_config_context`, `project_goals_overview` |
 | `backend_` | Server-side code | `backend_api_`, `backend_service_` |
 | `frontend_` | Client-side code | `frontend_components_`, `frontend_state_` |
 | `auth_` | Authentication/Authorization | `auth_oauth_`, `auth_session_` |
@@ -42,6 +89,7 @@
 | `security_` | Security concerns | `security_validation_`, `security_encryption_` |
 | `performance_` | Performance optimization | `performance_caching_`, `performance_queries_` |
 | `monitoring_` | Observability | `monitoring_logging_`, `monitoring_metrics_` |
+| `feature_` | Feature-specific | `feature_search_`, `feature_notifications_` |
 
 ## Invalid Names (Rejected)
 
@@ -74,6 +122,60 @@ The following generic names are **rejected** as too vague:
 | `Backend-API` | `backend_api_overview` | Wrong case and separator |
 | `auth` | `auth_oauth_flow_workflow` | Too short, no suffix |
 | `temp_fix` | `auth_session_troubleshooting` | Generic prefix |
+| `new_feature` | `feature_search_fulltext_idea` | Use proper suffix |
+| `requirements` | `user_auth_v2_prd` | Use _prd suffix |
+
+## Ideas and PRD Examples
+
+### Capturing an Idea
+
+```
+Memory name: feature_realtime_notifications_idea
+
+Content:
+# Real-time Notifications - Idea
+
+**Created:** 2026-02-01
+**Status:** proposed
+**Priority:** medium
+
+## Summary
+Add WebSocket-based real-time notifications for user events.
+
+## Motivation
+Users currently need to refresh to see updates...
+
+## Rough Approach
+- Use Socket.io for WebSocket connections
+- Redis pub/sub for cross-server communication
+...
+```
+
+### Storing a PRD
+
+```
+Memory name: user_auth_v2_prd
+
+Content:
+# User Authentication v2 - PRD
+
+**Created:** 2026-02-01
+**Status:** approved
+**Owner:** @team
+
+## Overview
+Upgrade authentication from session-based to JWT with refresh tokens...
+
+## Requirements
+1. JWT access tokens (15min expiry)
+2. Refresh tokens (7 day expiry)
+...
+
+## Success Criteria
+- [ ] All endpoints migrated
+- [ ] No session storage dependency
+...
+```
 
 ## Hierarchy and Consolidation
 

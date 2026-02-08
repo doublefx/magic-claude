@@ -4,11 +4,10 @@
  *
  * Cross-platform (Windows, macOS, Linux)
  *
- * Runs when a new Claude session starts:
- * 1. Checks for recent session files
- * 2. Detects workspace/project setup needs
- * 3. Outputs context via hookSpecificOutput.additionalContext
- * 4. Claude can proactively offer help based on detected needs
+ * Simplified approach:
+ * - Check .serena/project.yml for setup completion (Serena is source of truth)
+ * - Detect package manager from lock files (no JSON config needed)
+ * - Suggest /setup if Serena not configured
  */
 
 const fs = require('fs');
@@ -69,60 +68,17 @@ function readStdin() {
 }
 
 /**
- * Load cached ecosystems data if available
- * Returns null if cache doesn't exist or is invalid
+ * Check if Serena setup is complete (source of truth: .serena/project.yml exists)
  */
-function loadCachedEcosystems() {
+function isSerenaSetupComplete() {
   const cwd = process.cwd();
-  const cacheFile = path.join(cwd, '.claude', 'everything-claude-code.ecosystems.json');
-
-  if (!fs.existsSync(cacheFile)) {
-    return null;
-  }
-
-  try {
-    const data = JSON.parse(fs.readFileSync(cacheFile, 'utf8'));
-    // Validate minimum required structure
-    if (data.ecosystems && Array.isArray(data.ecosystems) && data.detectedAt) {
-      log('[SessionStart] Loaded cached ecosystems data');
-      return data;
-    }
-  } catch (err) {
-    log(`[SessionStart] Failed to load ecosystems cache: ${err.message}`);
-  }
-
-  return null;
-}
-
-/**
- * Format cached ecosystems for context output
- */
-function formatEcosystemsContext(ecosystemsData) {
-  if (!ecosystemsData || !ecosystemsData.ecosystems) {
-    return null;
-  }
-
-  const parts = [];
-  for (const eco of ecosystemsData.ecosystems) {
-    const projectPaths = eco.projects ? eco.projects.map(p => p.path).join(', ') : 'root';
-    const frameworks = eco.projects ?
-      [...new Set(eco.projects.flatMap(p => [p.framework, ...(p.frameworks || [])].filter(Boolean)))].join(', ') :
-      '';
-    let info = `${eco.type}: ${projectPaths}`;
-    if (frameworks) {
-      info += ` (${frameworks})`;
-    }
-    if (eco.version) {
-      info += ` [v${eco.version}]`;
-    }
-    parts.push(info);
-  }
-
-  return parts.length > 0 ? `Ecosystems: ${parts.join('; ')}` : null;
+  const serenaProjectFile = path.join(cwd, '.serena', 'project.yml');
+  return fs.existsSync(serenaProjectFile);
 }
 
 /**
  * Detect workspace setup issues that need attention
+ * Simplified: uses .serena/project.yml as setup indicator
  */
 function detectSetupNeeds() {
   const issues = [];
@@ -147,9 +103,10 @@ function detectSetupNeeds() {
 
   const hasRustIndicators = fs.existsSync(path.join(cwd, 'Cargo.toml'));
 
+  const hasAnyProject = hasNodeIndicators || hasPythonIndicators || hasJvmIndicators || hasRustIndicators;
+
   // Check for workspace patterns without root package.json
   if (!hasPackageJson) {
-    // Look for sub-packages
     const packagesDir = path.join(cwd, 'packages');
     const appsDir = path.join(cwd, 'apps');
     const servicesDir = path.join(cwd, 'services');
@@ -174,39 +131,21 @@ function detectSetupNeeds() {
     }
   }
 
-  // Check package manager configuration
-  const pm = getPackageManager();
-  if (pm.source === 'fallback' || pm.source === 'default') {
-    issues.push(`No package manager preference configured - using ${pm.name} as fallback`);
-  }
+  // Simplified setup detection: check .serena/project.yml
+  const serenaSetupComplete = isSerenaSetupComplete();
 
-  // Check for missing .claude directory (first time setup)
-  const claudeDir = path.join(cwd, '.claude');
-  const setupStatusFile = path.join(claudeDir, 'everything-claude-code.setup-status.json');
-  let setupStatus = null;
-
-  if (!fs.existsSync(claudeDir) && (hasNodeIndicators || hasPythonIndicators || hasJvmIndicators || hasRustIndicators)) {
-    issues.push('Project detected but no .claude/ configuration - consider running /setup for project-specific settings');
-  } else if (fs.existsSync(setupStatusFile)) {
-    // Load existing setup status
-    try {
-      setupStatus = JSON.parse(fs.readFileSync(setupStatusFile, 'utf8'));
-      // Check if Serena setup is still pending
-      if (setupStatus.serena_setup_needed && !setupStatus.serena_setup_complete) {
-        issues.push('Serena setup incomplete - run /serena-setup to complete');
-      }
-    } catch {
-      // Invalid status file, ignore
-    }
-  } else if (fs.existsSync(claudeDir) && (hasNodeIndicators || hasPythonIndicators || hasJvmIndicators || hasRustIndicators)) {
-    // .claude exists but no everything-claude-code.setup-status.json - might be old setup or manual config
-    issues.push('No setup status found - consider running /setup to configure project');
+  if (hasAnyProject && !serenaSetupComplete && isSerenaInstalled()) {
+    // Serena is available but not set up for this project
+    issues.push('Serena available but not configured - run /setup to set up project with Serena memories');
+  } else if (hasAnyProject && !serenaSetupComplete && !isSerenaInstalled()) {
+    // No Serena, suggest basic setup
+    issues.push('Project detected - consider running /setup for configuration');
   }
 
   return {
     issues,
     hasPackageJson,
-    setupStatus,
+    serenaSetupComplete,
     ecosystem: hasNodeIndicators ? 'nodejs' :
                hasPythonIndicators ? 'python' :
                hasJvmIndicators ? 'jvm' :
@@ -242,15 +181,6 @@ async function main() {
     contextParts.push(`${learnedSkills.length} learned skill(s) available in ${learnedDir}`);
   }
 
-  // Try to load cached ecosystems data first (optimization)
-  const cachedEcosystems = loadCachedEcosystems();
-  const ecosystemsContext = formatEcosystemsContext(cachedEcosystems);
-
-  if (ecosystemsContext) {
-    contextParts.push(ecosystemsContext);
-    log(`[SessionStart] ${ecosystemsContext}`);
-  }
-
   // Detect and report workspace status
   let workspaceInfo = '';
 
@@ -277,20 +207,25 @@ async function main() {
     contextParts.push(`Setup suggestions: ${setupNeeds.issues.join('; ')}`);
   }
 
-  // Serena Integration - Check and activate project
-  let serenaStatus = { installed: false, activated: false, jetbrains: false };
+  // Serena Integration - Check status
+  let serenaStatus = { installed: false, activated: false, jetbrains: false, setupComplete: false };
 
   if (isSerenaInstalled()) {
     serenaStatus.installed = true;
+    serenaStatus.setupComplete = setupNeeds.serenaSetupComplete;
     log('[SessionStart] Serena MCP detected');
+
+    if (serenaStatus.setupComplete) {
+      log('[SessionStart] Serena setup complete (.serena/project.yml exists)');
+      contextParts.push('Serena: Configured - project memories available via Serena MCP tools');
+      contextParts.push('Serena: Prefer Serena code navigation tools (find_symbol, search_for_pattern, get_symbols_overview) over native Grep/Glob for code exploration');
+    }
 
     // Check if project is already activated (with path validation)
     if (isProjectActivated()) {
       serenaStatus.activated = true;
       log('[SessionStart] Serena project already activated (cached, same path)');
     } else if (isSerenaEnabled()) {
-      // Need to activate project - will be done via MCP tool call
-      // We just note that activation is needed
       log('[SessionStart] Serena project activation needed');
       contextParts.push('Serena: Project activation needed - will activate on first exploration');
     }
@@ -309,25 +244,17 @@ async function main() {
   }
 
   // Use CLAUDE_ENV_FILE to persist detected environment settings
-  // These become available to subsequent hooks and commands
   if (process.env.CLAUDE_ENV_FILE) {
     try {
       const envLines = [];
       const pm = getPackageManager();
 
-      // Persist detected package manager
+      // Persist detected package manager (from lock file detection)
       envLines.push(`export DETECTED_PKG_MANAGER="${pm.name}"`);
       envLines.push(`export PKG_MANAGER_SOURCE="${pm.source}"`);
 
-      // Persist ecosystem (from cache if available, otherwise from detection)
-      if (cachedEcosystems && cachedEcosystems.ecosystems) {
-        const ecoTypes = cachedEcosystems.ecosystems.map(e => e.type).join(',');
-        envLines.push(`export DETECTED_ECOSYSTEMS="${ecoTypes}"`);
-        envLines.push(`export ECOSYSTEMS_CACHED="true"`);
-      } else {
-        envLines.push(`export DETECTED_ECOSYSTEM="${setupNeeds.ecosystem}"`);
-        envLines.push(`export ECOSYSTEMS_CACHED="false"`);
-      }
+      // Persist ecosystem
+      envLines.push(`export DETECTED_ECOSYSTEM="${setupNeeds.ecosystem}"`);
 
       // Persist workspace status
       envLines.push(`export IS_WORKSPACE="${isInWorkspace()}"`);
@@ -335,9 +262,9 @@ async function main() {
       // Persist Serena status
       if (serenaStatus.installed) {
         envLines.push(`export SERENA_INSTALLED="true"`);
+        envLines.push(`export SERENA_SETUP_COMPLETE="${serenaStatus.setupComplete}"`);
         envLines.push(`export SERENA_JETBRAINS_AVAILABLE="${serenaStatus.jetbrains}"`);
 
-        // Only persist activation if already activated (validated by path)
         if (serenaStatus.activated) {
           envLines.push(`export SERENA_PROJECT_ACTIVATED="true"`);
           envLines.push(`export SERENA_PROJECT_PATH="${process.cwd()}"`);
@@ -359,13 +286,11 @@ async function main() {
   }
 
   // SessionStart hooks should output empty JSON or nothing
-  // Do not pass through the input - just exit cleanly
   process.exit(0);
 }
 
 main().catch(err => {
   console.error('[SessionStart] Error:', err.message);
-  // On error, try to pass through input
   console.log(JSON.stringify({}));
   process.exit(0); // Don't block on errors
 });

@@ -161,7 +161,7 @@ cp -r .serena-backup-YYYY-MM-DD/* .serena/memories/
 
 1. Backup all memories
 2. Remove memories
-3. Re-run onboarding for fresh start
+3. Re-run `/serena-setup` for fresh start
 
 ## Confirmation Messages
 

@@ -29,7 +29,7 @@
 - After learning project conventions
 
 **How to create:**
-1. Use `/after-exploring` skill
+1. Use Serena `write_memory` tool
 2. Follow naming conventions
 3. Use memory template
 4. Set initial confidence (usually Medium)
@@ -124,8 +124,8 @@ Run `/memory-lifecycle` periodically to:
 
 ### DO
 
-- **Check memories before exploring** - `/before-exploring`
-- **Document significant findings** - `/after-exploring`
+- **Check memories before exploring** - use Serena `list_memories` / `read_memory`
+- **Document significant findings** - use Serena `write_memory` / `edit_memory`
 - **Consolidate early** - Don't wait for fragmentation
 - **Set confidence honestly** - Low is better than wrong High
 - **Link related memories** - Maintain discoverability
@@ -144,19 +144,10 @@ Run `/memory-lifecycle` periodically to:
 
 ### Hooks that help
 
-| Hook | Event | Action |
-|------|-------|--------|
-| `serena-memory-check.cjs` | PreToolUse | Reminds to check memories |
-| `serena-document-reminder.cjs` | PostToolUse | Reminds to document |
-| `serena-pre-compact.cjs` | PreCompact | Warns about context loss |
-| `serena-subagent-stop.cjs` | SubagentStop | Enforces documentation |
-
 ### Skills that help
 
 | Skill | Purpose |
 |-------|---------|
-| `/before-exploring` | Memory-first exploration |
-| `/after-exploring` | Document findings |
 | `/git-sync` | Sync with git changes |
 | `/memory-lifecycle` | Health checks |
 | `/serena-status` | Configuration diagnostics |

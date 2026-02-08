@@ -4,9 +4,7 @@
  *
  * Core utilities for Serena MCP integration:
  * - Installation and configuration detection
- * - Memory name validation
  * - Language detection for projects
- * - Feature flag management
  *
  * Cross-platform (Windows, macOS, Linux)
  */
@@ -17,46 +15,6 @@ const path = require('path');
 // =============================================================================
 // Constants
 // =============================================================================
-
-/**
- * Valid suffixes for memory names
- */
-const VALID_SUFFIXES = [
-  'architecture',
-  'workflow',
-  'guide',
-  'conventions',
-  'configuration',
-  'troubleshooting',
-  'overview',
-  'specifics',
-  'patterns',
-  'design',
-  'implementation'
-];
-
-/**
- * Invalid/generic memory names that should be rejected
- */
-const INVALID_NAMES = [
-  'notes',
-  'temp',
-  'misc',
-  'stuff',
-  'test',
-  'tmp',
-  'todo',
-  'scratch',
-  'draft'
-];
-
-/**
- * Agent types that perform code exploration
- */
-const EXPLORATION_AGENT_TYPES = [
-  'Explore',
-  'general-purpose'
-];
 
 /**
  * Default Serena configuration
@@ -190,83 +148,6 @@ function getSerenaConfig() {
 }
 
 // =============================================================================
-// Memory Name Validation
-// =============================================================================
-
-/**
- * Validate a memory name against naming conventions
- * @param {string} name - Memory name to validate
- * @returns {{ valid: boolean, reason?: string, suggestion?: string }}
- */
-function validateMemoryName(name) {
-  if (!name || typeof name !== 'string') {
-    return { valid: false, reason: 'Memory name is required' };
-  }
-
-  const lowerName = name.toLowerCase().trim();
-
-  // Check for generic/invalid names
-  if (INVALID_NAMES.includes(lowerName)) {
-    return {
-      valid: false,
-      reason: `"${name}" is too generic. Use descriptive names like "backend_api_architecture"`,
-      suggestion: suggestMemoryName(name)
-    };
-  }
-
-  // Check for valid suffix
-  const hasValidSuffix = VALID_SUFFIXES.some(suffix =>
-    lowerName.endsWith(`_${suffix}`) || lowerName.endsWith(suffix)
-  );
-
-  if (!hasValidSuffix) {
-    return {
-      valid: false,
-      reason: `Memory name should end with a valid suffix: ${VALID_SUFFIXES.join(', ')}`,
-      suggestion: suggestMemoryName(name)
-    };
-  }
-
-  // Check format (lowercase with underscores or hyphens)
-  const validFormat = /^[a-z][a-z0-9]*([_-][a-z0-9]+)*$/.test(lowerName);
-  if (!validFormat) {
-    return {
-      valid: false,
-      reason: 'Memory name should be lowercase with underscores or hyphens',
-      suggestion: suggestMemoryName(name)
-    };
-  }
-
-  return { valid: true };
-}
-
-/**
- * Suggest a valid memory name based on input
- * @param {string} name - Original name
- * @returns {string}
- */
-function suggestMemoryName(name) {
-  const lowerName = name.toLowerCase().trim().replace(/[^a-z0-9_-]/g, '_');
-
-  // If already has valid suffix, return as-is
-  const hasValidSuffix = VALID_SUFFIXES.some(suffix => lowerName.endsWith(suffix));
-  if (hasValidSuffix) {
-    return lowerName;
-  }
-
-  // Suggest adding _overview suffix
-  return `${lowerName}_overview`;
-}
-
-/**
- * Get list of valid memory name suffixes
- * @returns {string[]}
- */
-function getValidSuffixes() {
-  return [...VALID_SUFFIXES];
-}
-
-// =============================================================================
 // Language Detection
 // =============================================================================
 
@@ -367,57 +248,6 @@ function detectLanguagesInDir(dir, depth) {
 }
 
 // =============================================================================
-// Agent Type Detection
-// =============================================================================
-
-/**
- * Get list of agent types that perform code exploration
- * @returns {string[]}
- */
-function getExplorationAgentTypes() {
-  return [...EXPLORATION_AGENT_TYPES];
-}
-
-/**
- * Check if an agent type is an exploration agent
- * @param {string} agentType - Agent type to check
- * @returns {boolean}
- */
-function isExplorationAgent(agentType) {
-  return EXPLORATION_AGENT_TYPES.includes(agentType);
-}
-
-// =============================================================================
-// Serena Tool Patterns
-// =============================================================================
-
-/**
- * Get regex pattern for Serena exploration tools (excludes memory management)
- * @returns {string}
- */
-function getSerenaExplorationToolsPattern() {
-  const excludedTools = [
-    'read_memory',
-    'write_memory',
-    'list_memories',
-    'edit_memory',
-    'delete_memory',
-    'check_onboarding_performed',
-    'onboarding',
-    'activate_project',
-    'get_current_config',
-    'prepare_for_new_conversation',
-    'initial_instructions',
-    'think_about_collected_information',
-    'think_about_task_adherence',
-    'think_about_whether_you_are_done'
-  ];
-
-  const excludePattern = excludedTools.join('|');
-  return `mcp__plugin_serena_serena__(?!${excludePattern}).*`;
-}
-
-// =============================================================================
 // Exports
 // =============================================================================
 
@@ -429,24 +259,9 @@ module.exports = {
   isProjectActivated,
   getSerenaConfig,
 
-  // Memory Name Validation
-  validateMemoryName,
-  suggestMemoryName,
-  getValidSuffixes,
-
   // Language Detection
   detectLanguages,
 
-  // Agent Type Detection
-  getExplorationAgentTypes,
-  isExplorationAgent,
-
-  // Tool Patterns
-  getSerenaExplorationToolsPattern,
-
   // Constants (for testing)
-  VALID_SUFFIXES,
-  INVALID_NAMES,
-  EXPLORATION_AGENT_TYPES,
   DEFAULT_CONFIG
 };
