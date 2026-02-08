@@ -3,6 +3,12 @@ name: e2e-runner
 description: End-to-end testing specialist using Playwright. Use PROACTIVELY for generating, maintaining, and running E2E tests. Manages test journeys, quarantines flaky tests, uploads artifacts (screenshots, videos, traces), and ensures critical user flows work.
 tools: Read, Write, Edit, Bash, Grep, Glob
 model: sonnet
+hooks:
+  Stop:
+    - hooks:
+        - type: prompt
+          prompt: "Evaluate if the e2e-runner agent completed its work. Check the transcript: $ARGUMENTS. Verify: 1) E2E tests were actually executed (npx playwright test or similar). 2) Test results were reported (pass/fail counts). 3) Any failures have screenshots or traces captured. If tests were written but never run, or results were not reported, respond {\"ok\": false, \"reason\": \"E2E tests incomplete: [details]\"}. Otherwise respond {\"ok\": true}."
+          timeout: 30
 ---
 
 # E2E Test Runner
