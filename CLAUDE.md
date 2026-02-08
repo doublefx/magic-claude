@@ -222,7 +222,7 @@ If Serena MCP plugin is installed, the plugin provides Serena management skills:
 
 **JetBrains Recommendation**: For polyglot/monorepo projects, JetBrains plugin provides better performance ($5/mo or $50/yr).
 
-See `docs/serena/` for naming conventions and lifecycle management.
+See `skills/serena-setup/` and `skills/serena-status/` for configuration details.
 
 ## Workspace & Monorepo Support
 
@@ -343,8 +343,6 @@ const pm = getPackageManager();
 - Single-project workflows
 - Backward compatibility
 - Simple package manager detection
-
-See `docs/MIGRATION-v2.md` for complete migration guide.
 
 ## Critical Coding Rules
 

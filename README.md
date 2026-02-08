@@ -182,8 +182,6 @@ if (workspace.isWorkspace()) {
 
 **100% backward compatible** - single-project workflows work unchanged!
 
-See [Migration Guide](docs/MIGRATION-v2.md) for details.
-
 ---
 
 ## Cross-Platform Support
@@ -538,7 +536,6 @@ npm test -- --watch
 
 ### Core Documentation
 
-- **[MIGRATION-GUIDE.md](docs/MIGRATION-GUIDE.md)** - Upgrading from v1.0 to v2.0
 - **[FEATURES.md](docs/FEATURES.md)** - Complete feature documentation with examples
 - **[AGENT-CATALOG.md](docs/AGENT-CATALOG.md)** - All 16 agents with use cases
 - **[PERFORMANCE.md](docs/PERFORMANCE.md)** - Benchmarks and optimization tips

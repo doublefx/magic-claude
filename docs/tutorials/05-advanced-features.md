@@ -576,7 +576,6 @@ You've completed all tutorials!
 - [FEATURES.md](../FEATURES.md) - Deep dive into all features
 - [AGENT-CATALOG.md](../AGENT-CATALOG.md) - Complete agent reference
 - [PERFORMANCE.md](../PERFORMANCE.md) - Performance optimization guide
-- [MIGRATION-GUIDE.md](../MIGRATION-GUIDE.md) - Upgrading from v1.0
 
 **Get Involved**:
 - Contribute custom agents/skills

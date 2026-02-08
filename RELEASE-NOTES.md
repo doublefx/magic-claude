@@ -268,16 +268,13 @@ cp -r skills/* ~/.claude/skills/
 
 **Time Required**: 2-5 minutes
 **Breaking Changes**: None
-**Rollback**: Available (see MIGRATION-GUIDE.md)
-
-**Full Guide**: [MIGRATION-GUIDE.md](docs/MIGRATION-GUIDE.md)
+**Rollback**: Available via git revert
 
 ---
 
 ## New Documentation
 
 **Core Docs**:
-- [MIGRATION-GUIDE.md](docs/MIGRATION-GUIDE.md) - v1.0 to v2.0 upgrade guide
 - [FEATURES.md](docs/FEATURES.md) - Complete feature documentation
 - [AGENT-CATALOG.md](docs/AGENT-CATALOG.md) - All 16 agents with examples
 - [PERFORMANCE.md](docs/PERFORMANCE.md) - Benchmarks and optimization tips
