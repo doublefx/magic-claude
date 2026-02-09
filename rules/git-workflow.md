@@ -29,7 +29,7 @@ When creating PRs:
    - Break down into phases
 
 2. **TDD Approach**
-   - Use **tdd-guide** agent
+   - Use appropriate **tdd-guide** agent (ts/jvm/python)
    - Write tests first (RED)
    - Implement to pass tests (GREEN)
    - Refactor (IMPROVE)

@@ -1,9 +1,9 @@
 # Agent & Skill Catalog
 
-**Version**: 2.0.0
-**Last Updated**: 2026-01-25
-**Total Agents**: 16
-**Total Skills**: 16
+**Version**: 3.0.0
+**Last Updated**: 2026-02-09
+**Total Agents**: 27
+**Total Skills**: 27
 
 ---
 
@@ -149,29 +149,34 @@ Trade-offs:
 
 ---
 
-#### tdd-guide
-**Command**: `/tdd-guide`
-**Model**: Sonnet
-**Description**: Test-driven development guidance
+### Polyglot TDD Agents (Ecosystem-Specific)
 
-**When to Use**:
+#### ts-tdd-guide
+**Command**: `/tdd` (auto-dispatched for TS/JS projects)
+**Model**: Sonnet
+**Description**: TypeScript/JavaScript TDD with Jest/Vitest/Playwright
+
+#### jvm-tdd-guide
+**Command**: `/tdd` (auto-dispatched for JVM projects)
+**Model**: Sonnet
+**Description**: JVM TDD with JUnit 5, Mockito, MockK, AssertJ, JaCoCo
+
+#### python-tdd-guide
+**Command**: `/tdd` (auto-dispatched for Python projects)
+**Model**: Sonnet
+**Description**: Python TDD with pytest, unittest.mock, pytest-cov, hypothesis
+
+**When to Use** (all three):
 - Writing tests first
 - Need TDD workflow guidance
 - Want to improve test coverage
-- Learning TDD practices
-
-**What It Does**:
-- Guides through TDD workflow (Red → Green → Refactor)
-- Suggests test cases
-- Helps write testable code
-- Ensures 80%+ coverage
 
 ---
 
 #### code-reviewer
-**Command**: `/code-reviewer`
+**Command**: `/code-review`
 **Model**: Opus
-**Description**: General code quality and security review
+**Description**: Ecosystem-aware quality and security review
 
 **When to Use**:
 - Before committing code
@@ -180,100 +185,85 @@ Trade-offs:
 - Security audit
 
 **What It Does**:
-- Reviews code for quality
-- Checks security vulnerabilities
-- Suggests improvements
-- Validates best practices
+- Detects ecosystem from changed file extensions
+- Applies ecosystem-specific security and quality checks
+- Delegates to language reviewers (java-reviewer, kotlin-reviewer, python-reviewer, groovy-reviewer)
 
 ---
 
-#### security-reviewer
-**Command**: `/security-reviewer`
+### Polyglot Security Agents (Ecosystem-Specific)
+
+#### ts-security-reviewer
+**Command**: `/code-review` (auto-dispatched for TS/JS)
 **Model**: Opus
-**Description**: Deep security analysis and vulnerability detection
+**Description**: TypeScript/JavaScript/Next.js vulnerability analysis
 
-**When to Use**:
-- Security audit required
-- Sensitive code changes
-- Pre-production review
-- Compliance requirements
+#### jvm-security-reviewer
+**Command**: `/code-review` (auto-dispatched for JVM)
+**Model**: Opus
+**Description**: JVM security with SpotBugs, OWASP dependency-check, Spring Security
 
-**What It Does**:
-- OWASP Top 10 checks
-- SQL injection detection
-- XSS vulnerability analysis
-- Authentication/authorization review
-- Secret detection
+#### python-security-reviewer
+**Command**: `/code-review` (auto-dispatched for Python)
+**Model**: Opus
+**Description**: Python security with bandit, pip-audit, semgrep
 
 ---
+
+### Polyglot Build Resolvers (Ecosystem-Specific)
 
 #### ts-build-resolver
 **Command**: `/build-fix` (auto-dispatched)
 **Model**: Sonnet
-**Description**: TypeScript/JavaScript build error resolution for React, Next.js, Node.js
-
-**When to Use**:
-- `npm run build` or `npx tsc --noEmit` fails
-- TypeScript type errors, import resolution, ESLint failures
-- React hook errors, Next.js build issues
+**Description**: TypeScript/JavaScript build error resolution
 
 #### jvm-build-resolver
 **Command**: `/build-fix` (auto-dispatched)
 **Model**: Sonnet
-**Description**: JVM build error resolution for Java, Kotlin, Groovy with Maven or Gradle
-
-**When to Use**:
-- `mvn compile` / `gradle build` fails
-- Java/Kotlin compiler errors, dependency conflicts
-- Annotation processor issues, JPMS module errors
+**Description**: JVM build error resolution (Maven/Gradle)
 
 #### python-build-resolver
 **Command**: `/build-fix` (auto-dispatched)
 **Model**: Sonnet
-**Description**: Python build error resolution for pyright, mypy, ruff, pytest, pip/uv
-
-**When to Use**:
-- `pyright` / `mypy` / `ruff check` fails
-- Import errors, dependency resolution failures
-- Build system errors, framework configuration issues
+**Description**: Python build error resolution (pyright/ruff/pytest)
 
 ---
 
-#### e2e-runner
-**Command**: `/e2e-runner`
+### Polyglot E2E Agents (Ecosystem-Specific)
+
+#### ts-e2e-runner
+**Command**: `/e2e` (auto-dispatched for TS/JS)
 **Model**: Sonnet
-**Description**: End-to-end test generation and execution (Playwright)
+**Description**: Playwright E2E testing for TypeScript/JavaScript
 
-**When to Use**:
-- Need E2E tests
-- Testing user workflows
-- Regression testing
-- CI/CD integration
+#### jvm-e2e-runner
+**Command**: `/e2e` (auto-dispatched for JVM)
+**Model**: Sonnet
+**Description**: Selenium WebDriver and REST Assured E2E testing
 
-**What It Does**:
-- Generates Playwright tests
-- Covers user journeys
-- Handles assertions
-- Provides debugging tips
+#### python-e2e-runner
+**Command**: `/e2e` (auto-dispatched for Python)
+**Model**: Sonnet
+**Description**: pytest-playwright E2E testing for Python
 
 ---
 
-#### refactor-cleaner
-**Command**: `/refactor-cleaner`
-**Model**: Sonnet
-**Description**: Dead code cleanup and refactoring
+### Polyglot Refactor Agents (Ecosystem-Specific)
 
-**When to Use**:
-- Code cleanup needed
-- Remove unused code
-- Improve code structure
-- Reduce complexity
+#### ts-refactor-cleaner
+**Command**: `/refactor-clean` (auto-dispatched for TS/JS)
+**Model**: Haiku
+**Description**: TypeScript/JavaScript dead code cleanup (knip, depcheck, ts-prune)
 
-**What It Does**:
-- Identifies dead code
-- Finds unused imports/variables
-- Suggests simplifications
-- Improves readability
+#### jvm-refactor-cleaner
+**Command**: `/refactor-clean` (auto-dispatched for JVM)
+**Model**: Haiku
+**Description**: JVM dead code cleanup (jdeps, mvn dependency:analyze, SpotBugs)
+
+#### python-refactor-cleaner
+**Command**: `/refactor-clean` (auto-dispatched for Python)
+**Model**: Haiku
+**Description**: Python dead code cleanup (vulture, ruff F401/F841, autoflake)
 
 ---
 
@@ -865,17 +855,26 @@ pytest
 
 ## Summary
 
-**19 Agents**:
-- 9 general-purpose agents
-- 4 language-specific agents
-- 2 build tool agents
+**27 Agents**:
+- 2 planning agents (planner, architect)
+- 3 TDD agents (ts-tdd-guide, jvm-tdd-guide, python-tdd-guide)
+- 1 ecosystem-aware code reviewer
+- 3 security reviewers (ts-, jvm-, python-)
+- 3 build resolvers (ts-, jvm-, python-)
+- 3 E2E runners (ts-, jvm-, python-)
+- 3 refactor cleaners (ts-, jvm-, python-)
+- 4 language reviewers (python, java, kotlin, groovy)
+- 2 build tool agents (maven-expert, gradle-expert)
 - 1 CI/CD agent
+- 2 utility agents (doc-updater, setup-agent)
 
-**16 Skills**:
-- 2 language pattern skills
-- 2 build tool skills
-- 3 architecture skills
-- 1 testing skill
+**27 Skills**:
+- 3 coding standards skills (TS/JS, JVM, Python)
+- 3 backend pattern skills (TS/JS, JVM, Python)
+- 3 TDD workflow skills (TS/JS, JVM, Python)
+- 3 security review skills (TS/JS, JVM, Python)
+- 3 proactive skills (review, planning, TDD)
+- 4 language/build tool skills (python, kotlin, maven, gradle)
 - 8 general/advanced skills
 
 **Best Practices**:
@@ -887,4 +886,4 @@ pytest
 
 ---
 
-*Agent & Skill Catalog Version: 1.0 | Last Updated: 2026-01-25*
+*Agent & Skill Catalog Version: 3.0 | Last Updated: 2026-02-09*

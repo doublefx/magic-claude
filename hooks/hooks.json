@@ -154,7 +154,17 @@
             "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/console-log-detector.cjs\""
           }
         ],
-        "description": "Warn about console.log statements after edits (filters for JS/TS internally)"
+        "description": "Warn about debug statements after edits: console.log (JS/TS), print() (Python), System.out.println (Java/Kotlin)"
+      },
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/pyright-checker.cjs\""
+          }
+        ],
+        "description": "Pyright type check after editing .py files (filters internally)"
       }
     ],
     "Stop": [
@@ -166,7 +176,7 @@
             "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/stop-validation.cjs\""
           }
         ],
-        "description": "Check for console.log in modified files after each response"
+        "description": "Check for debug statements in modified files: console.log (JS/TS), print() (Python), System.out.println (Java/Kotlin)"
       }
     ],
     "SessionEnd": [

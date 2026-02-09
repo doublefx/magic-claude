@@ -8,7 +8,7 @@ agent: code-reviewer
 
 # Proactive Code Review
 
-This skill provides automatic code quality and security review at strategic moments in the development workflow.
+This skill provides automatic code quality and security review at strategic moments in the development workflow. It detects the project ecosystem and applies appropriate checks.
 
 ## When Claude Should Invoke This Skill
 
@@ -19,17 +19,43 @@ Claude should proactively invoke this skill when:
 3. **Significant Changes** - Multiple files or complex logic was modified
 4. **Security-Sensitive Code** - Authentication, authorization, input handling, or API endpoints were touched
 
+## Ecosystem Detection
+
+Detect the ecosystem from changed files:
+
+**TypeScript/JavaScript**: `.ts`, `.tsx`, `.js`, `.jsx` files
+**JVM (Java/Kotlin/Groovy)**: `.java`, `.kt`, `.kts`, `.groovy` files
+**Python**: `.py` files
+
 ## Review Checklist
 
 ### Security Issues (CRITICAL - Must Fix)
 
+**All Ecosystems:**
 - [ ] **Hardcoded credentials** - API keys, passwords, tokens in source
-- [ ] **SQL injection** - String concatenation in queries
-- [ ] **XSS vulnerabilities** - Unescaped user input in HTML
 - [ ] **Missing input validation** - User input not sanitized
 - [ ] **SSRF vulnerabilities** - User-controlled URLs fetched
 - [ ] **Path traversal** - User-controlled file paths
 - [ ] **Authentication bypass** - Missing auth checks on routes
+
+**TypeScript/JavaScript:**
+- [ ] **SQL injection** - String concatenation in queries
+- [ ] **XSS vulnerabilities** - Unescaped user input in HTML
+- [ ] **console.log statements** - Debug statements left in
+
+**JVM (Java/Kotlin/Groovy):**
+- [ ] **SQL injection** - String concatenation in JPQL/native queries
+- [ ] **XXE** - Default XML parser without feature disabling
+- [ ] **Deserialization** - ObjectInputStream with untrusted data
+- [ ] **System.out.println** / **e.printStackTrace()** - Debug statements left in
+- [ ] **Missing @PreAuthorize** - Sensitive endpoints unprotected
+
+**Python:**
+- [ ] **SQL injection** - f-strings/format in SQL queries
+- [ ] **pickle/yaml.load** - Deserialization of untrusted data
+- [ ] **eval/exec** - Execution of user input
+- [ ] **subprocess shell=True** - Command injection risk
+- [ ] **print() statements** - Debug statements left in
 
 ### Code Quality (HIGH - Should Fix)
 
@@ -37,7 +63,6 @@ Claude should proactively invoke this skill when:
 - [ ] **Large files** - Files > 800 lines
 - [ ] **Deep nesting** - Nesting depth > 4 levels
 - [ ] **Missing error handling** - try/catch missing
-- [ ] **console.log statements** - Debug statements left in
 - [ ] **Mutation patterns** - Objects mutated instead of copied
 - [ ] **Missing tests** - New code without test coverage
 
@@ -45,8 +70,6 @@ Claude should proactively invoke this skill when:
 
 - [ ] **Magic numbers** - Unexplained numeric constants
 - [ ] **Poor naming** - Unclear variable/function names
-- [ ] **Missing JSDoc** - Public APIs undocumented
-- [ ] **Accessibility** - Missing ARIA labels, poor contrast
 - [ ] **TODO/FIXME** - Unresolved comments without tickets
 
 ## Review Process
@@ -56,18 +79,26 @@ Claude should proactively invoke this skill when:
    git diff --name-only HEAD
    ```
 
-2. **For each file**, check against checklist
+2. **Detect ecosystem** from file extensions
 
-3. **Generate report** with:
+3. **For each file**, check against ecosystem-appropriate checklist
+
+4. **Delegate to language reviewers** if needed:
+   - `.java` files -> `java-reviewer` agent
+   - `.kt` files -> `kotlin-reviewer` agent
+   - `.groovy` files -> `groovy-reviewer` agent
+   - `.py` files -> `python-reviewer` agent
+
+5. **Generate report** with:
    - Severity level (CRITICAL, HIGH, MEDIUM, LOW)
    - File path and line number
    - Issue description
    - Suggested fix with code example
 
-4. **Recommendation**:
-   - ❌ **BLOCK** - CRITICAL or HIGH issues found
-   - ⚠️ **WARN** - Only MEDIUM issues found
-   - ✅ **APPROVE** - No significant issues
+6. **Recommendation**:
+   - BLOCK - CRITICAL or HIGH issues found
+   - WARN - Only MEDIUM issues found
+   - APPROVE - No significant issues
 
 ## Output Format
 
@@ -75,22 +106,16 @@ Claude should proactively invoke this skill when:
 ## Code Review Report
 
 **Files Reviewed:** X
+**Ecosystems:** [TypeScript, Java, Python]
 **Risk Level:** HIGH/MEDIUM/LOW
 
 ### CRITICAL Issues (Fix Immediately)
-1. **[Issue]** @ `file.ts:42`
+1. **[Issue]** @ `file.ext:42`
    - Problem: [description]
    - Fix: [code example]
 
 ### HIGH Issues (Fix Before Commit)
-1. **[Issue]** @ `file.ts:100`
-   - Problem: [description]
-   - Fix: [code example]
-
-### MEDIUM Issues (Consider Fixing)
-1. **[Issue]** @ `file.ts:200`
-   - Problem: [description]
-   - Suggestion: [recommendation]
+...
 
 ### Recommendation
 [BLOCK/WARN/APPROVE with explanation]
@@ -102,6 +127,15 @@ This skill runs with `context: fork` to preserve the main conversation context. 
 
 ## Related
 
-- `/code-review` command - Explicit user-invoked full review
-- `code-reviewer` agent - Full agent with code-reviewer tools
-- `security-review` skill - Deep security analysis
+- `/code-review` command - Explicit user-invoked full review (with ecosystem router)
+- `code-reviewer` agent - General quality and security review
+- `java-reviewer` agent - Java idioms and security
+- `kotlin-reviewer` agent - Kotlin idioms and null safety
+- `python-reviewer` agent - Python idioms and security
+- `groovy-reviewer` agent - Groovy/Spock patterns
+- `ts-security-reviewer` agent - TypeScript/JavaScript security specialist
+- `jvm-security-reviewer` agent - JVM security specialist
+- `python-security-reviewer` agent - Python security specialist
+- `security-review` skill - TypeScript/JavaScript security checklist
+- `jvm-security-review` skill - JVM security checklist
+- `python-security-review` skill - Python security checklist

@@ -1,13 +1,13 @@
 ---
 name: security-review
-description: Use this skill when adding authentication, handling user input, working with secrets, creating API endpoints, or implementing payment/sensitive features. Provides comprehensive security checklist and patterns.
+description: Use this skill for TypeScript/JavaScript/Next.js projects when adding authentication, handling user input, working with secrets, creating API endpoints, or implementing payment/sensitive features. Provides comprehensive security checklist and patterns using npm audit, eslint-plugin-security, and semgrep.
 context: fork
 agent: Explore
 ---
 
-# Security Review Skill
+# TypeScript/JavaScript Security Review Skill
 
-This skill ensures all code follows security best practices and identifies potential vulnerabilities.
+This skill ensures all TypeScript/JavaScript/Next.js code follows security best practices and identifies potential vulnerabilities.
 
 ## When to Activate
 

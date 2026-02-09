@@ -328,12 +328,12 @@ plugins {
 - Spring Boot upgrade compilation failures
 
 **DON'T USE when:**
-- Code needs refactoring (use refactor-cleaner)
+- Code needs refactoring (use jvm-refactor-cleaner)
 - Gradle build optimization (use gradle-expert)
 - Maven best practices review (use maven-expert)
 - New features required (use planner)
-- Tests failing (use tdd-guide)
-- Security issues (use security-reviewer)
+- Tests failing (use jvm-tdd-guide)
+- Security issues (use jvm-security-reviewer)
 
 ## Success Metrics
 

@@ -60,9 +60,9 @@ Beyond JavaScript/TypeScript, this plugin now provides **production-grade suppor
 - **Kotlin**: ktfmt/ktlint formatting, Detekt static analysis, Gradle Kotlin DSL
 - **Groovy**: CodeNarc, Gradle scripting support
 
-**19 Specialized Agents** including `python-reviewer`, `java-reviewer`, `kotlin-reviewer`, `maven-expert`, `gradle-expert`, `ci-cd-architect`, and ecosystem-specific build resolvers.
+**27 Specialized Agents** including ecosystem-specific TDD guides (`ts-tdd-guide`, `jvm-tdd-guide`, `python-tdd-guide`), security reviewers (`ts-security-reviewer`, `jvm-security-reviewer`, `python-security-reviewer`), E2E runners, refactor cleaners, build resolvers, language reviewers, and build tool experts.
 
-**16 Domain Skills** including language-specific patterns for Python, Kotlin, Maven, Gradle, and CI/CD best practices.
+**25+ Domain Skills** including ecosystem-specific coding standards, backend patterns, TDD workflows, and security review checklists for TypeScript/JavaScript, JVM (Java/Kotlin), and Python.
 
 ### Modern 2026 Tooling
 
@@ -226,34 +226,50 @@ magic-claude/
 |   |-- plugin.json         # Plugin metadata and component paths
 |   |-- marketplace.json    # Marketplace catalog for /plugin marketplace add
 |
-|-- agents/           # Specialized subagents for delegation (19 total)
-|   |-- planner.md           # Feature implementation planning
-|   |-- architect.md         # System design decisions
-|   |-- tdd-guide.md         # Test-driven development
-|   |-- code-reviewer.md     # Quality and security review
-|   |-- security-reviewer.md # Vulnerability analysis
+|-- agents/           # Specialized subagents for delegation (27 total)
+|   |-- planner.md              # Feature implementation planning
+|   |-- architect.md            # System design decisions
+|   |-- ts-tdd-guide.md         # TypeScript/JavaScript TDD
+|   |-- jvm-tdd-guide.md        # JVM (Java/Kotlin/Groovy) TDD
+|   |-- python-tdd-guide.md     # Python TDD
+|   |-- code-reviewer.md        # Ecosystem-aware quality review
+|   |-- ts-security-reviewer.md # TypeScript/JS vulnerability analysis
+|   |-- jvm-security-reviewer.md  # JVM security (SpotBugs, OWASP)
+|   |-- python-security-reviewer.md # Python security (bandit, semgrep)
 |   |-- ts-build-resolver.md    # TypeScript/JS build errors
 |   |-- jvm-build-resolver.md   # Java/Kotlin/Groovy build errors
 |   |-- python-build-resolver.md # Python build/type/lint errors
-|   |-- e2e-runner.md        # Playwright E2E testing
-|   |-- refactor-cleaner.md  # Dead code cleanup
-|   |-- doc-updater.md       # Documentation sync
-|   |-- python-reviewer.md   # Python code review
-|   |-- java-reviewer.md     # Java code review
-|   |-- kotlin-reviewer.md   # Kotlin code review
-|   |-- groovy-reviewer.md   # Groovy code review
-|   |-- maven-expert.md      # Maven build optimization
-|   |-- gradle-expert.md     # Gradle build optimization
-|   |-- ci-cd-architect.md   # CI/CD pipeline generation
+|   |-- ts-e2e-runner.md        # TypeScript/JS Playwright E2E testing
+|   |-- jvm-e2e-runner.md       # JVM Selenium/REST Assured E2E testing
+|   |-- python-e2e-runner.md    # Python pytest-playwright E2E testing
+|   |-- ts-refactor-cleaner.md  # TypeScript/JS dead code cleanup
+|   |-- jvm-refactor-cleaner.md # JVM dead code cleanup
+|   |-- python-refactor-cleaner.md # Python dead code cleanup
+|   |-- doc-updater.md          # Documentation sync
+|   |-- python-reviewer.md      # Python code review
+|   |-- java-reviewer.md        # Java code review
+|   |-- kotlin-reviewer.md      # Kotlin code review
+|   |-- groovy-reviewer.md      # Groovy code review
+|   |-- maven-expert.md         # Maven build optimization
+|   |-- gradle-expert.md        # Gradle build optimization
+|   |-- ci-cd-architect.md      # CI/CD pipeline generation
 |
-|-- skills/           # Workflow definitions and domain knowledge (18 total)
-|   |-- coding-standards/           # Language best practices
-|   |-- backend-patterns/           # API, database, caching patterns
+|-- skills/           # Workflow definitions and domain knowledge (27 total)
+|   |-- coding-standards/           # TypeScript/JS best practices
+|   |-- jvm-coding-standards/       # Java/Kotlin best practices
+|   |-- python-coding-standards/    # Python best practices
+|   |-- backend-patterns/           # TypeScript/Node.js API patterns
+|   |-- jvm-backend-patterns/       # Spring Boot/JPA patterns
+|   |-- python-backend-patterns/    # FastAPI/Django/SQLAlchemy patterns
 |   |-- frontend-patterns/          # React, Next.js patterns
+|   |-- tdd-workflow/               # TypeScript/JS TDD methodology
+|   |-- jvm-tdd-workflow/           # JVM TDD methodology
+|   |-- python-tdd-workflow/        # Python TDD methodology
+|   |-- security-review/            # TypeScript/JS security checklist
+|   |-- jvm-security-review/        # JVM security checklist
+|   |-- python-security-review/     # Python security checklist
 |   |-- continuous-learning/        # Auto-extract patterns from sessions (Longform Guide)
 |   |-- strategic-compact/          # Manual compaction suggestions (Longform Guide)
-|   |-- tdd-workflow/               # TDD methodology
-|   |-- security-review/            # Security checklist
 |   |-- eval-harness/               # Verification loop evaluation (Longform Guide)
 |   |-- verification-loop/          # Continuous verification (Longform Guide)
 |   |-- python-patterns/            # Python best practices and idioms
@@ -538,7 +554,7 @@ npm test -- --watch
 ### Core Documentation
 
 - **[FEATURES.md](docs/FEATURES.md)** - Complete feature documentation with examples
-- **[AGENT-CATALOG.md](docs/AGENT-CATALOG.md)** - All 19 agents with use cases
+- **[AGENT-CATALOG.md](docs/AGENT-CATALOG.md)** - All 27 agents with use cases
 - **[PERFORMANCE.md](docs/PERFORMANCE.md)** - Benchmarks and optimization tips
 
 ### Language-Specific Guides

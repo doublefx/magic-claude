@@ -1,5 +1,5 @@
 ---
-description: Run comprehensive verification on current codebase state - build, types, lint, tests, and security checks
+description: Run comprehensive verification on current codebase state - build, types, lint, tests, and security checks across all ecosystems
 ---
 
 # Verification Command
@@ -11,34 +11,69 @@ Run comprehensive verification on current codebase state.
 Git status:
 !`git status --short`
 
+## Step 1: Detect Ecosystem
+
+Check for ecosystem markers:
+- `package.json` / `tsconfig.json` → TypeScript/JavaScript
+- `pom.xml` / `build.gradle` / `build.gradle.kts` → JVM
+- `pyproject.toml` / `setup.py` / `requirements.txt` → Python
+
 ## Instructions
 
 Execute verification in this exact order:
 
-1. **Build Check**
-   - Run the build command for this project
-   - If it fails, report errors and STOP
+### 1. Build Check
 
-2. **Type Check**
-   - Run TypeScript/type checker
-   - Report all errors with file:line
+| Ecosystem | Command |
+|-----------|---------|
+| TypeScript/JavaScript | `npm run build` or `pnpm build` |
+| JVM (Gradle) | `./gradlew build -x test` |
+| JVM (Maven) | `./mvnw compile` |
+| Python | `python -m py_compile` or `python -m build` |
 
-3. **Lint Check**
-   - Run linter
-   - Report warnings and errors
+If build fails, report errors and STOP.
 
-4. **Test Suite**
-   - Run all tests
-   - Report pass/fail count
-   - Report coverage percentage
+### 2. Type Check
 
-5. **Console.log Audit**
-   - Search for console.log in source files
-   - Report locations
+| Ecosystem | Command |
+|-----------|---------|
+| TypeScript | `npx tsc --noEmit` |
+| Python | `pyright .` or `mypy .` |
+| JVM | (Handled by compiler in build step) |
 
-6. **Git Status**
-   - Show uncommitted changes
-   - Show files modified since last commit
+Report all type errors with file:line.
+
+### 3. Lint Check
+
+| Ecosystem | Command |
+|-----------|---------|
+| TypeScript/JavaScript | `npm run lint` or `npx eslint .` |
+| JVM (Java) | `./gradlew checkstyleMain` or `./mvnw checkstyle:check` |
+| JVM (Kotlin) | `./gradlew ktlintCheck` or `./gradlew detekt` |
+| Python | `ruff check .` |
+
+### 4. Test Suite
+
+| Ecosystem | Command |
+|-----------|---------|
+| TypeScript/JavaScript | `npm test -- --coverage` |
+| JVM (Gradle) | `./gradlew test jacocoTestReport` |
+| JVM (Maven) | `./mvnw test jacoco:report` |
+| Python | `pytest --cov=src -v` |
+
+Report: Total tests, Passed, Failed, Coverage %
+
+### 5. Debug Statement Audit
+
+| Ecosystem | Search Pattern |
+|-----------|---------------|
+| TypeScript/JavaScript | `console.log` in `*.ts`, `*.tsx`, `*.js`, `*.jsx` |
+| JVM (Java/Kotlin) | `System.out.println`, `e.printStackTrace()` in `*.java`, `*.kt` |
+| Python | `print(`, `breakpoint()`, `pdb.set_trace()` in `*.py` |
+
+### 6. Git Status
+- Show uncommitted changes
+- Show files modified since last commit
 
 ## Output
 
@@ -47,12 +82,13 @@ Produce a concise verification report:
 ```
 VERIFICATION: [PASS/FAIL]
 
-Build:    [OK/FAIL]
-Types:    [OK/X errors]
-Lint:     [OK/X issues]
-Tests:    [X/Y passed, Z% coverage]
-Secrets:  [OK/X found]
-Logs:     [OK/X console.logs]
+Ecosystem: [TypeScript/JVM/Python]
+Build:     [OK/FAIL]
+Types:     [OK/X errors]
+Lint:      [OK/X issues]
+Tests:     [X/Y passed, Z% coverage]
+Secrets:   [OK/X found]
+Debug:     [OK/X statements found]
 
 Ready for PR: [YES/NO]
 ```

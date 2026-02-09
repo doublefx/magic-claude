@@ -16,25 +16,25 @@ Sequential agent workflow for complex tasks.
 ### feature
 Full feature implementation workflow:
 ```
-planner -> tdd-guide -> code-reviewer -> security-reviewer
+planner -> [ts|jvm|python]-tdd-guide -> code-reviewer -> [ts|jvm|python]-security-reviewer
 ```
 
 ### bugfix
 Bug investigation and fix workflow:
 ```
-explorer -> tdd-guide -> code-reviewer
+explorer -> [ts|jvm|python]-tdd-guide -> code-reviewer
 ```
 
 ### refactor
 Safe refactoring workflow:
 ```
-architect -> code-reviewer -> tdd-guide
+architect -> code-reviewer -> [ts|jvm|python]-tdd-guide
 ```
 
 ### security
 Security-focused review:
 ```
-security-reviewer -> code-reviewer -> architect
+[ts|jvm|python]-security-reviewer -> code-reviewer -> architect
 ```
 
 ## Execution Pattern
@@ -83,19 +83,19 @@ Executes:
    - Identifies dependencies
    - Output: `HANDOFF: planner -> tdd-guide`
 
-2. **TDD Guide Agent**
+2. **TDD Guide Agent** (ecosystem-specific: ts/jvm/python)
    - Reads planner handoff
    - Writes tests first
    - Implements to pass tests
-   - Output: `HANDOFF: tdd-guide -> code-reviewer`
+   - Output: `HANDOFF: [ecosystem]-tdd-guide -> code-reviewer`
 
 3. **Code Reviewer Agent**
    - Reviews implementation
    - Checks for issues
    - Suggests improvements
-   - Output: `HANDOFF: code-reviewer -> security-reviewer`
+   - Output: `HANDOFF: code-reviewer -> [ecosystem]-security-reviewer`
 
-4. **Security Reviewer Agent**
+4. **Security Reviewer Agent** (ecosystem-specific: ts/jvm/python)
    - Security audit
    - Vulnerability check
    - Final approval
@@ -108,7 +108,7 @@ ORCHESTRATION REPORT
 ====================
 Workflow: feature
 Task: Add user authentication
-Agents: planner -> tdd-guide -> code-reviewer -> security-reviewer
+Agents: planner -> [ecosystem]-tdd-guide -> code-reviewer -> [ecosystem]-security-reviewer
 
 SUMMARY
 -------

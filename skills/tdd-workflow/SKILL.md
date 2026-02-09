@@ -1,14 +1,14 @@
 ---
 name: tdd-workflow
-description: Use this skill when writing new features, fixing bugs, or refactoring code. Enforces test-driven development with 80%+ coverage including unit, integration, and E2E tests.
+description: Use this skill when writing new TypeScript/JavaScript features, fixing bugs, or refactoring code. Enforces test-driven development with 80%+ coverage using Jest, Vitest, and Playwright for unit, integration, and E2E tests.
 context: fork
 agent: general-purpose
 allowed-tools: Read, Write, Edit, Grep, Glob, Bash(npm test *), Bash(npx vitest *), Bash(npx jest *), Bash(node tests/*)
 ---
 
-# Test-Driven Development Workflow
+# TypeScript/JavaScript Test-Driven Development Workflow
 
-This skill ensures all code development follows TDD principles with comprehensive test coverage.
+This skill ensures all TypeScript/JavaScript code development follows TDD principles with comprehensive test coverage.
 
 ## When to Activate
 

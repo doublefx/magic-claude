@@ -1,11 +1,14 @@
 #!/usr/bin/env node
 /**
- * Stop Validation - Check for console.log in modified files after each response
+ * Stop Validation - Check for debug statements in modified files after each response
  *
  * Cross-platform (Windows, macOS, Linux)
  *
  * Runs on Stop event (after each Claude response).
- * Checks git diff for modified JS/TS files with console.log.
+ * Checks git diff for modified files with debug statements:
+ * - JS/TS: console.log
+ * - Python: print()
+ * - Java/Kotlin: System.out.println, e.printStackTrace()
  */
 
 const { execSync } = require('child_process');
@@ -24,23 +27,45 @@ process.stdin.on('end', () => {
       process.exit(0);
     }
 
-    // Get modified JS/TS files
     try {
-      const files = execSync('git diff --name-only HEAD', {
+      const allFiles = execSync('git diff --name-only HEAD', {
         encoding: 'utf8',
         stdio: ['pipe', 'pipe', 'pipe']
-      }).split('\n').filter(f => /\.(ts|tsx|js|jsx)$/.test(f) && fs.existsSync(f));
+      }).split('\n').filter(f => f && fs.existsSync(f));
 
-      let hasConsole = false;
-      for (const f of files) {
+      let hasDebugStatements = false;
+
+      // Check JS/TS files for console.log
+      const jsFiles = allFiles.filter(f => /\.(ts|tsx|js|jsx)$/.test(f));
+      for (const f of jsFiles) {
         if (fs.readFileSync(f, 'utf8').includes('console.log')) {
           console.error(`[Hook] WARNING: console.log found in ${f}`);
-          hasConsole = true;
+          hasDebugStatements = true;
         }
       }
 
-      if (hasConsole) {
-        console.error('[Hook] Remove console.log statements before committing');
+      // Check Python files for print()
+      const pyFiles = allFiles.filter(f => /\.py$/.test(f));
+      for (const f of pyFiles) {
+        const content = fs.readFileSync(f, 'utf8');
+        if (/\bprint\s*\(/.test(content)) {
+          console.error(`[Hook] WARNING: print() found in ${f}`);
+          hasDebugStatements = true;
+        }
+      }
+
+      // Check Java/Kotlin files for System.out.println and e.printStackTrace()
+      const jvmFiles = allFiles.filter(f => /\.(java|kt|kts)$/.test(f));
+      for (const f of jvmFiles) {
+        const content = fs.readFileSync(f, 'utf8');
+        if (/System\.(out|err)\.(println|print)\b/.test(content) || /\.printStackTrace\s*\(/.test(content)) {
+          console.error(`[Hook] WARNING: Debug statements found in ${f}`);
+          hasDebugStatements = true;
+        }
+      }
+
+      if (hasDebugStatements) {
+        console.error('[Hook] Remove debug statements before committing');
       }
     } catch {
       // Git command failed, skip silently

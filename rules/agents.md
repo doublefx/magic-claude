@@ -8,14 +8,22 @@ Located in `~/.claude/agents/`:
 |-------|---------|-------------|
 | planner | Implementation planning | Complex features, refactoring |
 | architect | System design | Architectural decisions |
-| tdd-guide | Test-driven development | New features, bug fixes |
-| code-reviewer | Code review | After writing code |
-| security-reviewer | Security analysis | Before commits |
+| ts-tdd-guide | TypeScript/JS TDD | New TS/JS features, bug fixes |
+| jvm-tdd-guide | JVM TDD | New Java/Kotlin features, bug fixes |
+| python-tdd-guide | Python TDD | New Python features, bug fixes |
+| code-reviewer | Ecosystem-aware review | After writing code |
+| ts-security-reviewer | TS/JS security | Before commits (TS/JS projects) |
+| jvm-security-reviewer | JVM security | Before commits (JVM projects) |
+| python-security-reviewer | Python security | Before commits (Python projects) |
 | ts-build-resolver | Fix TS/JS build errors | When npm/tsc build fails |
 | jvm-build-resolver | Fix JVM build errors | When Maven/Gradle build fails |
 | python-build-resolver | Fix Python errors | When pyright/ruff/pytest fails |
-| e2e-runner | E2E testing | Critical user flows |
-| refactor-cleaner | Dead code cleanup | Code maintenance |
+| ts-e2e-runner | TS/JS E2E testing | Critical user flows (Playwright) |
+| jvm-e2e-runner | JVM E2E testing | Critical user flows (Selenium) |
+| python-e2e-runner | Python E2E testing | Critical user flows (pytest-playwright) |
+| ts-refactor-cleaner | TS/JS dead code | Code maintenance |
+| jvm-refactor-cleaner | JVM dead code | Code maintenance |
+| python-refactor-cleaner | Python dead code | Code maintenance |
 | doc-updater | Documentation | Updating docs |
 
 ## Immediate Agent Usage
@@ -23,7 +31,7 @@ Located in `~/.claude/agents/`:
 No user prompt needed:
 1. Complex feature requests - Use **planner** agent
 2. Code just written/modified - Use **code-reviewer** agent
-3. Bug fix or new feature - Use **tdd-guide** agent
+3. Bug fix or new feature - Use appropriate **tdd-guide** agent (ts/jvm/python)
 4. Architectural decision - Use **architect** agent
 
 ## Parallel Task Execution

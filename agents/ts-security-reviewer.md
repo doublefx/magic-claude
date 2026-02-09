@@ -1,6 +1,6 @@
 ---
-name: security-reviewer
-description: Security vulnerability detection and remediation specialist. Use PROACTIVELY after writing code that handles user input, authentication, API endpoints, or sensitive data. Flags secrets, SSRF, injection, unsafe crypto, and OWASP Top 10 vulnerabilities.
+name: ts-security-reviewer
+description: TypeScript/JavaScript/Next.js security vulnerability detection and remediation specialist. Use PROACTIVELY after writing TS/JS code that handles user input, authentication, API endpoints, or sensitive data. Flags secrets, SSRF, injection, unsafe crypto, and OWASP Top 10 vulnerabilities. Uses npm audit, eslint-plugin-security, and semgrep.
 tools: Read, Write, Edit, Bash, Grep, Glob
 model: opus
 skills: security-review, claude-mem-context, serena-code-navigation
@@ -439,7 +439,7 @@ When reviewing PRs, post inline comments:
 ```markdown
 ## Security Review
 
-**Reviewer:** security-reviewer agent
+**Reviewer:** ts-security-reviewer agent
 **Risk Level:** 🔴 HIGH / 🟡 MEDIUM / 🟢 LOW
 
 ### Blocking Issues
@@ -460,7 +460,7 @@ When reviewing PRs, post inline comments:
 
 ---
 
-> Security review performed by Claude Code security-reviewer agent
+> Security review performed by Claude Code ts-security-reviewer agent
 > For questions, see docs/SECURITY.md
 ```
 

@@ -124,7 +124,8 @@ Hooks execute Node.js scripts on tool events. Key hooks in `hooks/hooks.json`:
 - Python security scanning (Semgrep + pip-audit)
 - Maven/Gradle best practice advice
 - TypeScript type checking on .ts/.tsx edits
-- Warn about console.log statements
+- Warn about debug statements (console.log, print(), System.out.println)
+- Pyright type checking on .py edits
 - Suggest code review when tasks complete
 - Log PR URLs after creation
 
@@ -142,7 +143,7 @@ Hooks execute Node.js scripts on tool events. Key hooks in `hooks/hooks.json`:
 - Evaluate session for extractable patterns
 
 **Stop:**
-- Check for console.log in modified files
+- Check for debug statements in modified files (console.log, print(), System.out.println)
 - **Detect task completion and suggest code review**
 
 All hooks use inline Node.js via `node -e` or reference scripts in `scripts/hooks/` via `${CLAUDE_PLUGIN_ROOT}`.
@@ -159,14 +160,22 @@ Specialized agents in `agents/` directory:
 |-------|-------|---------|
 | planner | opus | Feature implementation planning |
 | architect | opus | System design decisions |
-| tdd-guide | sonnet | Test-driven development enforcement |
-| code-reviewer | opus | Quality and security review |
-| security-reviewer | opus | Vulnerability analysis |
+| ts-tdd-guide | sonnet | TypeScript/JavaScript TDD enforcement |
+| jvm-tdd-guide | sonnet | JVM (Java/Kotlin/Groovy) TDD enforcement |
+| python-tdd-guide | sonnet | Python TDD enforcement |
+| code-reviewer | opus | Ecosystem-aware quality and security review |
+| ts-security-reviewer | opus | TypeScript/JavaScript vulnerability analysis |
+| jvm-security-reviewer | opus | JVM security analysis (SpotBugs, OWASP) |
+| python-security-reviewer | opus | Python security analysis (bandit, semgrep) |
 | ts-build-resolver | sonnet | Fix TypeScript/JS build errors |
 | jvm-build-resolver | sonnet | Fix Java/Kotlin/Groovy build errors |
 | python-build-resolver | sonnet | Fix Python build/type/lint errors |
-| e2e-runner | sonnet | Playwright E2E testing |
-| refactor-cleaner | haiku | Dead code cleanup |
+| ts-e2e-runner | sonnet | TypeScript/JavaScript Playwright E2E testing |
+| jvm-e2e-runner | sonnet | JVM Selenium/REST Assured E2E testing |
+| python-e2e-runner | sonnet | Python pytest-playwright E2E testing |
+| ts-refactor-cleaner | haiku | TypeScript/JavaScript dead code cleanup |
+| jvm-refactor-cleaner | haiku | JVM dead code cleanup (jdeps, SpotBugs) |
+| python-refactor-cleaner | haiku | Python dead code cleanup (vulture, ruff) |
 | doc-updater | haiku | Documentation sync |
 | setup-agent | sonnet | Project setup and configuration |
 | gradle-expert | sonnet | Gradle build optimization |
@@ -189,16 +198,24 @@ Specialized agents in `agents/` directory:
 Skills define reusable workflows and domain knowledge in `skills/` directory:
 
 **Proactive Skills** (Claude invokes automatically):
-- **proactive-review/** - Code quality checks at task completion/pre-commit
+- **proactive-review/** - Ecosystem-aware code quality checks at task completion/pre-commit
 - **proactive-planning/** - Planning for complex tasks before coding
-- **proactive-tdd/** - TDD enforcement when implementing features
+- **proactive-tdd/** - Ecosystem-aware TDD enforcement when implementing features
 
 **Domain Knowledge Skills** (Context reference):
-- **coding-standards/** - Language best practices (with `context: fork`)
-- **backend-patterns/** - API design, database patterns (with `context: fork`)
+- **coding-standards/** - TypeScript/JavaScript best practices (with `context: fork`)
+- **jvm-coding-standards/** - Java/Kotlin best practices (with `context: fork`)
+- **python-coding-standards/** - Python best practices (with `context: fork`)
+- **backend-patterns/** - TypeScript/Node.js API patterns (with `context: fork`)
+- **jvm-backend-patterns/** - Spring Boot/JPA patterns (with `context: fork`)
+- **python-backend-patterns/** - FastAPI/Django/SQLAlchemy patterns (with `context: fork`)
 - **frontend-patterns/** - React, Next.js patterns (with `context: fork`)
-- **security-review/** - Security checklist (with `context: fork`)
-- **tdd-workflow/** - TDD methodology reference (with `context: fork`)
+- **security-review/** - TypeScript/JavaScript security checklist (with `context: fork`)
+- **jvm-security-review/** - JVM security checklist (with `context: fork`)
+- **python-security-review/** - Python security checklist (with `context: fork`)
+- **tdd-workflow/** - TypeScript/JavaScript TDD methodology (with `context: fork`)
+- **jvm-tdd-workflow/** - JVM TDD methodology (with `context: fork`)
+- **python-tdd-workflow/** - Python TDD methodology (with `context: fork`)
 
 **Workflow Skills**:
 - **continuous-learning/** - Auto-extract patterns from sessions
@@ -414,7 +431,10 @@ try {
 - **Integration tests:** API endpoints, database operations
 - **E2E tests:** Critical user flows (Playwright)
 
-Use **tdd-guide** agent proactively for new features to enforce write-tests-first workflow.
+Use the appropriate TDD agent proactively for new features:
+- TypeScript/JavaScript: **ts-tdd-guide**
+- JVM (Java/Kotlin): **jvm-tdd-guide**
+- Python: **python-tdd-guide**
 
 ## Git Workflow
 

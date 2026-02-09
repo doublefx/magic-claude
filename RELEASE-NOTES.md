@@ -1,3 +1,56 @@
+# Release Notes v2.0.0
+
+**Release Date**: 2026-02-09
+**Type**: Major Release - Full Polyglot Conversion
+**Status**: Production Ready
+
+---
+
+## Overview
+
+Magic Claude v2.0.0 completes the **full polyglot conversion** -- every TypeScript-only agent, skill, command, rule, and hook now supports three ecosystems: TypeScript/JavaScript, JVM (Java/Kotlin/Groovy), and Python.
+
+**What Changed**: 17 new files created, 26 files modified, 43 files touched total.
+
+### New Polyglot Agent Trios
+
+Each domain now has three ecosystem-specific agents dispatched by a single router command:
+
+| Domain | TS/JS Agent | JVM Agent | Python Agent | Router |
+|--------|-------------|-----------|--------------|--------|
+| TDD | ts-tdd-guide | jvm-tdd-guide | python-tdd-guide | `/tdd` |
+| Security | ts-security-reviewer | jvm-security-reviewer | python-security-reviewer | `/code-review` |
+| Build Fix | ts-build-resolver | jvm-build-resolver | python-build-resolver | `/build-fix` |
+| E2E | ts-e2e-runner | jvm-e2e-runner | python-e2e-runner | `/e2e` |
+| Refactor | ts-refactor-cleaner | jvm-refactor-cleaner | python-refactor-cleaner | `/refactor-clean` |
+
+### New Ecosystem Skills
+
+| Skill | Purpose |
+|-------|---------|
+| jvm-tdd-workflow | JUnit 5, Mockito, MockK, JaCoCo |
+| python-tdd-workflow | pytest, hypothesis, pytest-cov |
+| jvm-security-review | SpotBugs, OWASP, Spring Security checklist |
+| python-security-review | bandit, pip-audit, semgrep checklist |
+| jvm-coding-standards | Google Java Style, Kotlin idioms |
+| python-coding-standards | PEP 8, type hints, Pydantic v2 |
+| jvm-backend-patterns | Spring Boot, JPA, DTO records |
+| python-backend-patterns | FastAPI, Django, SQLAlchemy 2.0 |
+
+### Polyglot Hooks
+
+- **console-log-detector.cjs**: Now detects `console.log` (JS/TS), `print()` (Python), `System.out.println` (Java/Kotlin)
+- **stop-validation.cjs**: Now checks all three ecosystems for debug statements
+- **pyright-checker.cjs**: NEW - Pyright type checking after `.py` edits (mirrors typescript-checker.cjs)
+
+### Polyglot Rules, Commands, Skills
+
+- Rules (`patterns.md`, `coding-style.md`, `security.md`): JVM and Python sections added
+- Commands (`update-docs.md`, `test-coverage.md`, `verify.md`): Ecosystem detection and ecosystem-specific tooling
+- `verification-loop/SKILL.md`: JVM and Python build/test/lint commands
+
+---
+
 # Release Notes v1.0.0
 
 **Release Date**: 2026-02-08

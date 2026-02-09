@@ -1,6 +1,6 @@
 ---
-name: tdd-guide
-description: Test-Driven Development specialist enforcing write-tests-first methodology. Use PROACTIVELY when writing new features, fixing bugs, or refactoring code. Ensures 80%+ test coverage.
+name: ts-tdd-guide
+description: TypeScript/JavaScript Test-Driven Development specialist enforcing write-tests-first methodology. Use PROACTIVELY when writing new TS/JS features, fixing bugs, or refactoring code. Ensures 80%+ test coverage using Jest, Vitest, and Playwright.
 tools: Read, Write, Edit, Bash, Grep
 model: sonnet
 skills: tdd-workflow, claude-mem-context

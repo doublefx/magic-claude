@@ -5,7 +5,7 @@
 Test Types (ALL required):
 1. **Unit Tests** - Individual functions, utilities, components
 2. **Integration Tests** - API endpoints, database operations
-3. **E2E Tests** - Critical user flows (Playwright)
+3. **E2E Tests** - Critical user flows
 
 ## Test-Driven Development
 
@@ -19,12 +19,16 @@ MANDATORY workflow:
 
 ## Troubleshooting Test Failures
 
-1. Use **tdd-guide** agent
+1. Use the appropriate **tdd-guide** agent (ts/jvm/python)
 2. Check test isolation
 3. Verify mocks are correct
 4. Fix implementation, not tests (unless tests are wrong)
 
 ## Agent Support
 
-- **tdd-guide** - Use PROACTIVELY for new features, enforces write-tests-first
-- **e2e-runner** - Playwright E2E testing specialist
+- **ts-tdd-guide** - TypeScript/JavaScript TDD (Jest/Vitest)
+- **jvm-tdd-guide** - JVM TDD (JUnit 5, Mockito, MockK)
+- **python-tdd-guide** - Python TDD (pytest, hypothesis)
+- **ts-e2e-runner** - Playwright E2E testing
+- **jvm-e2e-runner** - Selenium/REST Assured E2E testing
+- **python-e2e-runner** - pytest-playwright E2E testing

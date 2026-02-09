@@ -6,7 +6,7 @@ user-invocable: false
 
 # Proactive TDD Enforcement
 
-This skill enforces test-driven development methodology when Claude is implementing new functionality.
+This skill enforces test-driven development methodology when Claude is implementing new functionality. It detects the project ecosystem and invokes the appropriate TDD agent.
 
 ## When Claude Should Invoke This Skill
 
@@ -17,6 +17,25 @@ Claude should proactively use TDD methodology when:
 3. **Business Logic** - Any logic involving calculations, rules, or workflows
 4. **API Endpoints** - New routes or handlers
 5. **Data Transformations** - Parsing, formatting, mapping functions
+
+## Ecosystem Detection
+
+Detect the target ecosystem from file context:
+
+**TypeScript/JavaScript** (dispatch to `ts-tdd-guide`):
+- Working with `.ts`, `.tsx`, `.js`, `.jsx` files
+- `tsconfig.json`, `package.json`, `jest.config.*`, `vitest.config.*` present
+- Test command: `npm test` or `npx vitest`
+
+**JVM (Java/Kotlin/Groovy)** (dispatch to `jvm-tdd-guide`):
+- Working with `.java`, `.kt`, `.groovy` files
+- `pom.xml`, `build.gradle`, `build.gradle.kts` present
+- Test command: `./gradlew test` or `./mvnw test`
+
+**Python** (dispatch to `python-tdd-guide`):
+- Working with `.py` files
+- `pyproject.toml`, `setup.py`, `conftest.py` present
+- Test command: `pytest`
 
 ## TDD Cycle
 
@@ -31,68 +50,58 @@ REPEAT:   Next test case
 
 ## Mandatory Workflow
 
-### Step 1: Define Interface (SCAFFOLD)
-```typescript
-// Define types/interfaces first
-interface Input { ... }
-interface Output { ... }
-
-function newFunction(input: Input): Output {
-  throw new Error('Not implemented')
-}
-```
+### Step 1: Detect Ecosystem
+Examine the file being worked on and project markers to choose the right agent.
 
 ### Step 2: Write Failing Test (RED)
+
+**TypeScript/JavaScript:**
 ```typescript
 describe('newFunction', () => {
   it('should handle happy path', () => {
-    const input = { ... }
-    const expected = { ... }
     expect(newFunction(input)).toEqual(expected)
-  })
-
-  it('should handle edge case', () => {
-    expect(newFunction(emptyInput)).toEqual(defaultOutput)
-  })
-
-  it('should throw on invalid input', () => {
-    expect(() => newFunction(null)).toThrow()
   })
 })
 ```
 
-### Step 3: Run Test - MUST FAIL
-```bash
-npm test path/to/test.ts
-# Test MUST fail with expected error
-```
-
-### Step 4: Implement Minimal Code (GREEN)
-```typescript
-function newFunction(input: Input): Output {
-  // Only enough code to pass the test
-  return { ... }
+**JVM (Java):**
+```java
+@Test
+@DisplayName("should handle happy path")
+void shouldHandleHappyPath() {
+    assertThat(newFunction(input)).isEqualTo(expected);
 }
 ```
 
-### Step 5: Run Test - MUST PASS
-```bash
-npm test path/to/test.ts
-# All tests should pass
+**Python:**
+```python
+def test_should_handle_happy_path():
+    assert new_function(input) == expected
 ```
+
+### Step 3: Run Test - MUST FAIL
+
+| Ecosystem | Command |
+|-----------|---------|
+| TypeScript/JavaScript | `npm test path/to/test` |
+| JVM (Gradle) | `./gradlew test --tests "*TestClass"` |
+| JVM (Maven) | `./mvnw test -Dtest=TestClass` |
+| Python | `pytest tests/test_module.py -v` |
+
+### Step 4: Implement Minimal Code (GREEN)
+
+### Step 5: Run Test - MUST PASS
 
 ### Step 6: Refactor (IMPROVE)
-- Extract constants
-- Improve naming
-- Remove duplication
-- Optimize if needed
-- Keep tests passing!
 
 ### Step 7: Check Coverage
-```bash
-npm test -- --coverage
-# Target: 80%+ coverage
-```
+
+| Ecosystem | Command | Target |
+|-----------|---------|--------|
+| TypeScript/JavaScript | `npm test -- --coverage` | 80%+ |
+| JVM (Gradle) | `./gradlew jacocoTestReport` | 80%+ |
+| JVM (Maven) | `./mvnw jacoco:report` | 80%+ |
+| Python | `pytest --cov=src --cov-fail-under=80` | 80%+ |
 
 ## Test Cases to Write
 
@@ -100,10 +109,10 @@ For every function:
 
 | Case Type | Example |
 |-----------|---------|
-| **Happy path** | Valid input → expected output |
-| **Empty input** | Empty array, empty string, null |
+| **Happy path** | Valid input -> expected output |
+| **Empty input** | Empty array, empty string, null/None |
 | **Edge cases** | Max values, min values, boundaries |
-| **Error cases** | Invalid input → appropriate error |
+| **Error cases** | Invalid input -> appropriate error |
 | **Type safety** | Wrong types rejected |
 
 ## Coverage Requirements
@@ -118,12 +127,12 @@ For every function:
 
 ## Anti-Patterns to Avoid
 
-❌ **NO** - Writing implementation before tests
-❌ **NO** - Skipping the "verify test fails" step
-❌ **NO** - Writing too much code at once
-❌ **NO** - Testing implementation details
-❌ **NO** - Mocking everything
-❌ **NO** - Leaving tests commented out
+- **NO** - Writing implementation before tests
+- **NO** - Skipping the "verify test fails" step
+- **NO** - Writing too much code at once
+- **NO** - Testing implementation details
+- **NO** - Mocking everything
+- **NO** - Leaving tests commented out
 
 ## Proactive Triggers
 
@@ -137,6 +146,10 @@ Claude should automatically enforce TDD when:
 
 ## Related
 
-- `/tdd` command - Explicit user-invoked TDD session
-- `tdd-guide` agent - Full TDD specialist agent
-- `tdd-workflow` skill - Complete TDD methodology reference
+- `/tdd` command - Explicit user-invoked TDD session (with ecosystem router)
+- `ts-tdd-guide` agent - TypeScript/JavaScript TDD specialist
+- `jvm-tdd-guide` agent - JVM (Java/Kotlin/Groovy) TDD specialist
+- `python-tdd-guide` agent - Python TDD specialist
+- `tdd-workflow` skill - TypeScript/JavaScript TDD methodology reference
+- `jvm-tdd-workflow` skill - JVM TDD methodology reference
+- `python-tdd-workflow` skill - Python TDD methodology reference
