@@ -68,6 +68,14 @@ class RustEcosystem extends Ecosystem {
     };
   }
 
+  getFileFormatters() {
+    return [{
+      extensions: ['.rs'],
+      tool: 'rustfmt',
+      args: (filePath) => [filePath]
+    }];
+  }
+
   getDebugPatterns() {
     return [];
   }

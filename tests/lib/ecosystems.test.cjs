@@ -26,6 +26,7 @@ let Ecosystem, getEcosystem, detectEcosystem, ECOSYSTEMS;
 let getRegistry, getEcosystemDirs, getEcosystemsByPriority;
 let getAllDebugPatterns, getAllProjectSubTypes, getAllSetupToolCategories;
 let getAllEcosystemTools, getAllVersionCommands, getAllInstallationHelp;
+let getAllFileFormatters;
 let moduleLoaded = false;
 
 try {
@@ -43,6 +44,7 @@ try {
   getAllEcosystemTools = ecosystemModule.getAllEcosystemTools;
   getAllVersionCommands = ecosystemModule.getAllVersionCommands;
   getAllInstallationHelp = ecosystemModule.getAllInstallationHelp;
+  getAllFileFormatters = ecosystemModule.getAllFileFormatters;
   moduleLoaded = true;
 } catch (error) {
   console.log('\n⚠️  Module not found (expected in TDD RED phase)');
@@ -94,6 +96,7 @@ try {
   getAllEcosystemTools = () => ({});
   getAllVersionCommands = () => ({});
   getAllInstallationHelp = () => ({});
+  getAllFileFormatters = () => [];
 }
 
 // Test suite
@@ -380,6 +383,89 @@ function runTests() {
     assert.ok(help.java, 'should have java');
     assert.ok(help.python, 'should have python');
     assert.ok(help.cargo, 'should have cargo');
+  }) ? 'passed' : 'failed']++;
+
+  results[test('getAllFileFormatters should aggregate formatters from all ecosystems', () => {
+    const formatters = getAllFileFormatters();
+    assert.ok(Array.isArray(formatters));
+    // Should have formatters for at least python (.py), java (.java), kotlin (.kt), typescript (.ts), rust (.rs)
+    assert.ok(formatters.length >= 4, `Expected at least 4 formatters, got ${formatters.length}`);
+    // Each should have ecosystem field added by aggregation
+    for (const fmt of formatters) {
+      assert.ok(fmt.ecosystem, 'formatter should have ecosystem field');
+      assert.ok(Array.isArray(fmt.extensions), 'should have extensions array');
+      assert.strictEqual(typeof fmt.tool, 'string', 'tool should be a string');
+      assert.strictEqual(typeof fmt.args, 'function', 'args should be a function');
+    }
+  }) ? 'passed' : 'failed']++;
+
+  console.log('');
+
+  // File Formatter Methods
+  console.log('File Formatter Methods:');
+
+  results[test('nodejs getFileFormatters should define prettier for JS/TS', () => {
+    const eco = getEcosystem(ECOSYSTEMS.NODEJS);
+    const formatters = eco.getFileFormatters();
+    assert.ok(Array.isArray(formatters));
+    assert.ok(formatters.length >= 1);
+    const prettierFmt = formatters.find(f => f.tool === 'prettier');
+    assert.ok(prettierFmt, 'should have prettier formatter');
+    assert.ok(prettierFmt.extensions.includes('.ts'));
+    assert.ok(prettierFmt.extensions.includes('.js'));
+    assert.ok(prettierFmt.command === 'npx', 'should use npx to run prettier');
+    const args = prettierFmt.args('/test/file.ts');
+    assert.ok(Array.isArray(args));
+    assert.ok(args.includes('/test/file.ts'));
+  }) ? 'passed' : 'failed']++;
+
+  results[test('jvm getFileFormatters should define java and kotlin formatters', () => {
+    const eco = getEcosystem(ECOSYSTEMS.JVM);
+    const formatters = eco.getFileFormatters();
+    assert.ok(formatters.length >= 2, 'should have at least java + kotlin formatters');
+    const javaFmt = formatters.find(f => f.extensions.includes('.java'));
+    assert.ok(javaFmt, 'should have .java formatter');
+    assert.strictEqual(javaFmt.tool, 'google-java-format');
+    const ktFmt = formatters.find(f => f.extensions.includes('.kt'));
+    assert.ok(ktFmt, 'should have .kt formatter');
+  }) ? 'passed' : 'failed']++;
+
+  results[test('jvm should have ktfmt and ktlint as ordered fallbacks for kotlin', () => {
+    const eco = getEcosystem(ECOSYSTEMS.JVM);
+    const formatters = eco.getFileFormatters();
+    const ktFormatters = formatters.filter(f => f.extensions.includes('.kt'));
+    assert.ok(ktFormatters.length >= 2, 'should have at least 2 kotlin formatters (ktfmt + ktlint)');
+    assert.strictEqual(ktFormatters[0].tool, 'ktfmt', 'ktfmt should come first');
+    assert.strictEqual(ktFormatters[1].tool, 'ktlint', 'ktlint should be fallback');
+  }) ? 'passed' : 'failed']++;
+
+  results[test('python getFileFormatters should define ruff for .py', () => {
+    const eco = getEcosystem(ECOSYSTEMS.PYTHON);
+    const formatters = eco.getFileFormatters();
+    assert.ok(formatters.length >= 1);
+    const ruffFmt = formatters.find(f => f.tool === 'ruff');
+    assert.ok(ruffFmt, 'should have ruff formatter');
+    assert.ok(ruffFmt.extensions.includes('.py'));
+    const args = ruffFmt.args('/test/file.py');
+    assert.deepStrictEqual(args, ['format', '/test/file.py']);
+  }) ? 'passed' : 'failed']++;
+
+  results[test('rust getFileFormatters should define rustfmt for .rs', () => {
+    const eco = getEcosystem(ECOSYSTEMS.RUST);
+    const formatters = eco.getFileFormatters();
+    assert.ok(formatters.length >= 1);
+    const rustFmt = formatters.find(f => f.tool === 'rustfmt');
+    assert.ok(rustFmt, 'should have rustfmt formatter');
+    assert.ok(rustFmt.extensions.includes('.rs'));
+  }) ? 'passed' : 'failed']++;
+
+  results[test('formatter args functions should return file path in args', () => {
+    const formatters = getAllFileFormatters();
+    for (const fmt of formatters) {
+      const args = fmt.args('/some/test/file.ext');
+      assert.ok(Array.isArray(args), `${fmt.tool} args should return array`);
+      assert.ok(args.includes('/some/test/file.ext'), `${fmt.tool} args should include file path`);
+    }
   }) ? 'passed' : 'failed']++;
 
   console.log('');

@@ -139,6 +139,33 @@ Detailed instructions...
 
 Make sure your config works with Claude Code before submitting.
 
+#### Running the test suite
+
+The plugin includes 150 tests across unit, integration, and E2E categories:
+
+```bash
+# Run all tests (unit + integration + e2e)
+node tests/run-all.cjs
+
+# Run specific test suites
+node tests/lib/utils.test.cjs
+node tests/lib/package-manager.test.cjs
+node tests/hooks/hooks.test.cjs
+
+# Run with npm
+npm test                       # All tests
+npm test tests/unit/           # Unit tests only
+npm test tests/integration/    # Integration tests only
+npm test tests/e2e/            # E2E tests only
+npm test -- --coverage         # With coverage report
+```
+
+**Coverage breakdown:**
+- Unit tests: 80+ tests (lib functions, hooks, utilities)
+- Integration tests: 50+ tests (Python, Java, Kotlin, build tools)
+- E2E tests: 20+ tests (CI/CD generation, monorepo scenarios)
+- Test fixtures: Multiple sample projects for realistic testing
+
 ### 6. Submit a PR
 
 ```bash

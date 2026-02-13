@@ -90,6 +90,14 @@ class PythonEcosystem extends Ecosystem {
     };
   }
 
+  getFileFormatters() {
+    return [{
+      extensions: ['.py'],
+      tool: 'ruff',
+      args: (filePath) => ['format', filePath]
+    }];
+  }
+
   getDebugPatterns() {
     return [{
       extensions: /\.py$/,

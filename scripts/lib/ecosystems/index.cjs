@@ -285,6 +285,21 @@ function getAllInstallationHelp() {
   return help;
 }
 
+/**
+ * Aggregate per-file formatter definitions from all discovered ecosystems.
+ * Each entry is augmented with an `ecosystem` field for traceability.
+ * @returns {Array<{ extensions: string[], tool: string, command?: string, args: (filePath: string) => string[], projectTypes?: string[], ecosystem: string }>}
+ */
+function getAllFileFormatters() {
+  const formatters = [];
+  for (const eco of getEcosystemsByPriority()) {
+    for (const fmt of eco.getFileFormatters()) {
+      formatters.push({ ...fmt, ecosystem: eco.getType() });
+    }
+  }
+  return formatters;
+}
+
 // --- Backward-compatible named exports ---
 // Derived from registry after loading so they exist even if file names change.
 
@@ -312,5 +327,6 @@ module.exports = {
   getAllSetupToolCategories,
   getAllEcosystemTools,
   getAllVersionCommands,
-  getAllInstallationHelp
+  getAllInstallationHelp,
+  getAllFileFormatters
 };

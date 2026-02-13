@@ -108,23 +108,7 @@ Magic Claude uses **runtime filtering** inside hook scripts. This provides:
 
 ### How It Works
 
-**Old Approach** - Matcher-based:
-```json
-{
-  "matcher": "tool == \"Edit\" && tool_input.file_path matches \"\\.(py)$\"",
-  "hooks": [{
-    "type": "command",
-    "command": "ruff format \"$file_path\""
-  }]
-}
-```
-
-**Problems**:
-- Runs Ruff on ANY `.py` file (even in Node.js projects)
-- Complex matcher syntax
-- Limited logic (no function calls in matchers)
-
-**New Approach** - Runtime filtering:
+**Runtime filtering**:
 ```json
 {
   "matcher": "tool == \"Edit\" || tool == \"Write\"",

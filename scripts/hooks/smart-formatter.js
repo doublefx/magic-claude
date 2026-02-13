@@ -2,122 +2,30 @@
 
 /**
  * Smart Formatter Hook
- * Auto-formats files based on project type and file extension
+ * Auto-formats files based on ecosystem registry and file extension.
  *
- * Supported formatters:
- * - Python: ruff format (pyproject.toml projects)
- * - Java: google-java-format (Maven/Gradle projects)
- * - Kotlin: ktfmt or ktlint (Gradle projects)
- * - TypeScript/JavaScript: prettier (Node.js projects)
+ * Formatter definitions come from each ecosystem's getFileFormatters() method,
+ * making this hook automatically support new ecosystems without code changes.
  */
 
 import fs from 'fs';
 import path from 'path';
+import { createRequire } from 'module';
 import {
   readHookInput,
   writeHookOutput,
   getFilePath,
-  detectProjectType,
   logHook,
   commandExists,
   safeExecSync,
   isValidFilePath
 } from '../lib/hook-utils.js';
 
-/**
- * Format a Python file using ruff
- * @param {string} filePath - Path to Python file
- */
-function formatPython(filePath) {
-  if (!isValidFilePath(filePath)) {
-    logHook(`Invalid file path: ${filePath}`, 'WARNING');
-    return;
-  }
-
-  if (commandExists('ruff')) {
-    try {
-      // Safe execution with array arguments - prevents command injection
-      safeExecSync('ruff', ['format', filePath], { stdio: 'pipe' });
-      logHook(`Formatted Python file: ${path.basename(filePath)}`);
-    } catch (error) {
-      logHook(`Failed to format Python file: ${error.message}`, 'WARNING');
-    }
-  }
-}
-
-/**
- * Format a Java file using google-java-format
- * @param {string} filePath - Path to Java file
- */
-function formatJava(filePath) {
-  if (!isValidFilePath(filePath)) {
-    logHook(`Invalid file path: ${filePath}`, 'WARNING');
-    return;
-  }
-
-  if (commandExists('google-java-format')) {
-    try {
-      // Safe execution with array arguments - prevents command injection
-      safeExecSync('google-java-format', ['-i', filePath], { stdio: 'pipe' });
-      logHook(`Formatted Java file: ${path.basename(filePath)}`);
-    } catch (error) {
-      logHook(`Failed to format Java file: ${error.message}`, 'WARNING');
-    }
-  }
-}
-
-/**
- * Format a Kotlin file using ktfmt or ktlint
- * @param {string} filePath - Path to Kotlin file
- */
-function formatKotlin(filePath) {
-  if (!isValidFilePath(filePath)) {
-    logHook(`Invalid file path: ${filePath}`, 'WARNING');
-    return;
-  }
-
-  if (commandExists('ktfmt')) {
-    try {
-      // Safe execution with array arguments - prevents command injection
-      safeExecSync('ktfmt', [filePath], { stdio: 'pipe' });
-      logHook(`Formatted Kotlin file: ${path.basename(filePath)}`);
-      return;
-    } catch (error) {
-      logHook(`Failed to format with ktfmt: ${error.message}`, 'WARNING');
-    }
-  }
-
-  if (commandExists('ktlint')) {
-    try {
-      // Safe execution with array arguments - prevents command injection
-      safeExecSync('ktlint', ['-F', filePath], { stdio: 'pipe' });
-      logHook(`Formatted Kotlin file: ${path.basename(filePath)}`);
-    } catch (error) {
-      logHook(`Failed to format with ktlint: ${error.message}`, 'WARNING');
-    }
-  }
-}
-
-/**
- * Format a TypeScript/JavaScript file using prettier
- * @param {string} filePath - Path to TS/JS file
- */
-function formatTypeScript(filePath) {
-  if (!isValidFilePath(filePath)) {
-    logHook(`Invalid file path: ${filePath}`, 'WARNING');
-    return;
-  }
-
-  if (commandExists('prettier')) {
-    try {
-      // Safe execution with array arguments - prevents command injection
-      safeExecSync('npx', ['prettier', '--write', filePath], { stdio: 'pipe' });
-      logHook(`Formatted TypeScript/JavaScript file: ${path.basename(filePath)}`);
-    } catch (error) {
-      logHook(`Failed to format TypeScript/JavaScript file: ${error.message}`, 'WARNING');
-    }
-  }
-}
+const require = createRequire(import.meta.url);
+const {
+  detectMultipleEcosystems,
+  getEcosystem
+} = require('../lib/ecosystems/index.cjs');
 
 /**
  * Main hook function
@@ -147,22 +55,39 @@ async function main() {
       process.exit(0);
     }
 
-    // Detect project types in current directory
-    const projectTypes = detectProjectType(process.cwd());
+    if (!isValidFilePath(filePath)) {
+      logHook(`Invalid file path: ${filePath}`, 'WARNING');
+      writeHookOutput(context);
+      process.exit(0);
+    }
+
+    // Detect ecosystems present in the project
+    const detectedEcosystems = detectMultipleEcosystems(process.cwd());
     const ext = path.extname(filePath);
 
-    // Format based on file extension and project type
-    if (ext === '.py' && projectTypes.includes('python')) {
-      formatPython(filePath);
+    // Collect formatters from detected ecosystems only
+    const formatters = [];
+    for (const ecoType of detectedEcosystems) {
+      const eco = getEcosystem(ecoType);
+      for (const fmt of eco.getFileFormatters()) {
+        formatters.push(fmt);
+      }
     }
-    else if (ext === '.java' && (projectTypes.includes('maven') || projectTypes.includes('gradle'))) {
-      formatJava(filePath);
-    }
-    else if (ext === '.kt' && projectTypes.includes('gradle')) {
-      formatKotlin(filePath);
-    }
-    else if (['.ts', '.tsx', '.js', '.jsx'].includes(ext) && projectTypes.includes('nodejs')) {
-      formatTypeScript(filePath);
+
+    // Find formatters matching this file's extension and try them in order
+    for (const fmt of formatters) {
+      if (!fmt.extensions.includes(ext)) continue;
+
+      const cmd = fmt.command || fmt.tool;
+      if (commandExists(fmt.tool)) {
+        try {
+          safeExecSync(cmd, fmt.args(filePath), { stdio: 'pipe' });
+          logHook(`Formatted ${path.basename(filePath)} with ${fmt.tool}`);
+          break; // Stop after first successful format
+        } catch (error) {
+          logHook(`Failed to format with ${fmt.tool}: ${error.message}`, 'WARNING');
+        }
+      }
     }
 
     // Always pass through context (required by hook protocol)

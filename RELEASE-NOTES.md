@@ -133,7 +133,7 @@ git clone https://github.com/doublefx/magic-claude.git
 
 **Domain Knowledge (10)**: backend-patterns, frontend-patterns, coding-standards, security-review, tdd-workflow, python-patterns, maven-patterns, gradle-patterns, kotlin-patterns, ci-cd-patterns
 
-**Workflow (7)**: continuous-learning, eval-harness, strategic-compact, verification-loop, clickhouse-io, extend-plugin, project-guidelines-example
+**Workflow (7)**: continuous-learning, eval-harness, strategic-compact, verification-loop, clickhouse-io, extend, project-guidelines-example
 
 **Serena Integration (4)**: serena-setup, serena-status, serena-cleanup, git-sync
 

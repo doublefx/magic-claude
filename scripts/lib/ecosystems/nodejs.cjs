@@ -95,6 +95,15 @@ class NodejsEcosystem extends Ecosystem {
     };
   }
 
+  getFileFormatters() {
+    return [{
+      extensions: ['.ts', '.tsx', '.js', '.jsx'],
+      tool: 'prettier',
+      command: 'npx',
+      args: (filePath) => ['prettier', '--write', filePath]
+    }];
+  }
+
   getDebugPatterns() {
     return [{
       extensions: /\.(ts|tsx|js|jsx)$/,

@@ -760,7 +760,7 @@ Gradle Optimization Report
 
 #### continuous-learning
 **Path**: `skills/continuous-learning/SKILL.md`
-**Description**: Auto-extract patterns from sessions (Longform Guide feature)
+**Description**: Auto-extract patterns from sessions ([Advanced Topics](guides/advanced-topics.md))
 
 **Covers**:
 - Pattern extraction
@@ -772,7 +772,7 @@ Gradle Optimization Report
 
 #### verification-loop
 **Path**: `skills/verification-loop/SKILL.md`
-**Description**: Continuous verification (Longform Guide feature)
+**Description**: Continuous verification ([Advanced Topics](guides/advanced-topics.md))
 
 **Covers**:
 - Checkpoint creation
@@ -784,7 +784,7 @@ Gradle Optimization Report
 
 #### eval-harness
 **Path**: `skills/eval-harness/SKILL.md`
-**Description**: Verification loop evaluation (Longform Guide feature)
+**Description**: Verification loop evaluation ([Advanced Topics](guides/advanced-topics.md))
 
 **Covers**:
 - Evaluation frameworks

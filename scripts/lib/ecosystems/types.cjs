@@ -120,6 +120,20 @@ class Ecosystem {
   }
 
   /**
+   * Get per-file formatter definitions for auto-format hooks.
+   * Each entry maps file extensions to a formatter tool and its arguments.
+   * - `tool`: binary name checked via `commandExists()`
+   * - `command`: (optional) actual binary to execute; defaults to `tool`
+   * - `args`: function returning the args array for safeExecSync
+   * - `projectTypes`: (optional) restrict to specific project sub-types
+   * Multiple entries for the same extension act as ordered fallbacks.
+   * @returns {Array<{ extensions: string[], tool: string, command?: string, args: (filePath: string) => string[], projectTypes?: string[] }>}
+   */
+  getFileFormatters() {
+    return [];
+  }
+
+  /**
    * Get project sub-types and their indicators
    * For ecosystems with distinct sub-types (e.g. JVM has maven and gradle)
    * @returns {{ [subtype: string]: string[] }}

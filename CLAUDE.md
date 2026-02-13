@@ -243,7 +243,7 @@ Skills define reusable workflows and domain knowledge in `skills/` directory:
 - **strategic-compact/** - Manual compaction suggestions
 - **eval-harness/** - Verification loop evaluation
 - **verification-loop/** - Continuous verification
-- **extend-plugin/** - Generate new plugin components following existing patterns
+- **extend/** - Generate new plugin components following existing patterns
 
 Skills with `context: fork` run in isolated subagent context to preserve main conversation.
 

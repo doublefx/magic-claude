@@ -38,6 +38,24 @@ cp rules/*.md ~/.claude/rules/
 # Copy hooks from hooks/hooks.json to ~/.claude/settings.json
 ```
 
+Or add the plugin directly to your `~/.claude/settings.json`:
+
+```json
+{
+  "extraKnownMarketplaces": {
+    "magic-claude": {
+      "source": {
+        "source": "github",
+        "repo": "doublefx/magic-claude"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "magic-claude@magic-claude": true
+  }
+}
+```
+
 ---
 
 ## Step 2: Verify Installation (2 minutes)

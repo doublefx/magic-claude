@@ -1,5 +1,5 @@
 ---
-name: extend-plugin
+name: extend
 description: Generate new plugin components (agents, skills, hooks, commands, rules) following existing patterns with researched domain knowledge. Supports full ecosystem scaffolding or individual components.
 argument-hint: [ecosystem-or-flags]
 context: fork
@@ -288,9 +288,10 @@ model: sonnet
 ```
 
 **Create formatter script** at `<target>/scripts/hooks/<ecosystem>-formatter.js`:
-- Follow the `smart-formatter.js` pattern from `${CLAUDE_PLUGIN_ROOT}/scripts/hooks/smart-formatter.js`
-- Filter by file extension(s) for the ecosystem
-- Call the ecosystem's formatter tool
+- The script should be **registry-aware**: import the ecosystem registry and call `getEcosystem('<ecosystem>').getFileFormatters()` at runtime to get formatter definitions
+- Do NOT hardcode formatter tool names or arguments — the ecosystem module is the single source of truth
+- Follow the `smart-formatter.js` pattern from `${CLAUDE_PLUGIN_ROOT}/scripts/hooks/smart-formatter.js` for the hook protocol (readHookInput/writeHookOutput/safeExecSync)
+- Iterate over `getFileFormatters()` entries matching the file extension, try each tool until one succeeds
 - Handle errors gracefully (formatter not installed)
 - Always output original stdin data
 

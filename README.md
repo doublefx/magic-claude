@@ -7,701 +7,136 @@
 ![Python](https://img.shields.io/badge/-Python-3776AB?logo=python&logoColor=white)
 ![Java](https://img.shields.io/badge/-Java-007396?logo=openjdk&logoColor=white)
 ![Kotlin](https://img.shields.io/badge/-Kotlin-7F52FF?logo=kotlin&logoColor=white)
-![Markdown](https://img.shields.io/badge/-Markdown-000000?logo=markdown&logoColor=white)
 
-**Enterprise polyglot Claude Code plugin for Python, Java, Kotlin, Gradle, Maven, and CI/CD pipelines.**
-
-Production-ready agents, skills, hooks, commands, rules, and templates with enterprise polyglot support, modern 2026 tooling (Ruff, uv, Semgrep), intelligent runtime hook filtering, and one-command CI/CD pipeline generation for GitHub/GitLab/Bitbucket.
-
----
-
-## The Guides
-
-This repo is the raw code only. The guides explain everything.
-
-<table>
-<tr>
-<td width="50%">
-<a href="https://x.com/affaanmustafa/status/2012378465664745795">
-<img src="https://github.com/user-attachments/assets/1a471488-59cc-425b-8345-5245c7efbcef" alt="The Shorthand Guide to Magic Claude" />
-</a>
-</td>
-<td width="50%">
-<a href="https://x.com/affaanmustafa/status/2014040193557471352">
-<img src="https://github.com/user-attachments/assets/c9ca43bc-b149-427f-b551-af6840c368f0" alt="The Longform Guide to Magic Claude" />
-</a>
-</td>
-</tr>
-<tr>
-<td align="center"><b>Shorthand Guide</b><br/>Setup, foundations, philosophy. <b>Read this first.</b></td>
-<td align="center"><b>Longform Guide</b><br/>Token optimization, memory persistence, evals, parallelization.</td>
-</tr>
-</table>
-
-| Topic | What You'll Learn |
-|-------|-------------------|
-| Token Optimization | Model selection, system prompt slimming, background processes |
-| Memory Persistence | Hooks that save/load context across sessions automatically |
-| Continuous Learning | Auto-extract patterns from sessions into reusable skills |
-| Verification Loops | Checkpoint vs continuous evals, grader types, pass@k metrics |
-| Parallelization | Git worktrees, cascade method, when to scale instances |
-| Subagent Orchestration | The context problem, iterative retrieval pattern |
-
----
-
-## Highlights
-
-### Enterprise Polyglot Support
-
-Beyond JavaScript/TypeScript, this plugin now provides **production-grade support** for:
-
-- **Python**: Ruff formatting, uv package management, Pyright type checking, Semgrep security scanning
-- **Java**: google-java-format, SpotBugs, Maven/Gradle integration
-- **Kotlin**: ktfmt/ktlint formatting, Detekt static analysis, Gradle Kotlin DSL
-- **Groovy**: CodeNarc, Gradle scripting support
-
-**27 Specialized Agents** including ecosystem-specific TDD guides (`ts-tdd-guide`, `jvm-tdd-guide`, `python-tdd-guide`), security reviewers (`ts-security-reviewer`, `jvm-security-reviewer`, `python-security-reviewer`), E2E runners, refactor cleaners, build resolvers, language reviewers, and build tool experts.
-
-**25+ Domain Skills** including ecosystem-specific coding standards, backend patterns, TDD workflows, and security review checklists for TypeScript/JavaScript, JVM (Java/Kotlin), and Python.
-
-### Modern 2026 Tooling
-
-All tools have been updated to use **2026 best practices**:
-
-- **Python**: Ruff (10-100x faster than black/flake8) + uv (10-100x faster than pip) + Pyright (3-5x faster than mypy)
-- **Java**: google-java-format + SpotBugs + Error Prone
-- **Kotlin**: ktfmt (official Google style) + Detekt
-- **Security**: Semgrep (2026 rules), Gitleaks, Trivy
-
-### Intelligent Runtime Hook Filtering
-
-Hooks now **automatically detect your project type** and only run relevant tools:
-
-- Python file in a Python project → Ruff formatting
-- Java file in a Maven project → google-java-format
-- TypeScript file in a Node.js project → Prettier
-- No cross-language interference in monorepos
-
-**Manifest hash-based caching** ensures detection is blazing fast (<50ms with cache).
-
-### One-Command CI/CD Pipeline Generation
-
-Generate complete, production-ready CI/CD pipelines with a single command:
+A Claude Code plugin that gives you **27 specialized agents**, **27 domain skills**, and **production-ready hooks** for Python, Java, Kotlin, TypeScript, and CI/CD -- installed in one command. Need Go, Rust, or C#? Run `/extend` to scaffold full ecosystem support.
 
 ```bash
-# Generate GitHub Actions workflow
-/ci-cd github-actions python
-
-# Generate GitLab CI pipeline for Java Maven
-/ci-cd gitlab-ci java-maven
-
-# Generate Bitbucket Pipeline for Node.js
-/ci-cd bitbucket-pipelines nodejs
-```
-
-**44 Production Templates** including:
-- GitHub Actions workflows (5 languages + Docker + reusable workflows)
-- GitLab CI pipelines (5 languages + Docker + Kubernetes)
-- Bitbucket Pipelines (4 languages)
-- Docker multi-stage builds (4 Dockerfiles)
-- Kubernetes manifests (6 resources)
-- Helm charts (full application chart)
-- Security scanning configs (Semgrep, Gitleaks, Trivy)
-
-### Quick Start Examples
-
-**Python Development**:
-```bash
-# Review Python code with modern best practices
-/python-reviewer
-
-# Run security scan with Semgrep
-# (Automatic on file write if python-security hook enabled)
-```
-
-**Java/Kotlin Development**:
-```bash
-# Review Java code with Spring Boot patterns
-/java-reviewer
-
-# Get Maven best practices advice
-/maven-expert
-
-# Review Kotlin code with modern patterns
-/kotlin-reviewer
-
-# Get Gradle optimization tips
-/gradle-expert
-```
-
-**CI/CD Setup**:
-```bash
-# Generate complete GitHub Actions pipeline
-/ci-cd github-actions python
-
-# Get CI/CD best practices and deployment patterns
-/ci-cd-patterns
-```
-
-### Self-Extending Plugin Architecture
-
-Add support for new languages and ecosystems without writing boilerplate. The `/extend` command scaffolds complete, cross-linked plugin components with researched domain knowledge:
-
-```bash
-# Full ecosystem: patterns skill + reviewer agent + build-resolver + hooks + command + rule
-/extend go
-
-# Individual components
-/extend --agent rust-reviewer
-/extend --skill swift-patterns
-/extend --hook zig-formatter
-/extend --command go-review
-
-# Audit existing components across all levels
-/extend --list
-```
-
-**What gets generated** (full ecosystem mode):
-
-| Component | Example | Purpose |
-|-----------|---------|---------|
-| Patterns skill | `go-patterns/SKILL.md` | Idiomatic patterns, tooling, best practices |
-| Reviewer agent | `go-reviewer.md` | Code review specialist using ecosystem tools |
-| Build resolver | `go-build-resolver.md` | Fix build/lint/type errors with minimal diffs |
-| Formatter hook | `go-formatter.js` | Auto-format on file edit |
-| Review command | `go-review.md` | Slash command delegating to reviewer agent |
-| Style rule | `go-style.md` | Coding style guidelines |
-| Ecosystem module | `go.cjs` | Auto-discoverable setup/detection integration |
-
-**Key features**:
-- **MCP-first research**: Uses context7 and ddg-search to gather real, current documentation for the target ecosystem before generating
-- **Template-driven**: Reads existing plugin components as templates, adapts structure for the new ecosystem
-- **Cross-linked**: Agents reference skills, commands delegate to agents, hooks point to scripts - all wired up automatically
-- **Idempotent**: Safe to re-run; detects existing components and warns before overwriting
-- **Multi-level targeting**: Install to user-level (`~/.claude/`) or project-level (`./.claude/`)
-- **Auto-discoverable ecosystems**: Generated ecosystem modules are automatically picked up by setup, detection, and hook infrastructure - no other file modifications needed
-
-### Monorepo & Workspace Support
-
-**Automatic workspace detection** with full support for mixed-language monorepos:
-
-- **Workspace Types**: pnpm workspaces, Nx, Lerna, Yarn workspaces, Turborepo
-- **Multi-Ecosystem**: Node.js, Java/JVM, Python, and Rust in one workspace
-- **Per-Package Config**: Each package can have its own package manager and settings
-- **Configuration Hierarchy**: Global > Workspace > Package precedence
-- **Tool Detection**: Cross-platform checks with installation guidance
-
-**Example workspace context**:
-```
-[SessionStart] Workspace/monorepo detected
-[SessionStart] Packages: 8
-[SessionStart] Ecosystems: nodejs, python, rust
-[SessionStart] Package managers: pnpm, pip, cargo
-```
-
-**Workspace-aware API**:
-```javascript
-const { getWorkspaceContext } = require('./scripts/lib/workspace-context.cjs');
-
-const workspace = getWorkspaceContext();
-if (workspace.isWorkspace()) {
-  // Get all packages
-  const packages = workspace.getAllPackages();
-
-  // Find package for a file
-  const pkg = workspace.findPackageForFile('/path/to/file.ts');
-
-  // Get merged configuration (global + workspace + package)
-  const config = workspace.getConfig();
-}
-```
-
-**100% backward compatible** - single-project workflows work unchanged!
-
----
-
-## Cross-Platform Support
-
-This plugin now fully supports **Windows, macOS, and Linux**. All hooks and scripts have been rewritten in Node.js for maximum compatibility.
-
-### Package Manager Detection
-
-The plugin automatically detects your preferred package manager (npm, pnpm, yarn, or bun) with the following priority:
-
-1. **Environment variable**: `CLAUDE_PACKAGE_MANAGER`
-2. **Project config**: `.claude/magic-claude.package-manager.json`
-3. **package.json**: `packageManager` field
-4. **Lock file**: Detection from package-lock.json, yarn.lock, pnpm-lock.yaml, or bun.lockb
-5. **Global config**: `~/.claude/magic-claude.package-manager.json`
-6. **Fallback**: First available package manager
-
-To set your preferred package manager:
-
-```bash
-# Via environment variable
-export CLAUDE_PACKAGE_MANAGER=pnpm
-
-# Via slash command (when installed as plugin)
-/setup-pm --global pnpm
-/setup-pm --project bun
-/setup-pm --detect
-
-# Or via direct script execution
-node scripts/setup-package-manager.cjs --global pnpm
-node scripts/setup-package-manager.cjs --project bun
-node scripts/setup-package-manager.cjs --detect
+/plugin marketplace add doublefx/magic-claude
+/plugin install magic-claude@magic-claude
+/setup
 ```
 
 ---
 
-## What's Inside
+## See It In Action
 
-This repo is a **Claude Code plugin** - install it directly or copy components manually.
+A typical workflow after installing the plugin:
 
+```bash
+# 1. Setup detects your ecosystem automatically
+/setup
+# -> Detects pyproject.toml, checks python3/pip/ruff/pyright
+
+# 2. Edit a Python file -- auto-formatting fires via PostToolUse hook
+#    Ruff formats the file, hook warns about any print() statements
+
+# 3. Implement a feature with test-driven development
+/tdd
+
+# 4. Review code quality and security before committing
+/code-review
+# -> python-reviewer agent checks style, security, patterns
 ```
-magic-claude/
-|-- .claude-plugin/   # Plugin and marketplace manifests
-|   |-- plugin.json         # Plugin metadata and component paths
-|   |-- marketplace.json    # Marketplace catalog for /plugin marketplace add
-|
-|-- agents/           # Specialized subagents for delegation (27 total)
-|   |-- planner.md              # Feature implementation planning
-|   |-- architect.md            # System design decisions
-|   |-- ts-tdd-guide.md         # TypeScript/JavaScript TDD
-|   |-- jvm-tdd-guide.md        # JVM (Java/Kotlin/Groovy) TDD
-|   |-- python-tdd-guide.md     # Python TDD
-|   |-- code-reviewer.md        # Ecosystem-aware quality review
-|   |-- ts-security-reviewer.md # TypeScript/JS vulnerability analysis
-|   |-- jvm-security-reviewer.md  # JVM security (SpotBugs, OWASP)
-|   |-- python-security-reviewer.md # Python security (bandit, semgrep)
-|   |-- ts-build-resolver.md    # TypeScript/JS build errors
-|   |-- jvm-build-resolver.md   # Java/Kotlin/Groovy build errors
-|   |-- python-build-resolver.md # Python build/type/lint errors
-|   |-- ts-e2e-runner.md        # TypeScript/JS Playwright E2E testing
-|   |-- jvm-e2e-runner.md       # JVM Selenium/REST Assured E2E testing
-|   |-- python-e2e-runner.md    # Python pytest-playwright E2E testing
-|   |-- ts-refactor-cleaner.md  # TypeScript/JS dead code cleanup
-|   |-- jvm-refactor-cleaner.md # JVM dead code cleanup
-|   |-- python-refactor-cleaner.md # Python dead code cleanup
-|   |-- doc-updater.md          # Documentation sync
-|   |-- python-reviewer.md      # Python code review
-|   |-- java-reviewer.md        # Java code review
-|   |-- kotlin-reviewer.md      # Kotlin code review
-|   |-- groovy-reviewer.md      # Groovy code review
-|   |-- maven-expert.md         # Maven build optimization
-|   |-- gradle-expert.md        # Gradle build optimization
-|   |-- ci-cd-architect.md      # CI/CD pipeline generation
-|
-|-- skills/           # Workflow definitions and domain knowledge (27 total)
-|   |-- coding-standards/           # TypeScript/JS best practices
-|   |-- jvm-coding-standards/       # Java/Kotlin best practices
-|   |-- python-coding-standards/    # Python best practices
-|   |-- backend-patterns/           # TypeScript/Node.js API patterns
-|   |-- jvm-backend-patterns/       # Spring Boot/JPA patterns
-|   |-- python-backend-patterns/    # FastAPI/Django/SQLAlchemy patterns
-|   |-- frontend-patterns/          # React, Next.js patterns
-|   |-- tdd-workflow/               # TypeScript/JS TDD methodology
-|   |-- jvm-tdd-workflow/           # JVM TDD methodology
-|   |-- python-tdd-workflow/        # Python TDD methodology
-|   |-- security-review/            # TypeScript/JS security checklist
-|   |-- jvm-security-review/        # JVM security checklist
-|   |-- python-security-review/     # Python security checklist
-|   |-- continuous-learning/        # Auto-extract patterns from sessions (Longform Guide)
-|   |-- strategic-compact/          # Manual compaction suggestions (Longform Guide)
-|   |-- eval-harness/               # Verification loop evaluation (Longform Guide)
-|   |-- verification-loop/          # Continuous verification (Longform Guide)
-|   |-- python-patterns/            # Python best practices and idioms
-|   |-- kotlin-patterns/            # Kotlin modern patterns
-|   |-- maven-patterns/             # Maven project management
-|   |-- gradle-patterns/            # Gradle build optimization
-|   |-- ci-cd-patterns/             # CI/CD and deployment patterns
-|   |-- clickhouse-io/              # ClickHouse database patterns
-|   |-- claude-mem-context/          # Cross-session historical context
-|   |-- extend-plugin/              # Generate new plugin components
-|   |-- project-guidelines-example/ # Template for project-specific guidelines
-|
-|-- commands/         # Slash commands for quick execution (14 total)
-|   |-- tdd.md              # /tdd - Test-driven development
-|   |-- plan.md             # /plan - Implementation planning
-|   |-- e2e.md              # /e2e - E2E test generation
-|   |-- code-review.md      # /code-review - Quality review
-|   |-- build-fix.md        # /build-fix - Fix build errors
-|   |-- refactor-clean.md   # /refactor-clean - Dead code removal
-|   |-- learn.md            # /learn - Extract patterns mid-session (Longform Guide)
-|   |-- checkpoint.md       # /checkpoint - Save verification state (Longform Guide)
-|   |-- verify.md           # /verify - Run verification loop (Longform Guide)
-|   |-- setup-pm.md         # /setup-pm - Configure package manager
-|   |-- eval.md             # /eval - Run evaluation harness
-|   |-- orchestrate.md      # /orchestrate - Multi-agent orchestration
-|   |-- test-coverage.md    # /test-coverage - Coverage reporting
-|   |-- update-docs.md      # /update-docs - Sync documentation
-|
-|-- rules/            # Always-follow guidelines (copy to ~/.claude/rules/)
-|   |-- security.md         # Mandatory security checks
-|   |-- coding-style.md     # Immutability, file organization
-|   |-- testing.md          # TDD, 80% coverage requirement
-|   |-- git-workflow.md     # Commit format, PR process
-|   |-- agents.md           # When to delegate to subagents
-|   |-- performance.md      # Model selection, context management
-|
-|-- hooks/            # Trigger-based automations
-|   |-- hooks.json                # All hooks config (PreToolUse, PostToolUse, Stop, etc.)
-|   |-- memory-persistence/       # Session lifecycle hooks (Longform Guide)
-|   |-- strategic-compact/        # Compaction suggestions (Longform Guide)
-|
-|-- scripts/          # Cross-platform Node.js scripts
-|   |-- lib/                     # Shared utilities
-|   |   |-- utils.js             # Cross-platform file/path/system utilities
-|   |   |-- package-manager.js   # Package manager detection and selection
-|   |   |-- detect-project-type.js  # Polyglot project detection
-|   |   |-- hook-utils.js           # Hook helper utilities
-|   |-- hooks/                   # Hook implementations (9 total)
-|   |   |-- session-start.js     # Load context on session start
-|   |   |-- session-end.js       # Save state on session end
-|   |   |-- pre-compact.js       # Pre-compaction state saving
-|   |   |-- suggest-compact.js   # Strategic compaction suggestions
-|   |   |-- evaluate-session.js  # Extract patterns from sessions
-|   |   |-- smart-formatter.js   # Universal auto-formatter
-|   |   |-- python-security.js   # Python security scanning
-|   |   |-- java-security.js     # Java security scanning
-|   |   |-- maven-advisor.js     # Maven/Gradle best practices
-|   |-- setup-package-manager.cjs # Interactive PM setup
-|
-|-- templates/        # CI/CD and deployment templates
-|   |-- github-actions/          # GitHub Actions workflows (6 files)
-|   |-- gitlab-ci/               # GitLab CI pipelines (6 files)
-|   |-- bitbucket-pipelines/     # Bitbucket Pipelines (4 files)
-|   |-- docker/                  # Docker multi-stage builds (5 files)
-|   |-- kubernetes/              # Kubernetes manifests (6 files)
-|   |-- helm/                    # Helm charts (full application chart)
-|   |-- security/                # Security scanning configs (6 files)
-|
-|-- tests/            # Test suite (150 tests)
-|   |-- unit/                    # Unit tests
-|   |   |-- lib/                 # Library unit tests
-|   |   |-- hooks/               # Hook unit tests
-|   |-- integration/             # Integration tests (Python, Java, Kotlin, Build Tools)
-|   |-- e2e/                     # End-to-end tests (CI/CD generation)
-|   |-- harnesses/               # Test harnesses (Hook, Agent, Template)
-|   |-- fixtures/                # Test fixtures (sample projects)
-|   |-- run-all.js               # Run all tests
-|
-|-- contexts/         # Dynamic system prompt injection contexts (Longform Guide)
-|   |-- dev.md              # Development mode context
-|   |-- review.md           # Code review mode context
-|   |-- research.md         # Research/exploration mode context
-|
-|-- examples/         # Example configurations and sessions
-|   |-- CLAUDE.md           # Example project-level config
-|   |-- user-CLAUDE.md      # Example user-level config
-|
-|-- mcp-configs/      # MCP server configurations
-|   |-- mcp-servers.json    # GitHub, Supabase, Vercel, Railway, etc.
-|
-|-- marketplace.json  # Self-hosted marketplace config (for /plugin marketplace add)
-```
+
+| Capability | What happens |
+|-----------|-------------|
+| Auto-formatting | Ruff, google-java-format, ktfmt, Prettier -- fires on every edit |
+| Security scanning | Semgrep, SpotBugs, pip-audit -- runs on file save |
+| TDD enforcement | Tests written first, 80%+ coverage verified |
+| Code review | Ecosystem-aware quality and security checks |
+| CI/CD generation | GitHub Actions, GitLab CI, Bitbucket Pipelines from one command |
+| Debug statement detection | Warns about `console.log`, `print()`, `System.out.println` |
+| Self-extending | `/extend go` scaffolds complete Go ecosystem support |
+| Monorepo support | pnpm workspaces, Nx, Lerna, Turborepo with mixed ecosystems |
+
+---
+
+## What You Get
+
+| Feature | Description | Details |
+|---------|-------------|---------|
+| **Polyglot agents** | 27 agents: reviewers, TDD guides, build resolvers, security scanners, E2E runners for each ecosystem | [AGENT-CATALOG](docs/AGENT-CATALOG.md) |
+| **Domain skills** | 27 skills: coding standards, backend patterns, TDD workflows, security checklists per ecosystem | [FEATURES](docs/FEATURES.md) |
+| **Auto-formatting** | PostToolUse hooks run Ruff, google-java-format, ktfmt, or Prettier based on project type | [Foundations Guide](docs/guides/foundations.md) |
+| **Security scanning** | Semgrep + pip-audit (Python), SpotBugs + FindSecurityBugs (Java), Gitleaks, Trivy | [FEATURES](docs/FEATURES.md) |
+| **CI/CD templates** | 44 templates: GitHub Actions, GitLab CI, Bitbucket Pipelines, Docker, Kubernetes, Helm | [Tutorial 04](docs/tutorials/04-cicd-generation.md) |
+| **Self-extending** | `/extend go` generates patterns skill, reviewer agent, build resolver, formatter hook, ecosystem module | [Advanced Topics](docs/guides/advanced-topics.md) |
+| **Monorepo support** | Auto-detects workspace type, per-package config, multi-ecosystem in one repo | [ARCHITECTURE](docs/ARCHITECTURE.md) |
+| **Memory persistence** | SessionStart/End hooks persist context across sessions; claude-mem integration for cross-session history | [Advanced Topics](docs/guides/advanced-topics.md) |
 
 ---
 
 ## Installation
 
-### Option 1: Install as Plugin (Recommended)
-
-The easiest way to use this repo - install as a Claude Code plugin:
+### Plugin Install (Recommended)
 
 ```bash
-# Add this repo as a marketplace
+# 1. Add the marketplace
 /plugin marketplace add doublefx/magic-claude
 
-# Install the plugin
+# 2. Install the plugin
 /plugin install magic-claude@magic-claude
-```
 
-Or add directly to your `~/.claude/settings.json`:
-
-```json
-{
-  "extraKnownMarketplaces": {
-    "magic-claude": {
-      "source": {
-        "source": "github",
-        "repo": "doublefx/magic-claude"
-      }
-    }
-  },
-  "enabledPlugins": {
-    "magic-claude@magic-claude": true
-  }
-}
-```
-
-This gives you instant access to all commands, agents, skills, and hooks.
-
-### First-Time Setup
-
-After installation, run the complete setup for your project:
-
-```bash
-# Interactive setup (recommended for first time)
+# 3. Run first-time setup
 /setup
-
-# Or fully automated
-/setup --yes
-
-# Or ask Claude naturally
-"Setup everything for this project"
-"Initialize Claude Code for this workspace"
 ```
 
-The `/setup` command will:
-- ✓ Detect workspace/monorepo structure
-- ✓ Initialize workspace root if needed
-- ✓ Configure package manager (npm/pnpm/yarn/bun)
-- ✓ Check development tools (Node.js, Python, Java, Rust)
-- ✓ Install dependencies
-- ✓ Create Claude Code configuration
+The `/setup` command detects your workspace, configures the package manager, checks development tools, and installs dependencies.
 
-**Which command to use:**
-- **`/setup`** - First-time setup, complete automation (recommended)
-- **`/setup-pm`** - Only configure package manager (when switching npm→pnpm, etc.)
-- **`/setup-ecosystem`** - Only workspace initialization and tool checking (for monorepos)
+For manual installation steps or adding the plugin via `settings.json`, see [Tutorial 01: Getting Started](docs/tutorials/01-getting-started.md).
+
+### Setup Commands
+
+| Command | When to use |
+|---------|-------------|
+| `/setup` | First-time setup (does everything) |
+| `/setup-pm` | Switch package managers (npm to pnpm, etc.) |
+| `/setup-ecosystem` | Workspace initialization and tool checking |
 
 ---
 
-### Option 2: Manual Installation
+## Learning Path
 
-If you prefer manual control over what's installed:
+### Start here
 
-```bash
-# Clone the repo
-git clone https://github.com/doublefx/magic-claude.git
+1. **[Foundations Guide](docs/guides/foundations.md)** -- Setup, component model, philosophy. Read this first.
+2. **[Tutorial 01: Getting Started](docs/tutorials/01-getting-started.md)** -- 15-minute hands-on installation.
 
-# Copy agents to your Claude config
-cp magic-claude/agents/*.md ~/.claude/agents/
+### Pick your ecosystem
 
-# Copy rules
-cp magic-claude/rules/*.md ~/.claude/rules/
+3. **[Tutorial 02: Python Development](docs/tutorials/02-python-development.md)** -- Ruff, uv, Pyright, Semgrep workflow
+4. **[Tutorial 03: Java Development](docs/tutorials/03-java-development.md)** -- Maven, Gradle, Spring Boot workflow
+5. **[Tutorial 04: CI/CD Generation](docs/tutorials/04-cicd-generation.md)** -- Pipeline generation for GitHub/GitLab/Bitbucket
 
-# Copy commands
-cp magic-claude/commands/*.md ~/.claude/commands/
+### Go deeper
 
-# Copy skills
-cp -r magic-claude/skills/* ~/.claude/skills/
-```
+6. **[Advanced Topics Guide](docs/guides/advanced-topics.md)** -- Token optimization, memory, parallelization, orchestration
+7. **[Tutorial 05: Advanced Features](docs/tutorials/05-advanced-features.md)** -- Monorepos, hooks, multi-agent workflows
 
-#### Add hooks to settings.json
+### Reference
 
-Copy the hooks from `hooks/hooks.json` to your `~/.claude/settings.json`.
+- **[FEATURES.md](docs/FEATURES.md)** -- Complete feature documentation
+- **[AGENT-CATALOG.md](docs/AGENT-CATALOG.md)** -- All 27 agents with use cases
+- **[PERFORMANCE.md](docs/PERFORMANCE.md)** -- Benchmarks and optimization tips
 
-#### Configure MCPs
+### For developers
 
-Copy desired MCP servers from `mcp-configs/mcp-servers.json` to your `~/.claude.json`.
+- **[ARCHITECTURE.md](docs/ARCHITECTURE.md)** -- Directory structure, ecosystem registry, workspace support
+- **[Plugin Development](docs/PLUGIN_DEVELOPMENT/00-OVERVIEW.md)** -- Build your own agents, skills, hooks, and commands
 
-**Important:** Replace `YOUR_*_HERE` placeholders with your actual API keys.
-
----
-
-## Key Concepts
-
-### Agents
-
-Subagents handle delegated tasks with limited scope. Example:
-
-```markdown
----
-name: code-reviewer
-description: Reviews code for quality, security, and maintainability
-tools: Read, Grep, Glob, Bash
-model: opus
----
-
-You are a senior code reviewer...
-```
-
-### Skills
-
-Skills are workflow definitions invoked by commands or agents:
-
-```markdown
-# TDD Workflow
-
-1. Define interfaces first
-2. Write failing tests (RED)
-3. Implement minimal code (GREEN)
-4. Refactor (IMPROVE)
-5. Verify 80%+ coverage
-```
-
-### Hooks
-
-Hooks fire on tool events. Example - warn about console.log:
-
-```json
-{
-  "matcher": "tool == \"Edit\" && tool_input.file_path matches \"\\\\.(ts|tsx|js|jsx)$\"",
-  "hooks": [{
-    "type": "command",
-    "command": "#!/bin/bash\ngrep -n 'console\\.log' \"$file_path\" && echo '[Hook] Remove console.log' >&2"
-  }]
-}
-```
-
-### Rules
-
-Rules are always-follow guidelines. Keep them modular:
-
-```
-~/.claude/rules/
-  security.md      # No hardcoded secrets
-  coding-style.md  # Immutability, file limits
-  testing.md       # TDD, coverage requirements
-```
-
----
-
-## Running Tests
-
-The plugin includes a comprehensive test suite with 150 tests:
-
-```bash
-# Run all tests (unit + integration + e2e)
-npm test
-
-# Run specific test categories
-npm test tests/unit/           # Unit tests only
-npm test tests/integration/    # Integration tests only
-npm test tests/e2e/            # E2E tests only
-
-# Run with coverage report
-npm test -- --coverage
-
-# Watch mode for development
-npm test -- --watch
-```
-
-**Test Coverage**:
-- Unit tests: 80+ tests (lib functions, hooks, utilities)
-- Integration tests: 50+ tests (Python, Java, Kotlin, build tools)
-- E2E tests: 20+ tests (CI/CD generation, monorepo scenarios)
-- Test fixtures: Multiple sample projects for realistic testing
-
----
-
-## Documentation
-
-### Core Documentation
-
-- **[FEATURES.md](docs/FEATURES.md)** - Complete feature documentation with examples
-- **[AGENT-CATALOG.md](docs/AGENT-CATALOG.md)** - All 27 agents with use cases
-- **[PERFORMANCE.md](docs/PERFORMANCE.md)** - Benchmarks and optimization tips
-
-### Language-Specific Guides
-
-**Python Development**:
-- Modern Python tooling (Ruff, uv, Pyright)
-- Security scanning with Semgrep
-- Best practices and patterns
-
-**Java/Kotlin Development**:
-- JVM tooling and formatting
-- Maven vs Gradle guidance
-- Spring Boot patterns
-
-**Build Tools**:
-- Maven optimization guide
-- Gradle best practices
-- Multi-module projects
-
-**CI/CD Pipelines**:
-- GitHub Actions setup
-- GitLab CI configuration
-- Bitbucket Pipelines
-- Docker and Kubernetes deployment
-
-### Tutorials
-
-Step-by-step walkthroughs for common scenarios:
-
-- **[Getting Started](docs/tutorials/01-getting-started.md)** - Installation and first project
-- **[Python Development](docs/tutorials/02-python-development.md)** - Complete Python workflow
-- **[Java Development](docs/tutorials/03-java-development.md)** - Complete Java workflow
-- **[CI/CD Generation](docs/tutorials/04-cicd-generation.md)** - Pipeline generation guide
-- **[Advanced Features](docs/tutorials/05-advanced-features.md)** - Monorepos and customization
-
-### Release Notes
-
-- **[RELEASE-NOTES.md](RELEASE-NOTES.md)** - Release Notes
+See [docs/README.md](docs/README.md) for the full documentation map.
 
 ---
 
 ## Contributing
 
-**Contributions are welcome and encouraged.**
+Contributions welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for format specs, testing instructions, and guidelines.
 
-This repo is meant to be a community resource. If you have:
-- Useful agents or skills
-- Clever hooks
-- Better MCP configurations
-- Improved rules
-
-Please contribute! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
-### Ideas for Contributions
-
-**New Language Support** (use `/extend` to scaffold):
-- Go patterns and tooling (gofmt, golangci-lint) — `/extend go`
-- Rust patterns and tooling (rustfmt, clippy) — `/extend rust`
-- C#/.NET patterns and tooling — `/extend csharp`
-- Ruby/Rails patterns — `/extend ruby`
-
-**Framework-Specific Configs**:
-- Django, Flask, FastAPI (Python web frameworks)
-- Spring Cloud, Quarkus, Micronaut (Java microservices)
-- Rails, Sinatra (Ruby frameworks)
-- Phoenix, Elixir patterns
-
-**DevOps and Cloud**:
-- Terraform patterns and best practices
-- AWS CDK configurations
-- Azure DevOps pipelines
-- Pulumi configurations
-
-**Additional CI/CD Platforms**:
-- CircleCI configurations
-- Jenkins pipelines
-- Azure Pipelines
-- Travis CI
-
-**Domain-Specific**:
-- Machine learning workflows (MLflow, DVC)
-- Data engineering patterns (dbt, Airflow)
-- Mobile development (React Native, Flutter)
-- Game development patterns
-
----
-
----
-
-## Important Notes
-
-### Context Window Management
-
-**Critical:** Don't enable all MCPs at once. Your 200k context window can shrink to 70k with too many tools enabled.
-
-Rule of thumb:
-- Have 20-30 MCPs configured
-- Keep under 10 enabled per project
-- Under 80 tools active
-
-Use `disabledMcpServers` in project config to disable unused ones.
-
-### Customization
-
-These configs work for my workflow. You should:
-1. Start with what resonates
-2. Modify for your stack
-3. Remove what you don't use
-4. Add your own patterns
+**Ideas to get started:**
+- New language support via `/extend` (Go, Rust, C#, Ruby)
+- Framework-specific skills (Django, Spring Cloud, Rails)
+- DevOps patterns (Terraform, AWS CDK, Pulumi)
+- Additional CI/CD platforms (CircleCI, Jenkins, Azure Pipelines)
 
 ---
 
@@ -713,8 +148,8 @@ These configs work for my workflow. You should:
 
 ## Links
 
-- **Shorthand Guide (Start Here):** [The Shorthand Guide to Magic Claude](https://x.com/affaanmustafa/status/2012378465664745795)
-- **Longform Guide (Advanced):** [The Longform Guide to Magic Claude](https://x.com/affaanmustafa/status/2014040193557471352)
+- **Foundations Guide:** [docs/guides/foundations.md](docs/guides/foundations.md)
+- **Advanced Topics:** [docs/guides/advanced-topics.md](docs/guides/advanced-topics.md)
 - **GitHub:** [doublefx/magic-claude](https://github.com/doublefx/magic-claude)
 
 ---
@@ -725,4 +160,4 @@ MIT - Use freely, modify as needed, contribute back if you can.
 
 ---
 
-**Star this repo if it helps. Read both guides. Build something great.**
+**Star this repo if it helps. Read the [Foundations Guide](docs/guides/foundations.md). Build something great.**

@@ -87,6 +87,26 @@ class JvmEcosystem extends Ecosystem {
     };
   }
 
+  getFileFormatters() {
+    return [
+      {
+        extensions: ['.java'],
+        tool: 'google-java-format',
+        args: (filePath) => ['-i', filePath]
+      },
+      {
+        extensions: ['.kt', '.kts'],
+        tool: 'ktfmt',
+        args: (filePath) => [filePath]
+      },
+      {
+        extensions: ['.kt', '.kts'],
+        tool: 'ktlint',
+        args: (filePath) => ['-F', filePath]
+      }
+    ];
+  }
+
   getDebugPatterns() {
     return [{
       extensions: /\.(java|kt|kts)$/,
