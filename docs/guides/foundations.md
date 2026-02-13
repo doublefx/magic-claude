@@ -36,12 +36,13 @@ They overlap but serve different purposes:
 |--------|--------|----------|
 | Invoked by | Claude (proactive) or user | User only (via `/command`) |
 | Context | Can fork (isolated subagent) | Runs in main conversation |
-| Examples | `proactive-review`, `tdd-workflow` | `/code-review`, `/tdd`, `/build-fix` |
+| Examples | `proactive-orchestration`, `tdd-workflow` | `/code-review`, `/tdd`, `/build-fix` |
 
 **Key skills to know:**
-- `proactive-review` — Claude automatically reviews code at task completion
-- `proactive-tdd` — Claude enforces test-driven development when implementing features
-- `proactive-planning` — Claude plans before complex changes
+- `proactive-orchestration` — Claude automatically orchestrates the full pipeline (PLAN -> TDD -> VERIFY -> REVIEW) for complex feature requests
+- `proactive-planning` — Claude plans before complex changes (standalone planning, outside full pipeline)
+- `proactive-tdd` — Claude enforces test-driven development when implementing features (standalone TDD)
+- `proactive-review` — Claude automatically reviews code at task completion (standalone review)
 
 **Key commands:**
 - `/setup` — Complete project setup (package manager, workspace, tools)

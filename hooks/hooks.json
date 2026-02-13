@@ -127,6 +127,16 @@
         "description": "Run security checks on Python files (Semgrep + pip-audit, filters for .py internally)"
       },
       {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/typescript-security.js\""
+          }
+        ],
+        "description": "Run security checks on TypeScript/JavaScript files (Semgrep + npm audit, filters for .ts/.tsx/.js/.jsx internally)"
+      },
+      {
         "matcher": "Bash",
         "hooks": [
           {

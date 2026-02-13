@@ -3,7 +3,7 @@ name: jvm-build-resolver
 description: JVM build error resolution specialist for Java, Kotlin, and Groovy projects using Maven or Gradle. Use PROACTIVELY when Maven or Gradle builds fail. Fixes build errors only with minimal diffs, no architectural edits.
 tools: Read, Write, Edit, Bash, Grep, Glob
 model: sonnet
-skills: gradle-patterns, maven-patterns, serena-code-navigation
+skills: gradle-patterns, maven-patterns, jvm-backend-patterns, serena-code-navigation
 permissionMode: acceptEdits
 hooks:
   Stop:

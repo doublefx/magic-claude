@@ -5,7 +5,7 @@ argument-hint: "[workflow-type] [task description]"
 
 # Orchestrate Command
 
-Sequential agent workflow for complex tasks.
+Sequential agent workflow for complex tasks. This command provides explicit control over the orchestration pipeline that `proactive-orchestration` handles automatically.
 
 ## Usage
 
@@ -14,15 +14,15 @@ Sequential agent workflow for complex tasks.
 ## Workflow Types
 
 ### feature
-Full feature implementation workflow:
+Full feature implementation pipeline (same phases as `proactive-orchestration`):
 ```
-planner -> [ts|jvm|python]-tdd-guide -> code-reviewer -> [ts|jvm|python]-security-reviewer
+planner -> [ts|jvm|python]-tdd-guide -> verify -> code-reviewer -> [ts|jvm|python]-security-reviewer
 ```
 
 ### bugfix
 Bug investigation and fix workflow:
 ```
-explorer -> [ts|jvm|python]-tdd-guide -> code-reviewer
+Explore (codebase investigation) -> [ts|jvm|python]-tdd-guide -> code-reviewer
 ```
 
 ### refactor
@@ -69,74 +69,41 @@ Between agents, create handoff document:
 [Suggested next steps]
 ```
 
-## Example: Feature Workflow
+## Feature Workflow Detail
 
-```
-/orchestrate feature "Add user authentication"
-```
+The `feature` workflow follows the same phases as `proactive-orchestration`:
 
-Executes:
+### Phase 1: PLAN
+- Invoke **planner** agent (opus) to analyze requirements
+- Present plan and WAIT for user confirmation
 
-1. **Planner Agent**
-   - Analyzes requirements
-   - Creates implementation plan
-   - Identifies dependencies
-   - Output: `HANDOFF: planner -> tdd-guide`
+### Phase 2: TDD
+- Detect ecosystem and dispatch to **ts-tdd-guide**, **jvm-tdd-guide**, or **python-tdd-guide**
+- Create task via TaskCreate to track progress
+- Execute RED-GREEN-REFACTOR cycle
+- Verify 80%+ coverage
 
-2. **TDD Guide Agent** (ecosystem-specific: ts/jvm/python)
-   - Reads planner handoff
-   - Writes tests first
-   - Implements to pass tests
-   - Output: `HANDOFF: [ecosystem]-tdd-guide -> code-reviewer`
+### Phase 3: VERIFY
+- Run `/verify full` workflow (build, types, lint, tests, debug audit)
+- If build fails, auto-invoke appropriate **build-resolver** agent
+- Re-verify after fixes
 
-3. **Code Reviewer Agent**
-   - Reviews implementation
-   - Checks for issues
-   - Suggests improvements
-   - Output: `HANDOFF: code-reviewer -> [ecosystem]-security-reviewer`
+### Phase 4: REVIEW
+- Invoke **code-reviewer** agent + ecosystem-specific security reviewer
+- For language-specific review: **java-reviewer**, **kotlin-reviewer**, **python-reviewer**
+- Mark task completed via TaskUpdate
 
-4. **Security Reviewer Agent** (ecosystem-specific: ts/jvm/python)
-   - Security audit
-   - Vulnerability check
-   - Final approval
-   - Output: Final Report
+### Phase 5: REPORT
+Produce orchestration report with verdict: **SHIP** / **NEEDS WORK** / **BLOCKED**
 
-## Final Report Format
+If NEEDS WORK, include remediation:
 
-```
-ORCHESTRATION REPORT
-====================
-Workflow: feature
-Task: Add user authentication
-Agents: planner -> [ecosystem]-tdd-guide -> code-reviewer -> [ecosystem]-security-reviewer
-
-SUMMARY
--------
-[One paragraph summary]
-
-AGENT OUTPUTS
--------------
-Planner: [summary]
-TDD Guide: [summary]
-Code Reviewer: [summary]
-Security Reviewer: [summary]
-
-FILES CHANGED
--------------
-[List all files modified]
-
-TEST RESULTS
-------------
-[Test pass/fail summary]
-
-SECURITY STATUS
----------------
-[Security findings]
-
-RECOMMENDATION
---------------
-[SHIP / NEEDS WORK / BLOCKED]
-```
+| Issue | Suggested Action |
+|-------|-----------------|
+| Build errors | "Run `/build-fix`" |
+| Test failures | "Run `/tdd` to fix" |
+| Coverage gaps | "Run `/test-coverage`" |
+| Security issues | "Fix and re-run `/code-review`" |
 
 ## Parallel Execution
 
@@ -156,7 +123,7 @@ Combine outputs into single report
 ## Arguments
 
 $ARGUMENTS:
-- `feature <description>` - Full feature workflow
+- `feature <description>` - Full feature workflow (recommended for most tasks)
 - `bugfix <description>` - Bug fix workflow
 - `refactor <description>` - Refactoring workflow
 - `security <description>` - Security review workflow
@@ -175,3 +142,4 @@ $ARGUMENTS:
 3. **Use security-reviewer** for auth/payment/PII
 4. **Keep handoffs concise** - focus on what next agent needs
 5. **Run verification** between agents if needed
+6. For most feature work, you don't need `/orchestrate` -- `proactive-orchestration` fires automatically

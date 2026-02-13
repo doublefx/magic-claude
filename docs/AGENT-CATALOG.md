@@ -3,7 +3,7 @@
 **Version**: 3.0.0
 **Last Updated**: 2026-02-09
 **Total Agents**: 27
-**Total Skills**: 27
+**Total Skills**: 28
 
 ---
 
@@ -154,16 +154,19 @@ Trade-offs:
 #### ts-tdd-guide
 **Command**: `/tdd` (auto-dispatched for TS/JS projects)
 **Model**: Sonnet
+**Skills**: `tdd-workflow`, `backend-patterns`, `claude-mem-context`
 **Description**: TypeScript/JavaScript TDD with Jest/Vitest/Playwright
 
 #### jvm-tdd-guide
 **Command**: `/tdd` (auto-dispatched for JVM projects)
 **Model**: Sonnet
+**Skills**: `jvm-tdd-workflow`, `jvm-backend-patterns`, `claude-mem-context`
 **Description**: JVM TDD with JUnit 5, Mockito, MockK, AssertJ, JaCoCo
 
 #### python-tdd-guide
 **Command**: `/tdd` (auto-dispatched for Python projects)
 **Model**: Sonnet
+**Skills**: `python-tdd-workflow`, `python-backend-patterns`, `claude-mem-context`
 **Description**: Python TDD with pytest, unittest.mock, pytest-cov, hypothesis
 
 **When to Use** (all three):
@@ -188,6 +191,8 @@ Trade-offs:
 - Detects ecosystem from changed file extensions
 - Applies ecosystem-specific security and quality checks
 - Delegates to language reviewers (java-reviewer, kotlin-reviewer, python-reviewer, groovy-reviewer)
+- Dispatches to ecosystem-specific security reviewers for security-sensitive changes
+- Provides remediation suggestions mapping issues to specific commands
 
 ---
 
@@ -215,16 +220,19 @@ Trade-offs:
 #### ts-build-resolver
 **Command**: `/build-fix` (auto-dispatched)
 **Model**: Sonnet
+**Skills**: `frontend-patterns`, `backend-patterns`, `coding-standards`, `serena-code-navigation`
 **Description**: TypeScript/JavaScript build error resolution
 
 #### jvm-build-resolver
 **Command**: `/build-fix` (auto-dispatched)
 **Model**: Sonnet
+**Skills**: `gradle-patterns`, `maven-patterns`, `jvm-backend-patterns`, `serena-code-navigation`
 **Description**: JVM build error resolution (Maven/Gradle)
 
 #### python-build-resolver
 **Command**: `/build-fix` (auto-dispatched)
 **Model**: Sonnet
+**Skills**: `python-patterns`, `python-backend-patterns`, `serena-code-navigation`
 **Description**: Python build error resolution (pyright/ruff/pytest)
 
 ---
@@ -791,6 +799,25 @@ Gradle Optimization Report
 - Test harnesses
 - Metrics collection
 - Performance tracking
+
+---
+
+#### proactive-orchestration
+**Path**: `skills/proactive-orchestration/SKILL.md`
+**Description**: Top-level pipeline orchestrator for complex feature work
+
+**Phases**: PLAN -> TDD -> VERIFY -> REVIEW -> REPORT
+
+**When It Fires**:
+- Complex feature requests (multiple components/files)
+- Architectural changes (new endpoints, services, modules)
+- Non-trivial scope ("add", "implement", "build", "create")
+
+**Does NOT fire on**: Simple bug fixes, single-file edits, documentation, configuration, refactoring
+
+**Agents Used**: planner, [ecosystem]-tdd-guide, [ecosystem]-build-resolver (if needed), code-reviewer, [ecosystem]-security-reviewer, language reviewers
+
+**Relationship to other proactive skills**: Subsumes `proactive-planning`, `proactive-tdd`, and `proactive-review` for complex feature work. Individual skills fire only for standalone single-phase work.
 
 ---
 

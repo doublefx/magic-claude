@@ -82,9 +82,15 @@ For each changed file, apply ecosystem-appropriate checks:
 - Poor variable naming
 - Missing accessibility (a11y) attributes
 
-## Step 3: Dispatch to Language Reviewers
+## Step 3: Dispatch to Specialist Agents
 
-For language-specific idiomatic review, delegate to specialized reviewers:
+### Primary Review
+
+Invoke the **code-reviewer** agent (opus) to perform comprehensive quality and security analysis across all changed files.
+
+### Language-Specific Idiomatic Review
+
+Delegate to specialized reviewers for ecosystem-specific patterns:
 
 | File Type | Reviewer Agent |
 |-----------|---------------|
@@ -92,7 +98,17 @@ For language-specific idiomatic review, delegate to specialized reviewers:
 | `.kt`, `.kts` | **kotlin-reviewer** |
 | `.groovy` | **groovy-reviewer** |
 | `.py` | **python-reviewer** |
-| `.ts`, `.tsx`, `.js` | (inline review - no separate agent) |
+| `.ts`, `.tsx`, `.js`, `.jsx` | (covered by code-reviewer) |
+
+### Security Review
+
+For security-sensitive changes (auth, input handling, API endpoints, payment), dispatch to ecosystem-specific security reviewers:
+
+| Ecosystem | Security Agent |
+|-----------|---------------|
+| TypeScript/JavaScript | **ts-security-reviewer** |
+| JVM (Java/Kotlin/Groovy) | **jvm-security-reviewer** |
+| Python | **python-security-reviewer** |
 
 ## Step 4: Generate Report
 
@@ -125,3 +141,17 @@ For language-specific idiomatic review, delegate to specialized reviewers:
 - APPROVE: No significant issues
 
 Never approve code with security vulnerabilities!
+
+## Step 6: Remediation Suggestions
+
+If BLOCK verdict, include actionable next steps:
+
+| Issue Type | Suggested Action |
+|-----------|-----------------|
+| Build errors | "Run `/build-fix` to resolve build errors" |
+| Missing tests | "Run `/tdd` to add test coverage" |
+| Coverage gaps | "Run `/test-coverage` to fill coverage gaps" |
+| Security issues | List specific fixes, then "re-run `/code-review`" |
+| Debug statements | "Remove debug statements before committing" |
+
+If WARN verdict, list specific improvements and suggest re-running `/code-review` after fixes.

@@ -20,6 +20,12 @@ Claude should proactively invoke this skill when:
 4. **High-Risk Changes** - Security, payments, or data-critical code
 5. **Refactoring** - Large-scale code reorganization
 
+## Scope
+
+For planning without the full TDD/review pipeline (architectural discussions, requirement analysis, design decisions), this skill handles planning directly.
+
+For complex multi-file features, `proactive-orchestration` handles the full pipeline including planning as Phase 1. This skill fires only when planning is needed as a standalone activity.
+
 ## Planning Process
 
 ### 1. Requirements Analysis
@@ -109,5 +115,6 @@ This skill runs with `context: fork` to allow deep analysis without consuming ma
 ## Related
 
 - `/plan` command - Explicit user-invoked planning
+- `proactive-orchestration` skill - Full pipeline orchestration (includes planning as Phase 1)
 - `planner` agent - Full planning agent with Opus model
 - `architect` agent - System design specialist

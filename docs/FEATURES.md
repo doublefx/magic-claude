@@ -738,7 +738,7 @@ helm uninstall myapp
 
 ### Integrated Tools
 
-1. **Semgrep** (Python, JavaScript)
+1. **Semgrep** (Python, JavaScript, TypeScript)
    - OWASP Top 10
    - SANS Top 25
    - Language-specific rules
@@ -760,6 +760,11 @@ helm uninstall myapp
    - Performance issues
 
 ### Security Hooks
+
+**typescript-security.js**:
+- Runs Semgrep + npm audit on TypeScript/JavaScript file save
+- Detects eval(), innerHTML/XSS, SQL injection, hardcoded credentials, command injection, open redirects
+- Reports findings to stderr (doesn't block save)
 
 **python-security.js**:
 - Runs Semgrep on Python file save

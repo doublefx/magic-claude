@@ -8,7 +8,7 @@
 ![Java](https://img.shields.io/badge/-Java-007396?logo=openjdk&logoColor=white)
 ![Kotlin](https://img.shields.io/badge/-Kotlin-7F52FF?logo=kotlin&logoColor=white)
 
-A Claude Code plugin that gives you **27 specialized agents**, **27 domain skills**, and **production-ready hooks** for Python, Java, Kotlin, TypeScript, and CI/CD -- installed in one command. Need Go, Rust, or C#? Run `/extend` to scaffold full ecosystem support.
+A Claude Code plugin that gives you **27 specialized agents**, **28 domain skills**, and **production-ready hooks** for Python, Java, Kotlin, TypeScript, and CI/CD -- installed in one command. Need Go, Rust, or C#? Run `/extend` to scaffold full ecosystem support.
 
 ```bash
 /plugin marketplace add doublefx/magic-claude
@@ -56,7 +56,7 @@ A typical workflow after installing the plugin:
 | Feature | Description | Details |
 |---------|-------------|---------|
 | **Polyglot agents** | 27 agents: reviewers, TDD guides, build resolvers, security scanners, E2E runners for each ecosystem | [AGENT-CATALOG](docs/AGENT-CATALOG.md) |
-| **Domain skills** | 27 skills: coding standards, backend patterns, TDD workflows, security checklists per ecosystem | [FEATURES](docs/FEATURES.md) |
+| **Domain skills** | 28 skills: coding standards, backend patterns, TDD workflows, security checklists, proactive orchestration per ecosystem | [FEATURES](docs/FEATURES.md) |
 | **Auto-formatting** | PostToolUse hooks run Ruff, google-java-format, ktfmt, or Prettier based on project type | [Foundations Guide](docs/guides/foundations.md) |
 | **Security scanning** | Semgrep + pip-audit (Python), SpotBugs + FindSecurityBugs (Java), Gitleaks, Trivy | [FEATURES](docs/FEATURES.md) |
 | **CI/CD templates** | 44 templates: GitHub Actions, GitLab CI, Bitbucket Pipelines, Docker, Kubernetes, Helm | [Tutorial 04](docs/tutorials/04-cicd-generation.md) |

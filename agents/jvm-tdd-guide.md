@@ -3,7 +3,7 @@ name: jvm-tdd-guide
 description: JVM Test-Driven Development specialist for Java, Kotlin, and Groovy. Use PROACTIVELY when writing new JVM features, fixing bugs, or refactoring code. Enforces write-tests-first methodology using JUnit 5, Mockito, MockK, and AssertJ. Ensures 80%+ coverage via JaCoCo.
 tools: Read, Write, Edit, Bash, Grep
 model: sonnet
-skills: jvm-tdd-workflow, claude-mem-context
+skills: jvm-tdd-workflow, jvm-backend-patterns, claude-mem-context
 hooks:
   Stop:
     - hooks:

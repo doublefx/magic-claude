@@ -26,6 +26,7 @@ Hooks fire automatically during every workflow. They are the connective tissue.
 | `console-log-detector.cjs` | Warns about debug statements | All source files |
 | `java-security.js` | SpotBugs + FindSecurityBugs | `.java` |
 | `python-security.js` | Semgrep + pip-audit | `.py` |
+| `typescript-security.js` | Semgrep + npm audit + pattern checks | `.ts`, `.tsx`, `.js`, `.jsx` |
 
 ### PreToolUse
 
@@ -44,9 +45,9 @@ Hooks fire automatically during every workflow. They are the connective tissue.
 | `stop-validation.cjs` | Check ALL modified files for debug statements (every Claude response) |
 | `post-task-update.cjs` | Inject "Code Review Recommended" when task marked completed |
 
-### Gap: No TypeScript/JavaScript Security Hook
+### Resolved: TypeScript/JavaScript Security Hook
 
-Java gets `java-security.js`. Python gets `python-security.js`. TypeScript/JavaScript gets nothing. A `typescript-security.js` hook (ESLint security plugin, Semgrep JS rules) is missing.
+`typescript-security.js` now provides security scanning for TS/JS files, mirroring the Java and Python security hooks. Checks include: Semgrep SAST scan, npm audit for vulnerable dependencies, and pattern-based detection of eval(), innerHTML, SQL injection, hardcoded credentials, command injection, and open redirects.
 
 ---
 
@@ -85,10 +86,10 @@ User: /tdd
 ```
 
 **Agents:** `ts-tdd-guide` | `jvm-tdd-guide` | `python-tdd-guide` (sonnet)
-**Skills consumed:** `tdd-workflow` | `jvm-tdd-workflow` | `python-tdd-workflow`, `claude-mem-context`
-**Hooks during:** auto-format, type check, debug detect, security scan (Java/Python only)
+**Skills consumed:** `tdd-workflow` + `backend-patterns` | `jvm-tdd-workflow` + `jvm-backend-patterns` | `python-tdd-workflow` + `python-backend-patterns`, `claude-mem-context`
+**Hooks during:** auto-format, type check, debug detect, security scan (Java/Python/TypeScript)
 **Verification:** Agent self-check only (was TDD cycle followed?). No build/lint/full-test verification.
-**Gap:** Does not trigger `verification-loop` or `/verify` at the end. Does not trigger `proactive-review`. Does not create a task, so `post-task-update.cjs` never fires to suggest code review.
+**Note:** When invoked via `proactive-orchestration`, verification and review follow automatically as subsequent phases.
 
 ---
 
@@ -103,14 +104,17 @@ User: /code-review
      -> For .kt:   also kotlin-reviewer (opus)
      -> For .py:   also python-reviewer (opus)
      -> For .groovy: also groovy-reviewer (opus)
+  -> For security-sensitive changes:
+     -> ts-security-reviewer / jvm-security-reviewer / python-security-reviewer
   -> Severity report (CRITICAL / HIGH / MEDIUM)
   -> Verdict: BLOCK / WARN / APPROVE
+  -> Remediation suggestions (maps issues to specific commands)
 ```
 
-**Agents:** `code-reviewer` (opus) + language-specific reviewers as needed
+**Agents:** `code-reviewer` (opus) + language-specific reviewers + security reviewers as needed
 **Skills consumed:** `coding-standards`, `security-review`, `claude-mem-context`, `serena-code-navigation`
 **Verification:** Agent Stop hook checks completeness (files read, security checked, verdict given).
-**Gap:** Does not suggest next commands based on issue type. If build is broken: should suggest `/build-fix`. If coverage is low: should suggest `/test-coverage`. The verdict is final but not actionable.
+**Remediation:** On BLOCK, suggests `/build-fix`, `/tdd`, `/test-coverage`, or specific security fixes.
 
 ---
 
@@ -184,7 +188,7 @@ User: /verify [quick|full|pre-commit|pre-pr]
 ```
 
 **Agents:** None -- runs in main context.
-**Gap:** Reports failures but does not suggest specific remediation. Build fails -> should suggest `/build-fix`. Tests fail -> should suggest `/tdd`. Coverage low -> should suggest `/test-coverage`.
+**Remediation:** Maps failure categories to specific commands: Build FAIL -> `/build-fix`, Types FAIL -> `/build-fix`, Tests FAIL -> `/tdd`, Coverage LOW -> `/test-coverage`, Debug FOUND -> remove before committing, Security FOUND -> `/code-review`.
 
 ---
 
@@ -201,7 +205,9 @@ User: /orchestrate feature [description]
 
 **Variants:** `bugfix`, `refactor`, `security`, `custom`
 **Agents:** Multiple in sequence with structured handoff documents.
-**Gap:** No verification between agent handoffs. Does not use `/eval` to define success criteria upfront. Does not run `verification-loop` between agents to ensure build stays green.
+**Feature workflow** now shares phases with `proactive-orchestration` (PLAN, TDD, VERIFY, REVIEW, REPORT).
+**Bugfix workflow** uses `Explore` (built-in codebase investigation) instead of a custom explorer agent.
+**Remediation:** Includes remediation suggestions in final report (maps issues to commands).
 
 ---
 
@@ -236,25 +242,34 @@ User: /test-coverage
 
 ## Proactive Skills
 
-These trigger automatically when Claude detects the right signals.
+These trigger automatically when Claude detects the right signals. A hierarchy governs which skill fires:
 
-### `proactive-planning`
+### `proactive-orchestration` (Top-Level Orchestrator)
 
-**Triggers on:** Complex feature requests, architectural changes, unclear requirements, "implement", "build", "create" + multiple files.
-**Dispatches to:** `planner` (opus)
-**Gap:** After the plan is confirmed, does not hand off to `proactive-tdd`. User must manually proceed.
+**Triggers on:** Complex feature requests (multiple components/files), architectural changes (new endpoints, services, modules), "add/implement/build/create" + non-trivial scope.
+**Does NOT trigger on:** Simple bug fixes, single-file edits, documentation, configuration, refactoring.
+**Phases:** PLAN (planner agent) -> TDD (ecosystem TDD agent) -> VERIFY (build/types/lint/tests) -> REVIEW (code-reviewer + security reviewers) -> REPORT (SHIP/NEEDS WORK/BLOCKED).
+**Runs in main context** (no `context: fork`) to allow user confirmation gates between phases.
 
-### `proactive-tdd`
+When `proactive-orchestration` fires, it subsumes the three individual proactive skills below.
 
-**Triggers on:** "Add", "implement", "create" + function/feature. Bug fix requests. Files with existing tests.
-**Dispatches to:** `ts-tdd-guide` | `jvm-tdd-guide` | `python-tdd-guide` (sonnet)
-**Gap:** Can conflict with `proactive-planning`. Both trigger on "implement". No defined precedence. Expected flow: plan first, then TDD. Not enforced.
+### `proactive-planning` (Standalone Planning)
 
-### `proactive-review`
+**Triggers on:** Architectural discussions, requirement analysis, design decisions -- when planning is needed without the full TDD/review pipeline.
+**Dispatches to:** `planner` (opus) via `context: fork`.
+**Note:** For complex multi-file features, `proactive-orchestration` handles planning as Phase 1.
 
-**Triggers on:** Task completion, before commit, significant changes, security-sensitive code.
-**Dispatches to:** `code-reviewer` (opus) + language-specific reviewers.
-**Gap:** Only triggers on task completion if the `post-task-update.cjs` hook fires. Commands like `/tdd` don't create tasks, so proactive-review is never suggested after `/tdd`.
+### `proactive-tdd` (Standalone TDD)
+
+**Triggers on:** Adding tests to existing code, bug fix with reproduction test, isolated TDD needs.
+**Dispatches to:** `ts-tdd-guide` | `jvm-tdd-guide` | `python-tdd-guide` (sonnet) via `context: fork`.
+**Note:** For complex features, `proactive-orchestration` coordinates TDD as Phase 2.
+
+### `proactive-review` (Standalone Review)
+
+**Triggers on:** Pre-commit review, reviewing existing code, task completion for non-orchestrated work.
+**Dispatches to:** `code-reviewer` (opus) via `context: fork`.
+**Note:** For complex features, `proactive-orchestration` includes review as Phase 4.
 
 ---
 
@@ -264,16 +279,30 @@ These trigger automatically when Claude detects the right signals.
 
 ```
 User: "Add a health check endpoint to the API"
-  1. Planning happens automatically (proactive-planning)
+  1. Planning happens automatically
   2. User confirms the plan
-  3. TDD agent writes tests first (proactive-tdd)
+  3. TDD agent writes tests first
   4. Implementation fills in the code
-  5. Build/type/lint verified automatically (verification-loop)
-  6. Code review runs automatically (proactive-review)
-  7. User sees: "Ready to commit. Run /verify pre-commit for final check."
+  5. Build/type/lint verified automatically
+  6. Code review runs automatically
+  7. User sees: "Ready to commit" or "Needs work: [specific actions]"
 ```
 
-### What actually happens
+### What now happens (with proactive-orchestration)
+
+```
+User: "Add a health check endpoint to the API"
+  1. proactive-orchestration fires (detects complex feature request)
+  2. Phase 1: planner agent designs approach, waits for user confirmation
+  3. Phase 2: Ecosystem TDD agent implements with backend patterns in context
+  4. Phase 3: Verification runs (build + types + lint + tests + debug audit)
+     -> If build fails: auto-invokes build-resolver, re-verifies
+  5. Phase 4: code-reviewer + security reviewers check quality
+     -> If issues found: reports with specific remediation commands
+  6. Phase 5: SHIP / NEEDS WORK / BLOCKED verdict
+```
+
+### What previously happened (before orchestration)
 
 ```
 User: "Add a health check endpoint to the API"
@@ -291,37 +320,35 @@ User: "Add a health check endpoint to the API"
 
 ## Gap Summary
 
-### Connection Gaps (workflows that should chain but don't)
+### Resolved (v2.1.0)
+
+| Gap | Resolution |
+|-----|-----------|
+| **Plan -> TDD handoff** | `proactive-orchestration` coordinates Plan -> TDD -> Verify -> Review as sequential phases |
+| **TDD -> Verify** | `proactive-orchestration` Phase 3 runs verification after TDD completes |
+| **TDD -> Review** | `proactive-orchestration` Phase 4 runs code review; task lifecycle managed via TaskCreate/TaskUpdate |
+| **Review -> Fix** | `/code-review` now includes remediation suggestions mapping issues to specific commands |
+| **Verify -> Fix** | `/verify` now includes remediation suggestions mapping failures to specific commands |
+| **Orchestrate -> Verify** | `/orchestrate feature` now includes verification phase between TDD and Review |
+| **Proactive precedence** | `proactive-orchestration` is the top-level orchestrator; individual proactive skills fire only for standalone work |
+| **TS/JS security hook** | `typescript-security.js` PostToolUse hook created (Semgrep + npm audit + pattern checks) |
+| **Remediation suggestions** | Both `/verify` and `/code-review` now suggest next commands based on failure type |
+| **`/tdd` vs `proactive-tdd`** | Unified: `proactive-tdd` delegates to `/tdd` command workflow (single implementation) |
+| **`/verify` vs `verification-loop`** | Unified: `verification-loop` delegates to `/verify full` process (single implementation) |
+| **`/code-review` vs `proactive-review`** | Unified: `proactive-review` delegates to `/code-review` workflow (single implementation) |
+| **Backend patterns in TDD** | TDD agents now include `*-backend-patterns` skills in frontmatter |
+| **Backend patterns in build-resolvers** | Build-resolver agents now include `*-backend-patterns` skills in frontmatter |
+| **Phantom `explorer` agent** | Replaced with `Explore` (built-in Claude Code subagent) in `/orchestrate` bugfix workflow |
+
+### Remaining Gaps
 
 | Gap | Current | Should Be |
 |-----|---------|-----------|
-| **Plan -> TDD handoff** | Plan ends, user must manually start TDD | After plan confirmation, offer to invoke TDD agent |
-| **TDD -> Verify** | TDD ends after RED-GREEN-REFACTOR | Run `verification-loop` as final step |
-| **TDD -> Review** | No task created, so post-task-update hook never fires | Create task at start, complete at end to trigger review suggestion |
-| **Review -> Fix** | Verdict given but no next-step suggestions | Suggest `/build-fix`, `/test-coverage`, or `/tdd` based on issue type |
-| **Verify -> Fix** | Reports PASS/FAIL but no remediation suggestions | Map failure categories to commands |
-| **Orchestrate -> Verify** | No verification between agent handoffs | Insert verification phase between each handoff |
 | **Orchestrate -> Eval** | Does not define or check evals | Start with `/eval define`, end with `/eval check` |
 | **Checkpoint -> Eval** | Independent systems | `/checkpoint verify` could run `/eval check` if eval exists |
-| **Proactive precedence** | `proactive-planning` and `proactive-tdd` can conflict | Define: planning first, TDD second |
-
-### Missing Components
-
-| Component | What's Missing | Impact |
-|-----------|---------------|--------|
-| **TS/JS security hook** | No `typescript-security.js` PostToolUse hook | TypeScript files get no security scanning on edit (Java and Python do) |
-| **Remediation suggestions** | `/verify` and `/code-review` don't suggest fix commands | User must know which command fixes which problem |
 | **Ecosystem cache reuse** | Commands re-detect ecosystem instead of reading `session-start.cjs` detection | Redundant work on every command |
 | **Auto-learn** | `evaluate-session.cjs` detects patterns but only suggests `/learn` | Patterns are lost if user forgets to run `/learn` |
-
-### Coherence Issues
-
-| Issue | Detail |
-|-------|--------|
-| **`/tdd` vs `proactive-tdd`** | Same TDD agents, same workflow, different entry points. No shared state. If `proactive-tdd` ran partway, `/tdd` starts fresh. |
-| **`/verify` vs `verification-loop` skill** | Nearly identical logic. `/verify` is user-invoked, `verification-loop` is Claude-invocable. Could be one implementation. |
-| **`/code-review` vs `proactive-review`** | Same agent chain, different triggers. `proactive-review` has `context: fork`, `/code-review` does not. |
-| **Test coverage** | `/test-coverage` generates tests in main context. `/tdd` uses specialist TDD agents. `/test-coverage` could delegate to TDD agents for better quality tests. |
+| **Test coverage delegation** | `/test-coverage` generates tests in main context | Could delegate to TDD agents for better quality tests |
 
 ---
 
@@ -335,23 +362,62 @@ User: "Add a health check endpoint to the API"
 
 ---
 
-## Recommended Priority Fixes
+## Design Principle: Zero Cognitive Load
 
-### High: Complete the proactive chain
+The user should never need to memorize command names. The only commands a user needs to know:
 
-1. **Define proactive precedence:** `proactive-planning` triggers first for complex tasks. After plan confirmation, `proactive-tdd` triggers for implementation. After implementation, `proactive-review` triggers.
-2. **Task lifecycle integration:** `/tdd` (and proactive-tdd) should create a task at start and complete it at end. This triggers `post-task-update.cjs` which suggests code review.
-3. **Verification after TDD:** TDD agents should invoke `verification-loop` as a final step (build + types + lint + tests).
+- `/setup` -- first-time project setup
+- `/extend` -- adding new ecosystem support
 
-### Medium: Add remediation suggestions
+Everything else should be proactive. Commands remain as escape hatches for explicit control, but the default path is: **describe what you want, the system does the rest.**
 
-4. **`/verify` failure mapping:** Build fail -> suggest `/build-fix`. Test fail -> suggest `/tdd`. Coverage low -> suggest `/test-coverage`. Lint fail -> suggest specific fix.
-5. **`/code-review` next steps:** BLOCK verdict -> suggest specific commands per issue category.
-6. **`/orchestrate` verification phases:** Insert `/verify quick` between agent handoffs.
+### Why the Current Architecture Falls Short
 
-### Low: Fill component gaps
+The plugin has the right components but the wrong wiring. Three independent proactive skills (`proactive-planning`, `proactive-tdd`, `proactive-review`) each decide independently whether to fire. They don't coordinate, share state, or enforce ordering. Meanwhile `/orchestrate` -- which *does* coordinate agents in sequence -- is user-invoked only. The full pipeline exists but requires the user to know to type `/orchestrate feature`.
 
-7. **TypeScript security hook:** Create `typescript-security.js` mirroring `java-security.js` and `python-security.js`.
-8. **Eval integration:** `/orchestrate feature` could start with `/eval define` and end with `/eval check`.
-9. **Ecosystem cache reuse:** Commands read `DETECTED_ECOSYSTEM` from session instead of re-detecting.
-10. **`/test-coverage` agent delegation:** Delegate test generation to TDD agents for ecosystem-appropriate test quality.
+### Skills vs Commands: The Key Insight
+
+Per the plugin spec (`docs/PLUGIN_DEVELOPMENT/01-COMMANDS-SKILLS.md`), skills and commands are merged in Claude Code. Both create slash commands. Skills add: `context: fork`, `user-invocable: false`, `disable-model-invocation`, and **auto-loading by Claude based on description**. Skills with `user-invocable: false` let Claude load them automatically when context matches -- the user never invokes them explicitly.
+
+This means the fix is architectural, not additive. Instead of adding more proactive skills, unify the orchestration.
+
+---
+
+## Implementation Status
+
+All items from the original proposed redesign have been implemented:
+
+1. **Unified Proactive Orchestration** -- `proactive-orchestration` skill coordinates PLAN -> TDD -> VERIFY -> REVIEW -> REPORT
+2. **Unified Implementations** -- `proactive-tdd`, `proactive-review`, `verification-loop` delegate to their command counterparts
+3. **Pattern Skills in Agent Context** -- Option A implemented: `*-backend-patterns` added to TDD agents and build-resolvers
+4. **Task Lifecycle Automation** -- `proactive-orchestration` manages TaskCreate/TaskUpdate across phases
+5. **Remediation Suggestions** -- `/verify` and `/code-review` map failures to specific commands
+6. **TypeScript/JavaScript Security Hook** -- `typescript-security.js` mirrors Java and Python security hooks
+
+### What This Achieves
+
+**Before (user must know):**
+```
+"Add a health check endpoint"
+  -> User must run /plan (or hope proactive-planning fires)
+  -> User must run /tdd (or hope proactive-tdd fires)
+  -> User must run /verify
+  -> User must run /code-review (or hope proactive-review fires)
+  -> User must know /build-fix if build breaks
+  -> User must know /test-coverage if coverage is low
+```
+
+**After (system orchestrates):**
+```
+"Add a health check endpoint"
+  -> proactive-orchestration fires (detects complex feature request)
+  -> Phase 1: planner designs approach, waits for user confirmation
+  -> Phase 2: TDD agent implements with ecosystem-appropriate patterns
+  -> Phase 3: verification checks build/types/lint/tests
+     -> If build fails: auto-invokes build-resolver, re-verifies
+  -> Phase 4: code-reviewer checks quality and security
+     -> If issues found: reports with specific remediation commands
+  -> Phase 5: "Ready to commit" or "Needs work: [specific actions]"
+```
+
+The user's cognitive load: describe what you want. The system handles the rest.

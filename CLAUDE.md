@@ -219,9 +219,10 @@ Specialized agents in `agents/` directory:
 Skills define reusable workflows and domain knowledge in `skills/` directory:
 
 **Proactive Skills** (Claude invokes automatically):
-- **proactive-review/** - Ecosystem-aware code quality checks at task completion/pre-commit
-- **proactive-planning/** - Planning for complex tasks before coding
-- **proactive-tdd/** - Ecosystem-aware TDD enforcement when implementing features
+- **proactive-orchestration/** - Full pipeline orchestrator for complex features (PLAN -> TDD -> VERIFY -> REVIEW). Top-level skill that subsumes individual proactive skills for multi-file feature work.
+- **proactive-planning/** - Planning for complex tasks before coding (standalone planning only; orchestration handles planning for full pipelines)
+- **proactive-tdd/** - Ecosystem-aware TDD enforcement (standalone TDD only; orchestration handles TDD for full pipelines)
+- **proactive-review/** - Ecosystem-aware code quality checks at task completion/pre-commit (standalone review only; orchestration handles review for full pipelines)
 
 **Domain Knowledge Skills** (Context reference):
 - **coding-standards/** - TypeScript/JavaScript best practices (with `context: fork`)

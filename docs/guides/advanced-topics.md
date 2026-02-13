@@ -247,12 +247,14 @@ Each handoff passes structured context to the next agent.
 
 Claude automatically selects agents based on context:
 
-- Editing Python? → `python-reviewer` for quality checks
-- Build failing? → `python-build-resolver` or `jvm-build-resolver`
-- New feature? → `proactive-planning` triggers, then `proactive-tdd`
-- Before commit? → `proactive-review` runs quality checks
+- **Complex feature request?** → `proactive-orchestration` fires, coordinating the full pipeline: planning (planner agent), TDD (ecosystem TDD agent), verification, and code review
+- **Editing Python?** → `python-reviewer` for quality checks
+- **Build failing?** → `python-build-resolver` or `jvm-build-resolver`
+- **Standalone planning needed?** → `proactive-planning` for architectural discussions
+- **Adding tests to existing code?** → `proactive-tdd` for isolated TDD
+- **Before commit?** → `proactive-review` runs quality checks
 
-You don't have to explicitly invoke agents — the skills and hooks trigger them.
+You don't have to explicitly invoke agents — the skills and hooks trigger them. For complex feature work, `proactive-orchestration` is the top-level orchestrator. Individual proactive skills handle focused single-phase work.
 
 ---
 

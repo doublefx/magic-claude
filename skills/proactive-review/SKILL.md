@@ -8,7 +8,7 @@ agent: code-reviewer
 
 # Proactive Code Review
 
-This skill provides automatic code quality and security review at strategic moments in the development workflow. It detects the project ecosystem and applies appropriate checks.
+This skill provides automatic code quality and security review at strategic moments in the development workflow. It delegates to the `/code-review` command workflow.
 
 ## When Claude Should Invoke This Skill
 
@@ -19,107 +19,25 @@ Claude should proactively invoke this skill when:
 3. **Significant Changes** - Multiple files or complex logic was modified
 4. **Security-Sensitive Code** - Authentication, authorization, input handling, or API endpoints were touched
 
-## Ecosystem Detection
+## Scope
 
-Detect the ecosystem from changed files:
+For standalone review needs (pre-commit review, reviewing existing code, reviewing someone else's code), this skill handles review directly.
 
-**TypeScript/JavaScript**: `.ts`, `.tsx`, `.js`, `.jsx` files
-**JVM (Java/Kotlin/Groovy)**: `.java`, `.kt`, `.kts`, `.groovy` files
-**Python**: `.py` files
+For complex multi-file features, `proactive-orchestration` includes review as the final phase of the full pipeline (planning, TDD, verification, review). This skill fires only when review is needed without the full orchestration pipeline.
 
-## Review Checklist
+## Workflow
 
-### Security Issues (CRITICAL - Must Fix)
+When triggered, follow the same workflow as the `/code-review` command:
 
-**All Ecosystems:**
-- [ ] **Hardcoded credentials** - API keys, passwords, tokens in source
-- [ ] **Missing input validation** - User input not sanitized
-- [ ] **SSRF vulnerabilities** - User-controlled URLs fetched
-- [ ] **Path traversal** - User-controlled file paths
-- [ ] **Authentication bypass** - Missing auth checks on routes
-
-**TypeScript/JavaScript:**
-- [ ] **SQL injection** - String concatenation in queries
-- [ ] **XSS vulnerabilities** - Unescaped user input in HTML
-- [ ] **console.log statements** - Debug statements left in
-
-**JVM (Java/Kotlin/Groovy):**
-- [ ] **SQL injection** - String concatenation in JPQL/native queries
-- [ ] **XXE** - Default XML parser without feature disabling
-- [ ] **Deserialization** - ObjectInputStream with untrusted data
-- [ ] **System.out.println** / **e.printStackTrace()** - Debug statements left in
-- [ ] **Missing @PreAuthorize** - Sensitive endpoints unprotected
-
-**Python:**
-- [ ] **SQL injection** - f-strings/format in SQL queries
-- [ ] **pickle/yaml.load** - Deserialization of untrusted data
-- [ ] **eval/exec** - Execution of user input
-- [ ] **subprocess shell=True** - Command injection risk
-- [ ] **print() statements** - Debug statements left in
-
-### Code Quality (HIGH - Should Fix)
-
-- [ ] **Large functions** - Functions > 50 lines
-- [ ] **Large files** - Files > 800 lines
-- [ ] **Deep nesting** - Nesting depth > 4 levels
-- [ ] **Missing error handling** - try/catch missing
-- [ ] **Mutation patterns** - Objects mutated instead of copied
-- [ ] **Missing tests** - New code without test coverage
-
-### Best Practices (MEDIUM - Consider)
-
-- [ ] **Magic numbers** - Unexplained numeric constants
-- [ ] **Poor naming** - Unclear variable/function names
-- [ ] **TODO/FIXME** - Unresolved comments without tickets
-
-## Review Process
-
-1. **Get changed files**
-   ```bash
-   git diff --name-only HEAD
-   ```
-
+1. **Get changed files** via `git diff --name-only HEAD`
 2. **Detect ecosystem** from file extensions
+3. **Apply ecosystem-appropriate checks** (security, quality, best practices)
+4. **Dispatch to specialist agents** (code-reviewer, language reviewers, security reviewers)
+5. **Generate report** with severity-based findings
+6. **Issue verdict**: BLOCK / WARN / APPROVE
+7. **Provide remediation suggestions** if issues found
 
-3. **For each file**, check against ecosystem-appropriate checklist
-
-4. **Delegate to language reviewers** if needed:
-   - `.java` files -> `java-reviewer` agent
-   - `.kt` files -> `kotlin-reviewer` agent
-   - `.groovy` files -> `groovy-reviewer` agent
-   - `.py` files -> `python-reviewer` agent
-
-5. **Generate report** with:
-   - Severity level (CRITICAL, HIGH, MEDIUM, LOW)
-   - File path and line number
-   - Issue description
-   - Suggested fix with code example
-
-6. **Recommendation**:
-   - BLOCK - CRITICAL or HIGH issues found
-   - WARN - Only MEDIUM issues found
-   - APPROVE - No significant issues
-
-## Output Format
-
-```markdown
-## Code Review Report
-
-**Files Reviewed:** X
-**Ecosystems:** [TypeScript, Java, Python]
-**Risk Level:** HIGH/MEDIUM/LOW
-
-### CRITICAL Issues (Fix Immediately)
-1. **[Issue]** @ `file.ext:42`
-   - Problem: [description]
-   - Fix: [code example]
-
-### HIGH Issues (Fix Before Commit)
-...
-
-### Recommendation
-[BLOCK/WARN/APPROVE with explanation]
-```
+See the `/code-review` command for the full security checklists, quality checks, agent dispatch table, report format, and remediation suggestions.
 
 ## Context Forking Note
 
@@ -127,7 +45,8 @@ This skill runs with `context: fork` to preserve the main conversation context. 
 
 ## Related
 
-- `/code-review` command - Explicit user-invoked full review (with ecosystem router)
+- `/code-review` command - Explicit user-invoked review (single source of truth for review workflow)
+- `proactive-orchestration` skill - Full pipeline orchestration (includes review as final phase)
 - `code-reviewer` agent - General quality and security review
 - `java-reviewer` agent - Java idioms and security
 - `kotlin-reviewer` agent - Kotlin idioms and null safety

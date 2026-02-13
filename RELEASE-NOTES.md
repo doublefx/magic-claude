@@ -1,3 +1,71 @@
+# Release Notes v2.1.0
+
+**Release Date**: 2026-02-13
+**Type**: Feature Release - Unified Proactive Orchestration
+**Status**: Production Ready
+
+---
+
+## Overview
+
+Magic Claude v2.1.0 introduces **unified proactive orchestration** -- the plugin now automatically coordinates the full development pipeline (planning, TDD, verification, review) for complex feature work. Users describe what they want; the system handles the rest.
+
+### Proactive Orchestration
+
+**New skill: `proactive-orchestration`** -- top-level pipeline orchestrator that fires automatically on complex feature requests.
+
+| Phase | What Happens |
+|-------|-------------|
+| PLAN | Planner agent designs approach, waits for user confirmation |
+| TDD | Ecosystem TDD agent implements with RED-GREEN-REFACTOR |
+| VERIFY | Build, types, lint, tests, debug audit (auto-remediation on build failure) |
+| REVIEW | Code reviewer + security reviewers check quality |
+| REPORT | SHIP / NEEDS WORK / BLOCKED verdict with remediation suggestions |
+
+Individual proactive skills (`proactive-planning`, `proactive-tdd`, `proactive-review`) remain for standalone single-phase work.
+
+### Unified Implementations
+
+Duplicate logic between commands and proactive skills has been consolidated:
+
+| Pair | Resolution |
+|------|-----------|
+| `/tdd` + `proactive-tdd` | `proactive-tdd` delegates to `/tdd` workflow |
+| `/code-review` + `proactive-review` | `proactive-review` delegates to `/code-review` workflow |
+| `/verify` + `verification-loop` | `verification-loop` delegates to `/verify full` process |
+
+### Remediation Suggestions
+
+Both `/verify` and `/code-review` now suggest specific commands based on failure type:
+- Build FAIL -> `/build-fix`
+- Tests FAIL -> `/tdd`
+- Coverage LOW -> `/test-coverage`
+- Security issues -> specific fixes + `/code-review`
+
+### Backend Patterns in Agent Context
+
+TDD agents and build-resolvers now include ecosystem-specific backend patterns:
+- `ts-tdd-guide`: `tdd-workflow, backend-patterns, claude-mem-context`
+- `jvm-tdd-guide`: `jvm-tdd-workflow, jvm-backend-patterns, claude-mem-context`
+- `python-tdd-guide`: `python-tdd-workflow, python-backend-patterns, claude-mem-context`
+- Build-resolvers similarly enriched with backend patterns
+
+### TypeScript/JavaScript Security Hook
+
+New `typescript-security.js` PostToolUse hook mirrors existing Java and Python security hooks:
+- Semgrep SAST scan
+- npm audit for vulnerable dependencies
+- Pattern-based detection: eval(), innerHTML, SQL injection, hardcoded credentials, command injection, open redirects
+- Graceful degradation if tools not installed
+
+### Bug Fixes
+
+- Fixed phantom `explorer` agent reference in `/orchestrate` bugfix workflow (replaced with `Explore` subagent)
+- Added missing `context: fork` to `proactive-tdd` skill
+- Upgraded `/code-review` to dispatch to `code-reviewer` agent and ecosystem security reviewers
+
+---
+
 # Release Notes v2.0.0
 
 **Release Date**: 2026-02-09
