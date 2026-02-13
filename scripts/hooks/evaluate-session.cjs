@@ -154,13 +154,13 @@ async function main() {
 
   if (patterns.length > 0) {
     // SessionEnd/PreCompact hooks do NOT support hookSpecificOutput
-    // Log to stderr for visibility
-    log(`[ContinuousLearning] Detected patterns: ${patterns.join(', ')}`);
+    // Log to stderr for visibility - Claude sees these as [Hook] messages
+    log(`[ContinuousLearning] Detected ${patterns.length} extractable pattern(s): ${patterns.join(', ')}`);
     log(`[ContinuousLearning] Universal patterns → ${userLearnedSkillsPath}`);
     if (projectLearnedSkillsPath) {
       log(`[ContinuousLearning] Project-specific → ${projectLearnedSkillsPath}`);
     }
-    log('[ContinuousLearning] Tip: Use /learn to save reusable patterns');
+    log('[ContinuousLearning] ACTION REQUIRED: Run /learn now to extract and save these patterns before the session ends. Patterns will be lost if not extracted.');
   }
 
   // SessionEnd/PreCompact hooks should exit cleanly

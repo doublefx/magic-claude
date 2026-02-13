@@ -217,13 +217,12 @@ User: /orchestrate feature [description]
 User: /test-coverage
   -> Detect ecosystem, run coverage tool
   -> Identify files below 80%
-  -> Generate missing tests
-  -> Verify new tests pass
-  -> Before/after metrics
+  -> Delegate to TDD agent for test generation (RED-GREEN-REFACTOR)
+  -> Re-run coverage, show before/after metrics
 ```
 
-**Agents:** None -- runs in main context.
-**Gap:** Does not link to `/tdd` for structured test writing. Could delegate to TDD agents for generating high-quality tests.
+**Agents:** `ts-tdd-guide` | `jvm-tdd-guide` | `python-tdd-guide` (sonnet) -- dispatched via Task tool for test generation.
+**Verification:** Coverage re-run after test generation. Before/after comparison.
 
 ---
 
@@ -231,7 +230,7 @@ User: /test-coverage
 
 | Command | Purpose | Agents | Gap |
 |---------|---------|--------|-----|
-| `/learn` | Extract patterns from session | None | Manual only; `evaluate-session.cjs` suggests but cannot auto-invoke |
+| `/learn` | Extract patterns from session | None | `evaluate-session.cjs` emits `ACTION REQUIRED`; `continuous-learning` rule instructs Claude to run `/learn` proactively |
 | `/checkpoint` | Save verification state | None | Uses `/verify quick` internally. Does not integrate with `/eval`. |
 | `/eval` | Eval-driven development | None | Standalone. Not used by `/orchestrate` or `/checkpoint`. |
 | `/update-docs` | Sync docs from source | `doc-updater` (haiku) | Minimal gaps. |
@@ -340,15 +339,20 @@ User: "Add a health check endpoint to the API"
 | **Backend patterns in build-resolvers** | Build-resolver agents now include `*-backend-patterns` skills in frontmatter |
 | **Phantom `explorer` agent** | Replaced with `Explore` (built-in Claude Code subagent) in `/orchestrate` bugfix workflow |
 
-### Remaining Gaps
+### Resolved (v2.1.1)
 
-| Gap | Current | Should Be |
-|-----|---------|-----------|
-| **Orchestrate -> Eval** | Does not define or check evals | Start with `/eval define`, end with `/eval check` |
-| **Checkpoint -> Eval** | Independent systems | `/checkpoint verify` could run `/eval check` if eval exists |
-| **Ecosystem cache reuse** | Commands re-detect ecosystem instead of reading `session-start.cjs` detection | Redundant work on every command |
-| **Auto-learn** | `evaluate-session.cjs` detects patterns but only suggests `/learn` | Patterns are lost if user forgets to run `/learn` |
-| **Test coverage delegation** | `/test-coverage` generates tests in main context | Could delegate to TDD agents for better quality tests |
+| Gap | Resolution |
+|-----|-----------|
+| **Test coverage delegation** | `/test-coverage` now delegates to ecosystem TDD agents (`ts-tdd-guide`, `jvm-tdd-guide`, `python-tdd-guide`) for RED-GREEN-REFACTOR test generation |
+| **Auto-learn** | `evaluate-session.cjs` emits `ACTION REQUIRED` message; `rules/continuous-learning.md` instructs Claude to proactively run `/learn` when patterns are detected |
+
+### Remaining Gaps (Deferred)
+
+| Gap | Current | Impact | Priority |
+|-----|---------|--------|----------|
+| **Orchestrate -> Eval** | Does not define or check evals | Medium -- advanced workflow, best as opt-in flag | Low |
+| **Checkpoint -> Eval** | Independent systems | Low -- narrow audience (users of both checkpoint AND eval) | Low |
+| **Ecosystem cache reuse** | Commands re-detect ecosystem via project markers | Negligible -- detection is essentially free (file existence check) | Lowest |
 
 ---
 

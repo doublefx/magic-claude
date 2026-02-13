@@ -69,6 +69,26 @@ function readStdin() {
 }
 
 /**
+ * Check if claude-mem MCP plugin is installed
+ * Checks user settings for enabledPlugins containing 'claude-mem'
+ */
+function isClaudeMemInstalled() {
+  try {
+    const homeDir = require('os').homedir();
+    const settingsPath = path.join(homeDir, '.claude', 'settings.json');
+    if (!fs.existsSync(settingsPath)) return false;
+
+    const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
+    const enabledPlugins = settings.enabledPlugins || {};
+    return Object.keys(enabledPlugins).some(
+      key => key.startsWith('claude-mem') && enabledPlugins[key] === true
+    );
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Check if Serena setup is complete (source of truth: .serena/project.yml exists)
  */
 function isSerenaSetupComplete() {
@@ -225,6 +245,16 @@ async function main() {
     if (languages.length > 1 && !serenaStatus.jetbrains) {
       contextParts.push(`Serena: Multiple languages detected (${languages.join(', ')}) - consider JetBrains plugin for better support`);
     }
+  }
+
+  // claude-mem Integration - Check if installed
+  const claudeMemInstalled = isClaudeMemInstalled();
+  if (claudeMemInstalled) {
+    log('[SessionStart] claude-mem MCP detected');
+    contextParts.push('claude-mem: Installed - cross-session memory available via claude-mem MCP tools (search, timeline, get_observations)');
+  } else {
+    log('[SessionStart] claude-mem MCP not detected');
+    contextParts.push('claude-mem: Not installed - cross-session memory is unavailable. To install: /plugin marketplace add doublefx/claude-mem then /plugin install claude-mem and enable at user level for persistent session context, architectural history, and decision tracking.');
   }
 
   // Use CLAUDE_ENV_FILE to persist detected environment settings

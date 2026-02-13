@@ -1,3 +1,33 @@
+# Release Notes v2.2.0
+
+**Release Date**: 2026-02-13
+**Type**: Feature Release - Workflow Gap Closure
+**Status**: Production Ready
+
+---
+
+## Overview
+
+Magic Claude v2.2.0 closes two high-value workflow gaps and adds claude-mem installation guidance.
+
+### Test Coverage TDD Delegation
+
+`/test-coverage` now delegates test generation to ecosystem TDD agents (`ts-tdd-guide`, `jvm-tdd-guide`, `python-tdd-guide`) instead of generating tests ad-hoc in the main context. Tests follow proper RED-GREEN-REFACTOR methodology with backend-patterns skills in context.
+
+### Auto-Learn Closure
+
+`evaluate-session.cjs` now emits `ACTION REQUIRED` instead of a passive suggestion. A new `rules/continuous-learning.md` rule instructs Claude to proactively run `/learn` when patterns are detected, preventing knowledge loss at session end and compaction.
+
+### claude-mem Installation Guidance
+
+Session start now detects whether the claude-mem MCP plugin is installed. When not detected, it recommends installation via `/plugin marketplace add doublefx/claude-mem` and `/plugin install claude-mem` with user-level enablement for cross-session memory, architectural history, and decision tracking.
+
+### Plugin Version Bump
+
+Plugin version bumped from 1.0.0 to 2.2.0 to reflect the cumulative feature additions since initial release.
+
+---
+
 # Release Notes v2.1.0
 
 **Release Date**: 2026-02-13
