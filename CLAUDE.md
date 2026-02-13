@@ -94,6 +94,27 @@ hooks/hooks.json            # All hook definitions (PreToolUse, PostToolUse, Ses
 
 All components are auto-loaded when installed via `/plugin install`.
 
+### Ecosystem Registry (Auto-Discovery)
+
+Ecosystem modules are the **single source of truth** for all language/platform metadata. The registry auto-discovers modules by scanning directories at three levels:
+
+| Priority | Level | Path |
+|----------|-------|------|
+| 1 (base) | Plugin | `scripts/lib/ecosystems/` |
+| 2 | User | `~/.claude/ecosystems/` |
+| 3 (wins) | Project | `./.claude/ecosystems/` |
+
+Later levels override earlier ones. Adding a new ecosystem (e.g., Go) requires only dropping a single `.cjs` file into any `ecosystems/` directory. The file must export a class extending `Ecosystem` from `types.cjs`.
+
+Each ecosystem module is self-describing — it declares tools, version commands, installation help, setup categories, debug patterns, project sub-types, and config-aware command generation. All consumers (tool-detection, commands, setup scripts, hook scripts) aggregate metadata from the registry instead of maintaining hardcoded maps.
+
+Key exports from `scripts/lib/ecosystems/index.cjs`:
+- `getEcosystem(type, config)` — Get an instance by type
+- `detectEcosystem(dir)` — Detect ecosystem from directory indicators
+- `getRegistry()` — Full registry map
+- `getEcosystemDirs()` — Discovery directories
+- `getAllDebugPatterns()`, `getAllProjectSubTypes()`, `getAllEcosystemTools()`, etc.
+
 ### Cross-Platform Script System
 
 All automation is Node.js-based (no shell scripts) for Windows/macOS/Linux compatibility:

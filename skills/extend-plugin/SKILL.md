@@ -79,17 +79,17 @@ Scan three levels for existing components:
 
 **User-level** (`~/.claude/`):
 ```bash
-ls ~/.claude/agents/ ~/.claude/skills/ ~/.claude/commands/ ~/.claude/rules/ 2>/dev/null
+ls ~/.claude/agents/ ~/.claude/skills/ ~/.claude/commands/ ~/.claude/rules/ ~/.claude/ecosystems/ 2>/dev/null
 ```
 
 **Project-level** (`./.claude/`):
 ```bash
-ls ./.claude/agents/ ./.claude/skills/ ./.claude/commands/ ./.claude/rules/ 2>/dev/null
+ls ./.claude/agents/ ./.claude/skills/ ./.claude/commands/ ./.claude/rules/ ./.claude/ecosystems/ 2>/dev/null
 ```
 
 **Plugin (installed)** — use `${CLAUDE_PLUGIN_ROOT}` to resolve the installed plugin cache path:
 ```bash
-ls "${CLAUDE_PLUGIN_ROOT}/agents/" "${CLAUDE_PLUGIN_ROOT}/skills/" "${CLAUDE_PLUGIN_ROOT}/commands/" "${CLAUDE_PLUGIN_ROOT}/rules/" 2>/dev/null
+ls "${CLAUDE_PLUGIN_ROOT}/agents/" "${CLAUDE_PLUGIN_ROOT}/skills/" "${CLAUDE_PLUGIN_ROOT}/commands/" "${CLAUDE_PLUGIN_ROOT}/rules/" "${CLAUDE_PLUGIN_ROOT}/scripts/lib/ecosystems/" 2>/dev/null
 ```
 
 Build an inventory table and check for name collisions with planned components.
@@ -123,6 +123,7 @@ Options:
   - "Hooks" — Auto-formatter and security scanner
   - "Command" — Slash command for review
   - "Rule" — Coding style guidelines
+  - "Ecosystem module" — Auto-discoverable setup/detection integration
 ```
 
 **Question 3 — Confirm**:
@@ -325,6 +326,55 @@ Include: when to use, what gets checked, output format.
 - Error handling patterns
 - What the auto-formatter enforces vs. what requires manual attention
 
+#### 7g. Ecosystem Module (if included)
+
+**Purpose**: Generate a self-describing ecosystem module so the new ecosystem is automatically discovered by the setup/detection infrastructure. No other file modifications needed.
+
+**Create**: `<target>/ecosystems/<ecosystem>.cjs` (at the chosen target level)
+- User-level: `~/.claude/ecosystems/<ecosystem>.cjs`
+- Project-level: `./.claude/ecosystems/<ecosystem>.cjs`
+- Plugin source repo: `scripts/lib/ecosystems/<ecosystem>.cjs`
+
+**Import path** (varies by target level):
+```javascript
+// Plugin source repo (relative)
+const { Ecosystem } = require('./types.cjs');
+
+// User or project level (via CLAUDE_PLUGIN_ROOT)
+const path = require('path');
+const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT || '';
+const { Ecosystem } = require(path.join(pluginRoot, 'scripts/lib/ecosystems/types.cjs'));
+```
+
+**Required methods to implement** (all with real values from Step 5 research):
+```javascript
+class <Ecosystem>Ecosystem extends Ecosystem {
+  constructor(config = {}) { super('<ecosystem>', config); }
+  getConstantKey()          // e.g. 'GO'
+  getDetectionPriority()    // Lower = checked first; use 15 for specific ecosystems
+  getName()                 // Human-readable, e.g. 'Go'
+  getIndicators()           // File names, e.g. ['go.mod', 'go.sum']
+  getFileExtensions()       // e.g. ['.go']
+  getTools()                // { runtime: [...], packageManagers: [...] }
+  getVersionCommands()      // { tool: 'tool --version' }
+  getInstallationHelp()     // { tool: { win32, darwin, linux } }
+  getSetupToolCategories()  // { critical: [...], recommended: [...] }
+  getDebugPatterns()        // [{ extensions, pattern, name, message }]
+  getInstallCommand(config) // e.g. 'go mod download'
+  getRunCommand(script, config)
+  getBuildCommand(config)
+  getTestCommand(config)
+  getFormatCommand(config)
+  getLintCommand(config)
+}
+module.exports = { <Ecosystem>Ecosystem };
+```
+
+**After generation**, verify the new ecosystem is discovered:
+```bash
+node -e "const {getRegistry} = require('./scripts/lib/ecosystems/index.cjs'); console.log(Object.keys(getRegistry()))"
+```
+
 ---
 
 ### Step 8: Report Summary
@@ -340,13 +390,14 @@ Ecosystem: <ecosystem>
 Target: <user|project> (<path>)
 
 Generated Components:
-  [skill]   <path>/skills/<ecosystem>-patterns/SKILL.md
-  [agent]   <path>/agents/<ecosystem>-reviewer.md
-  [agent]   <path>/agents/<ecosystem>-build-resolver.md
-  [hook]    <path>/hooks/hooks.json (appended)
-  [script]  <path>/scripts/hooks/<ecosystem>-formatter.js
-  [command] <path>/commands/<ecosystem>-review.md
-  [rule]    <path>/rules/<ecosystem>-style.md
+  [skill]     <path>/skills/<ecosystem>-patterns/SKILL.md
+  [agent]     <path>/agents/<ecosystem>-reviewer.md
+  [agent]     <path>/agents/<ecosystem>-build-resolver.md
+  [hook]      <path>/hooks/hooks.json (appended)
+  [script]    <path>/scripts/hooks/<ecosystem>-formatter.js
+  [command]   <path>/commands/<ecosystem>-review.md
+  [rule]      <path>/rules/<ecosystem>-style.md
+  [ecosystem] <path>/ecosystems/<ecosystem>.cjs
 
 Cross-Links:
   <ecosystem>-reviewer agent → uses <ecosystem>-patterns skill
@@ -370,6 +421,10 @@ Run verification checks:
 3. **Command agent references**: Grep command bodies → verify named agents exist as files
 4. **Hook script references**: Grep hook script paths → verify script files exist
 5. **File existence**: Verify all generated files are readable
+6. **Ecosystem registry** (if ecosystem module generated): Verify the new ecosystem appears in the registry:
+   ```bash
+   node -e "const {getRegistry,ECOSYSTEMS} = require('./scripts/lib/ecosystems/index.cjs'); console.log('Registry:', Object.keys(getRegistry())); console.log('Constants:', ECOSYSTEMS)"
+   ```
 
 Report results with pass/fail for each check.
 

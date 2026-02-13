@@ -1,6 +1,6 @@
 /**
  * Tests for scripts/lib/ecosystems/ modules
- * Ecosystem registry and ecosystem-specific modules (Node.js, JVM, Python, Rust)
+ * Ecosystem registry, auto-discovery, and ecosystem-specific modules (Node.js, JVM, Python, Rust)
  *
  * Run with: node tests/lib/ecosystems.test.cjs
  */
@@ -23,6 +23,9 @@ function test(name, fn) {
 
 // Try to import the modules (will fail in RED phase)
 let Ecosystem, getEcosystem, detectEcosystem, ECOSYSTEMS;
+let getRegistry, getEcosystemDirs, getEcosystemsByPriority;
+let getAllDebugPatterns, getAllProjectSubTypes, getAllSetupToolCategories;
+let getAllEcosystemTools, getAllVersionCommands, getAllInstallationHelp;
 let moduleLoaded = false;
 
 try {
@@ -31,6 +34,15 @@ try {
   getEcosystem = ecosystemModule.getEcosystem;
   detectEcosystem = ecosystemModule.detectEcosystem;
   ECOSYSTEMS = ecosystemModule.ECOSYSTEMS;
+  getRegistry = ecosystemModule.getRegistry;
+  getEcosystemDirs = ecosystemModule.getEcosystemDirs;
+  getEcosystemsByPriority = ecosystemModule.getEcosystemsByPriority;
+  getAllDebugPatterns = ecosystemModule.getAllDebugPatterns;
+  getAllProjectSubTypes = ecosystemModule.getAllProjectSubTypes;
+  getAllSetupToolCategories = ecosystemModule.getAllSetupToolCategories;
+  getAllEcosystemTools = ecosystemModule.getAllEcosystemTools;
+  getAllVersionCommands = ecosystemModule.getAllVersionCommands;
+  getAllInstallationHelp = ecosystemModule.getAllInstallationHelp;
   moduleLoaded = true;
 } catch (error) {
   console.log('\n⚠️  Module not found (expected in TDD RED phase)');
@@ -51,17 +63,37 @@ try {
       this.config = config;
     }
     getType() { return this.type; }
+    getConstantKey() { return this.type.toUpperCase(); }
+    getDetectionPriority() { return 50; }
     getName() { return 'Node.js'; }
     getIndicators() { return []; }
+    getFileExtensions() { return []; }
     getPackageManagerCommands() { return {}; }
+    getTools() { return {}; }
+    getVersionCommands() { return {}; }
+    getInstallationHelp() { return {}; }
+    getSetupToolCategories() { return {}; }
+    getDebugPatterns() { return []; }
+    getProjectSubTypes() { return {}; }
     getBuildCommand() { return null; }
     getTestCommand() { return null; }
     getFormatCommand() { return null; }
     getLintCommand() { return null; }
+    getInstallCommand() { return null; }
+    getRunCommand() { return null; }
   }
 
   getEcosystem = (type) => new Ecosystem(type);
   detectEcosystem = (dir) => ECOSYSTEMS.NODEJS;
+  getRegistry = () => ({});
+  getEcosystemDirs = () => [];
+  getEcosystemsByPriority = () => [];
+  getAllDebugPatterns = () => [];
+  getAllProjectSubTypes = () => ({});
+  getAllSetupToolCategories = () => ({});
+  getAllEcosystemTools = () => ({});
+  getAllVersionCommands = () => ({});
+  getAllInstallationHelp = () => ({});
 }
 
 // Test suite
@@ -90,6 +122,49 @@ function runTests() {
     assert.strictEqual(ECOSYSTEMS.PYTHON, 'python');
     assert.strictEqual(ECOSYSTEMS.RUST, 'rust');
     assert.strictEqual(ECOSYSTEMS.UNKNOWN, 'unknown');
+  }) ? 'passed' : 'failed']++;
+
+  results[test('ECOSYSTEMS should be frozen after auto-discovery', () => {
+    if (!moduleLoaded) return; // Skip in stub mode
+    assert.ok(Object.isFrozen(ECOSYSTEMS), 'ECOSYSTEMS should be frozen');
+  }) ? 'passed' : 'failed']++;
+
+  console.log('');
+
+  // Auto-Discovery Registry
+  console.log('Auto-Discovery Registry:');
+
+  results[test('registry should contain all four ecosystems plus unknown', () => {
+    const registry = getRegistry();
+    assert.ok(registry['nodejs'], 'nodejs should be in registry');
+    assert.ok(registry['jvm'], 'jvm should be in registry');
+    assert.ok(registry['python'], 'python should be in registry');
+    assert.ok(registry['rust'], 'rust should be in registry');
+    assert.ok(registry['unknown'], 'unknown should be in registry');
+  }) ? 'passed' : 'failed']++;
+
+  results[test('getEcosystemDirs should include plugin-level directory', () => {
+    const dirs = getEcosystemDirs();
+    assert.ok(Array.isArray(dirs));
+    assert.ok(dirs.length >= 1, 'should have at least the plugin directory');
+  }) ? 'passed' : 'failed']++;
+
+  results[test('getEcosystemsByPriority should return sorted instances', () => {
+    const sorted = getEcosystemsByPriority();
+    assert.ok(Array.isArray(sorted));
+    // Verify sorted by priority (lower first)
+    for (let i = 1; i < sorted.length; i++) {
+      assert.ok(
+        sorted[i].getDetectionPriority() >= sorted[i - 1].getDetectionPriority(),
+        `Priority should be ascending: ${sorted[i - 1].getType()}=${sorted[i - 1].getDetectionPriority()} <= ${sorted[i].getType()}=${sorted[i].getDetectionPriority()}`
+      );
+    }
+  }) ? 'passed' : 'failed']++;
+
+  results[test('getEcosystemsByPriority should exclude unknown', () => {
+    const sorted = getEcosystemsByPriority();
+    const types = sorted.map(e => e.getType());
+    assert.ok(!types.includes('unknown'), 'unknown should not be in priority list');
   }) ? 'passed' : 'failed']++;
 
   console.log('');
@@ -137,6 +212,174 @@ function runTests() {
     const eco = getEcosystem(ECOSYSTEMS.NODEJS);
     const command = eco.getTestCommand();
     assert.ok(command === null || typeof command === 'string');
+  }) ? 'passed' : 'failed']++;
+
+  console.log('');
+
+  // New Self-Describing Methods
+  console.log('Self-Describing Methods:');
+
+  results[test('getConstantKey should return uppercase type', () => {
+    const eco = getEcosystem(ECOSYSTEMS.NODEJS);
+    assert.strictEqual(eco.getConstantKey(), 'NODEJS');
+    const jvm = getEcosystem(ECOSYSTEMS.JVM);
+    assert.strictEqual(jvm.getConstantKey(), 'JVM');
+  }) ? 'passed' : 'failed']++;
+
+  results[test('getDetectionPriority should return a number', () => {
+    const eco = getEcosystem(ECOSYSTEMS.RUST);
+    const priority = eco.getDetectionPriority();
+    assert.strictEqual(typeof priority, 'number');
+    assert.ok(priority > 0);
+  }) ? 'passed' : 'failed']++;
+
+  results[test('detection priority order should be rust < jvm < python < nodejs', () => {
+    const rust = getEcosystem(ECOSYSTEMS.RUST).getDetectionPriority();
+    const jvm = getEcosystem(ECOSYSTEMS.JVM).getDetectionPriority();
+    const python = getEcosystem(ECOSYSTEMS.PYTHON).getDetectionPriority();
+    const nodejs = getEcosystem(ECOSYSTEMS.NODEJS).getDetectionPriority();
+    assert.ok(rust < jvm, `rust (${rust}) < jvm (${jvm})`);
+    assert.ok(jvm < python, `jvm (${jvm}) < python (${python})`);
+    assert.ok(python < nodejs, `python (${python}) < nodejs (${nodejs})`);
+  }) ? 'passed' : 'failed']++;
+
+  results[test('getFileExtensions should return array of strings', () => {
+    const eco = getEcosystem(ECOSYSTEMS.NODEJS);
+    const exts = eco.getFileExtensions();
+    assert.ok(Array.isArray(exts));
+    assert.ok(exts.length > 0);
+    assert.ok(exts.includes('.js') || exts.includes('.ts'));
+  }) ? 'passed' : 'failed']++;
+
+  results[test('getTools should return tool definitions', () => {
+    const eco = getEcosystem(ECOSYSTEMS.NODEJS);
+    const tools = eco.getTools();
+    assert.ok(tools.runtime || tools.packageManagers || tools.buildTools);
+  }) ? 'passed' : 'failed']++;
+
+  results[test('getVersionCommands should return tool-to-command map', () => {
+    const eco = getEcosystem(ECOSYSTEMS.NODEJS);
+    const cmds = eco.getVersionCommands();
+    assert.ok(cmds.node, 'should have node version command');
+    assert.strictEqual(typeof cmds.node, 'string');
+  }) ? 'passed' : 'failed']++;
+
+  results[test('getInstallationHelp should return platform-specific help', () => {
+    const eco = getEcosystem(ECOSYSTEMS.NODEJS);
+    const help = eco.getInstallationHelp();
+    assert.ok(help.node, 'should have node installation help');
+    assert.ok(help.node.linux, 'should have linux instructions');
+  }) ? 'passed' : 'failed']++;
+
+  results[test('getSetupToolCategories should return categories', () => {
+    const eco = getEcosystem(ECOSYSTEMS.NODEJS);
+    const cats = eco.getSetupToolCategories();
+    assert.ok(cats.critical, 'should have critical tools');
+    assert.ok(Array.isArray(cats.critical));
+  }) ? 'passed' : 'failed']++;
+
+  results[test('getDebugPatterns should return pattern objects', () => {
+    const eco = getEcosystem(ECOSYSTEMS.NODEJS);
+    const patterns = eco.getDebugPatterns();
+    assert.ok(Array.isArray(patterns));
+    assert.ok(patterns.length > 0, 'nodejs should have at least one debug pattern');
+    assert.ok(patterns[0].extensions instanceof RegExp);
+    assert.ok(patterns[0].pattern instanceof RegExp);
+    assert.strictEqual(typeof patterns[0].name, 'string');
+    assert.strictEqual(typeof patterns[0].message, 'string');
+  }) ? 'passed' : 'failed']++;
+
+  results[test('getProjectSubTypes should return subtypes with indicators', () => {
+    const jvm = getEcosystem(ECOSYSTEMS.JVM);
+    const subTypes = jvm.getProjectSubTypes();
+    assert.ok(subTypes.maven, 'JVM should have maven sub-type');
+    assert.ok(subTypes.gradle, 'JVM should have gradle sub-type');
+    assert.ok(Array.isArray(subTypes.maven));
+    assert.ok(subTypes.maven.includes('pom.xml'));
+  }) ? 'passed' : 'failed']++;
+
+  console.log('');
+
+  // Config-Aware Command Generation
+  console.log('Config-Aware Commands:');
+
+  results[test('nodejs getInstallCommand respects packageManager config', () => {
+    const eco = getEcosystem(ECOSYSTEMS.NODEJS);
+    assert.strictEqual(eco.getInstallCommand({ packageManager: 'pnpm' }), 'pnpm install');
+    assert.strictEqual(eco.getInstallCommand({ packageManager: 'yarn' }), 'yarn install');
+    assert.strictEqual(eco.getInstallCommand({ packageManager: 'npm' }), 'npm install');
+  }) ? 'passed' : 'failed']++;
+
+  results[test('jvm getInstallCommand respects buildTool and platform', () => {
+    const eco = getEcosystem(ECOSYSTEMS.JVM);
+    assert.strictEqual(eco.getInstallCommand({ buildTool: 'gradle', useWrapper: true, platform: 'linux' }), './gradlew build');
+    assert.strictEqual(eco.getInstallCommand({ buildTool: 'gradle', useWrapper: true, platform: 'win32' }), 'gradlew.bat build');
+    assert.strictEqual(eco.getInstallCommand({ buildTool: 'maven', useWrapper: true, platform: 'linux' }), './mvnw install');
+  }) ? 'passed' : 'failed']++;
+
+  results[test('python getTestCommand respects packageManager', () => {
+    const eco = getEcosystem(ECOSYSTEMS.PYTHON);
+    assert.strictEqual(eco.getTestCommand({ packageManager: 'poetry' }), 'poetry run pytest');
+    assert.strictEqual(eco.getTestCommand({ packageManager: 'pip' }), 'pytest');
+  }) ? 'passed' : 'failed']++;
+
+  results[test('rust commands are simple and config-independent', () => {
+    const eco = getEcosystem(ECOSYSTEMS.RUST);
+    assert.strictEqual(eco.getInstallCommand(), 'cargo fetch');
+    assert.strictEqual(eco.getBuildCommand(), 'cargo build');
+    assert.strictEqual(eco.getTestCommand(), 'cargo test');
+    assert.strictEqual(eco.getFormatCommand(), 'cargo fmt');
+    assert.strictEqual(eco.getLintCommand(), 'cargo clippy');
+  }) ? 'passed' : 'failed']++;
+
+  console.log('');
+
+  // Aggregation Functions
+  console.log('Aggregation Functions:');
+
+  results[test('getAllDebugPatterns should aggregate from all ecosystems', () => {
+    const patterns = getAllDebugPatterns();
+    assert.ok(Array.isArray(patterns));
+    // Should have at least nodejs (console.log), python (print), jvm (System.out)
+    assert.ok(patterns.length >= 3, `Expected at least 3 patterns, got ${patterns.length}`);
+  }) ? 'passed' : 'failed']++;
+
+  results[test('getAllProjectSubTypes should include maven and gradle', () => {
+    const subTypes = getAllProjectSubTypes();
+    assert.ok(subTypes.maven, 'should have maven');
+    assert.ok(subTypes.gradle, 'should have gradle');
+    assert.ok(subTypes.nodejs || subTypes.rust, 'should have at least one non-JVM type');
+  }) ? 'passed' : 'failed']++;
+
+  results[test('getAllSetupToolCategories should have entries for all ecosystems', () => {
+    const cats = getAllSetupToolCategories();
+    assert.ok(cats.nodejs, 'should have nodejs');
+    assert.ok(cats.jvm, 'should have jvm');
+    assert.ok(cats.python, 'should have python');
+    assert.ok(cats.rust, 'should have rust');
+  }) ? 'passed' : 'failed']++;
+
+  results[test('getAllEcosystemTools should have entries for all ecosystems', () => {
+    const tools = getAllEcosystemTools();
+    assert.ok(tools.nodejs, 'should have nodejs tools');
+    assert.ok(tools.nodejs.runtime, 'nodejs should have runtime');
+    assert.ok(tools.jvm.buildTools, 'jvm should have build tools');
+  }) ? 'passed' : 'failed']++;
+
+  results[test('getAllVersionCommands should aggregate all tool commands', () => {
+    const cmds = getAllVersionCommands();
+    assert.ok(cmds.node, 'should have node');
+    assert.ok(cmds.java, 'should have java');
+    assert.ok(cmds.python, 'should have python');
+    assert.ok(cmds.cargo, 'should have cargo');
+  }) ? 'passed' : 'failed']++;
+
+  results[test('getAllInstallationHelp should aggregate all tool help', () => {
+    const help = getAllInstallationHelp();
+    assert.ok(help.node, 'should have node');
+    assert.ok(help.java, 'should have java');
+    assert.ok(help.python, 'should have python');
+    assert.ok(help.cargo, 'should have cargo');
   }) ? 'passed' : 'failed']++;
 
   console.log('');
@@ -275,6 +518,13 @@ function runTests() {
     const eco = getEcosystem(ECOSYSTEMS.RUST);
     const commands = eco.getPackageManagerCommands();
     assert.ok(commands.cargo || commands.build);
+  }) ? 'passed' : 'failed']++;
+
+  results[test('rust should have no debug patterns', () => {
+    const eco = getEcosystem(ECOSYSTEMS.RUST);
+    const patterns = eco.getDebugPatterns();
+    assert.ok(Array.isArray(patterns));
+    assert.strictEqual(patterns.length, 0);
   }) ? 'passed' : 'failed']++;
 
   console.log('');

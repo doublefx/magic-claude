@@ -29,14 +29,10 @@ const {
   isJetBrainsAvailable,
   detectLanguages
 } = require('./lib/serena.cjs');
+const { getAllProjectSubTypes } = require('./lib/ecosystems/index.cjs');
 
-// Project type indicators
-const PROJECT_INDICATORS = {
-  nodejs: ['package.json', 'package-lock.json', 'yarn.lock', 'pnpm-lock.yaml', 'bun.lockb'],
-  python: ['pyproject.toml', 'setup.py', 'requirements.txt', 'Pipfile', 'poetry.lock'],
-  maven: ['pom.xml', 'mvnw', 'mvnw.cmd'],
-  gradle: ['build.gradle', 'build.gradle.kts', 'settings.gradle', 'gradlew']
-};
+// Project type indicators — built dynamically from the ecosystem registry
+const PROJECT_INDICATORS = getAllProjectSubTypes();
 
 /**
  * Detect project types (no caching - just detection)

@@ -32,6 +32,7 @@ const {
   isJetBrainsAvailable,
   detectLanguages
 } = require('../lib/serena.cjs');
+const { detectEcosystem, ECOSYSTEMS } = require('../lib/ecosystems/index.cjs');
 
 /**
  * Read hook input from stdin (JSON format)
@@ -87,23 +88,9 @@ function detectSetupNeeds() {
   // Check for package.json in current directory
   const hasPackageJson = fs.existsSync(path.join(cwd, 'package.json'));
 
-  // Check for common ecosystem indicators
-  const hasNodeIndicators = fs.existsSync(path.join(cwd, 'node_modules')) ||
-                           fs.existsSync(path.join(cwd, 'package-lock.json')) ||
-                           fs.existsSync(path.join(cwd, 'pnpm-lock.yaml')) ||
-                           fs.existsSync(path.join(cwd, 'yarn.lock'));
-
-  const hasPythonIndicators = fs.existsSync(path.join(cwd, 'requirements.txt')) ||
-                              fs.existsSync(path.join(cwd, 'pyproject.toml')) ||
-                              fs.existsSync(path.join(cwd, 'setup.py'));
-
-  const hasJvmIndicators = fs.existsSync(path.join(cwd, 'pom.xml')) ||
-                           fs.existsSync(path.join(cwd, 'build.gradle')) ||
-                           fs.existsSync(path.join(cwd, 'build.gradle.kts'));
-
-  const hasRustIndicators = fs.existsSync(path.join(cwd, 'Cargo.toml'));
-
-  const hasAnyProject = hasNodeIndicators || hasPythonIndicators || hasJvmIndicators || hasRustIndicators;
+  // Use ecosystem registry for detection
+  const detectedEcosystem = detectEcosystem(cwd);
+  const hasAnyProject = detectedEcosystem !== ECOSYSTEMS.UNKNOWN;
 
   // Check for workspace patterns without root package.json
   if (!hasPackageJson) {
@@ -146,10 +133,7 @@ function detectSetupNeeds() {
     issues,
     hasPackageJson,
     serenaSetupComplete,
-    ecosystem: hasNodeIndicators ? 'nodejs' :
-               hasPythonIndicators ? 'python' :
-               hasJvmIndicators ? 'jvm' :
-               hasRustIndicators ? 'rust' : 'unknown'
+    ecosystem: detectedEcosystem
   };
 }
 

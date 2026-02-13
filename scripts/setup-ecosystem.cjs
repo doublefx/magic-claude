@@ -22,30 +22,10 @@ const {
   getInstallationHelp
 } = require('./lib/workspace/tool-detection.cjs');
 const { ensureDir, writeFile } = require('./lib/utils.cjs');
+const { getAllSetupToolCategories, ECOSYSTEMS } = require('./lib/ecosystems/index.cjs');
 
-// Ecosystem tool definitions
-const ECOSYSTEM_TOOLS = {
-  nodejs: {
-    critical: ['node'],
-    packageManagers: ['npm', 'pnpm', 'yarn', 'bun'],
-    recommended: ['pnpm']
-  },
-  python: {
-    critical: ['python', 'python3'],
-    packageManagers: ['pip', 'pip3', 'poetry', 'uv'],
-    recommended: ['pip3']
-  },
-  jvm: {
-    critical: ['java', 'javac'],
-    buildTools: ['mvn', 'gradle'],
-    recommended: ['gradle']
-  },
-  rust: {
-    critical: ['rustc', 'cargo'],
-    packageManagers: ['cargo'],
-    recommended: ['cargo']
-  }
-};
+// Ecosystem tool definitions — built dynamically from the registry
+const ECOSYSTEM_TOOLS = getAllSetupToolCategories();
 
 /**
  * Detect if current directory could be a workspace root
@@ -464,7 +444,8 @@ function checkSpecificEcosystem(ecosystem) {
 
   if (!ECOSYSTEM_TOOLS[ecosystem]) {
     console.log(`Error: Unknown ecosystem "${ecosystem}"`);
-    console.log('Supported: nodejs, python, jvm, rust');
+    const supported = Object.values(ECOSYSTEMS).filter(e => e !== 'unknown').join(', ');
+    console.log(`Supported: ${supported}`);
     process.exit(1);
   }
 
@@ -610,7 +591,8 @@ if (args.includes('--detect')) {
     const ecosystem = args[checkIdx + 1];
     if (!ecosystem) {
       console.error('Error: --check requires an ecosystem name');
-      console.error('Supported: nodejs, python, jvm, rust');
+      const supported = Object.values(ECOSYSTEMS).filter(e => e !== 'unknown').join(', ');
+      console.error(`Supported: ${supported}`);
       process.exit(1);
     }
     checkSpecificEcosystem(ecosystem);

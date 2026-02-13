@@ -3,14 +3,22 @@
  * Handles Rust projects with Cargo
  */
 
-const { Ecosystem, ECOSYSTEMS } = require('./types.cjs');
+const { Ecosystem } = require('./types.cjs');
 
 /**
  * Rust Ecosystem implementation
  */
 class RustEcosystem extends Ecosystem {
   constructor(config = {}) {
-    super(ECOSYSTEMS.RUST, config);
+    super('rust', config);
+  }
+
+  getConstantKey() {
+    return 'RUST';
+  }
+
+  getDetectionPriority() {
+    return 10;
   }
 
   getName() {
@@ -22,6 +30,46 @@ class RustEcosystem extends Ecosystem {
       'Cargo.toml',
       'Cargo.lock'
     ];
+  }
+
+  getFileExtensions() {
+    return ['.rs'];
+  }
+
+  getTools() {
+    return {
+      runtime: ['rustc'],
+      packageManagers: ['cargo']
+    };
+  }
+
+  getVersionCommands() {
+    return {
+      cargo: 'cargo --version',
+      rustc: 'rustc --version'
+    };
+  }
+
+  getInstallationHelp() {
+    return {
+      cargo: {
+        win32: 'Install Rust (includes cargo) from https://rustup.rs:\n  Download and run rustup-init.exe\n\nOr use the /setup-ecosystem command for guided setup.',
+        darwin: 'Install Rust (includes cargo) using rustup:\n  curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh\n\nOr use the /setup-ecosystem command for guided setup.',
+        linux: 'Install Rust (includes cargo) using rustup:\n  curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh\n\nOr use the /setup-ecosystem command for guided setup.'
+      }
+    };
+  }
+
+  getSetupToolCategories() {
+    return {
+      critical: ['rustc', 'cargo'],
+      packageManagers: ['cargo'],
+      recommended: ['cargo']
+    };
+  }
+
+  getDebugPatterns() {
+    return [];
   }
 
   getPackageManagerCommands() {
@@ -40,19 +88,29 @@ class RustEcosystem extends Ecosystem {
     };
   }
 
-  getBuildCommand() {
+  // --- Config-aware command generation ---
+
+  getInstallCommand(config) {
+    return 'cargo fetch';
+  }
+
+  getRunCommand(script, config) {
+    return `cargo run --bin ${script}`;
+  }
+
+  getBuildCommand(config) {
     return 'cargo build';
   }
 
-  getTestCommand() {
+  getTestCommand(config) {
     return 'cargo test';
   }
 
-  getFormatCommand() {
+  getFormatCommand(config) {
     return 'cargo fmt';
   }
 
-  getLintCommand() {
+  getLintCommand(config) {
     return 'cargo clippy';
   }
 }

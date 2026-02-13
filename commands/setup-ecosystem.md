@@ -37,6 +37,8 @@ Automatically detect your project's ecosystem and help install any missing devel
 
 ## Supported Ecosystems
 
+Ecosystems are **auto-discovered** from the ecosystem registry. The built-in ecosystems are:
+
 ### Node.js
 - **Runtime**: node
 - **Package Managers**: npm, pnpm, yarn, bun
@@ -52,6 +54,8 @@ Automatically detect your project's ecosystem and help install any missing devel
 ### Rust
 - **Runtime**: rustc
 - **Package Manager**: cargo
+
+> **Adding new ecosystems**: Use `/extend <ecosystem>` to generate a self-describing ecosystem module. Once dropped into any `ecosystems/` directory (plugin, user, or project level), it is automatically discovered and integrated with all setup/detection infrastructure.
 
 ## What It Does
 

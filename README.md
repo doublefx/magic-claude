@@ -143,6 +143,44 @@ Generate complete, production-ready CI/CD pipelines with a single command:
 /ci-cd-patterns
 ```
 
+### Self-Extending Plugin Architecture
+
+Add support for new languages and ecosystems without writing boilerplate. The `/extend` command scaffolds complete, cross-linked plugin components with researched domain knowledge:
+
+```bash
+# Full ecosystem: patterns skill + reviewer agent + build-resolver + hooks + command + rule
+/extend go
+
+# Individual components
+/extend --agent rust-reviewer
+/extend --skill swift-patterns
+/extend --hook zig-formatter
+/extend --command go-review
+
+# Audit existing components across all levels
+/extend --list
+```
+
+**What gets generated** (full ecosystem mode):
+
+| Component | Example | Purpose |
+|-----------|---------|---------|
+| Patterns skill | `go-patterns/SKILL.md` | Idiomatic patterns, tooling, best practices |
+| Reviewer agent | `go-reviewer.md` | Code review specialist using ecosystem tools |
+| Build resolver | `go-build-resolver.md` | Fix build/lint/type errors with minimal diffs |
+| Formatter hook | `go-formatter.js` | Auto-format on file edit |
+| Review command | `go-review.md` | Slash command delegating to reviewer agent |
+| Style rule | `go-style.md` | Coding style guidelines |
+| Ecosystem module | `go.cjs` | Auto-discoverable setup/detection integration |
+
+**Key features**:
+- **MCP-first research**: Uses context7 and ddg-search to gather real, current documentation for the target ecosystem before generating
+- **Template-driven**: Reads existing plugin components as templates, adapts structure for the new ecosystem
+- **Cross-linked**: Agents reference skills, commands delegate to agents, hooks point to scripts - all wired up automatically
+- **Idempotent**: Safe to re-run; detects existing components and warns before overwriting
+- **Multi-level targeting**: Install to user-level (`~/.claude/`) or project-level (`./.claude/`)
+- **Auto-discoverable ecosystems**: Generated ecosystem modules are automatically picked up by setup, detection, and hook infrastructure - no other file modifications needed
+
 ### Monorepo & Workspace Support
 
 **Automatic workspace detection** with full support for mixed-language monorepos:
@@ -610,11 +648,11 @@ Please contribute! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ### Ideas for Contributions
 
-**New Language Support**:
-- Go patterns and tooling (gofmt, golangci-lint)
-- Rust patterns and tooling (rustfmt, clippy)
-- C#/.NET patterns and tooling
-- Ruby/Rails patterns
+**New Language Support** (use `/extend` to scaffold):
+- Go patterns and tooling (gofmt, golangci-lint) — `/extend go`
+- Rust patterns and tooling (rustfmt, clippy) — `/extend rust`
+- C#/.NET patterns and tooling — `/extend csharp`
+- Ruby/Rails patterns — `/extend ruby`
 
 **Framework-Specific Configs**:
 - Django, Flask, FastAPI (Python web frameworks)

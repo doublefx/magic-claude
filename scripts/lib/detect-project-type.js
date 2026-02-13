@@ -5,50 +5,25 @@
  * Simplified approach - no caching:
  * - Detection is fast (<200ms)
  * - No JSON config files created
- * - Serena memories can store project configuration if needed
+ * - Project sub-types are aggregated from the ecosystem registry
  */
 
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { createRequire } from 'module';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Bridge CJS ecosystem registry into ESM
+const require = createRequire(import.meta.url);
+const { getAllProjectSubTypes } = require('./ecosystems/index.cjs');
+
 /**
- * Project type indicators - files that identify a project type
+ * Project type indicators — built dynamically from the ecosystem registry
  */
-export const PROJECT_INDICATORS = {
-  nodejs: [
-    'package.json',
-    'package-lock.json',
-    'yarn.lock',
-    'pnpm-lock.yaml',
-    'bun.lockb'
-  ],
-  python: [
-    'pyproject.toml',
-    'setup.py',
-    'requirements.txt',
-    'Pipfile',
-    'poetry.lock',
-    'uv.lock',
-    'environment.yml'
-  ],
-  maven: [
-    'pom.xml',
-    'mvnw',
-    'mvnw.cmd'
-  ],
-  gradle: [
-    'build.gradle',
-    'build.gradle.kts',
-    'settings.gradle',
-    'settings.gradle.kts',
-    'gradlew',
-    'gradlew.bat'
-  ]
-};
+export const PROJECT_INDICATORS = getAllProjectSubTypes();
 
 /**
  * Detect project types in a directory

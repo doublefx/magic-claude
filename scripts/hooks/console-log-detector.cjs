@@ -5,13 +5,14 @@
  * Cross-platform (Windows, macOS, Linux)
  *
  * Runs on PostToolUse for Edit commands.
- * Detects ecosystem-specific debug statements:
- * - JS/TS: console.log
- * - Python: print()
- * - Java/Kotlin: System.out.println, e.printStackTrace()
+ * Debug patterns are aggregated from the ecosystem registry — adding a new
+ * ecosystem automatically extends detection.
  */
 
 const fs = require('fs');
+const { getAllDebugPatterns } = require('../lib/ecosystems/index.cjs');
+
+const DEBUG_PATTERNS = getAllDebugPatterns();
 
 let data = '';
 process.stdin.on('data', chunk => data += chunk);
@@ -27,53 +28,22 @@ process.stdin.on('end', () => {
 
     const content = fs.readFileSync(filePath, 'utf8');
     const lines = content.split('\n');
-    const matches = [];
 
-    // JS/TS files: check for console.log
-    if (/\.(ts|tsx|js|jsx)$/.test(filePath)) {
+    for (const dp of DEBUG_PATTERNS) {
+      if (!dp.extensions.test(filePath)) continue;
+
+      const matches = [];
       lines.forEach((line, idx) => {
-        if (/console\.log/.test(line)) {
+        if (dp.skipPattern && dp.skipPattern.test(line.trim())) return;
+        if (dp.pattern.test(line)) {
           matches.push(`${idx + 1}: ${line.trim()}`);
         }
       });
-      if (matches.length) {
-        console.error(`[Hook] WARNING: console.log found in ${filePath}`);
-        matches.slice(0, 5).forEach(m => console.error(m));
-        console.error('[Hook] Remove console.log before committing');
-      }
-    }
 
-    // Python files: check for print()
-    if (/\.py$/.test(filePath)) {
-      lines.forEach((line, idx) => {
-        const trimmed = line.trim();
-        // Skip comments and docstrings
-        if (trimmed.startsWith('#') || trimmed.startsWith('"""') || trimmed.startsWith("'''")) return;
-        if (/\bprint\s*\(/.test(line)) {
-          matches.push(`${idx + 1}: ${trimmed}`);
-        }
-      });
       if (matches.length) {
-        console.error(`[Hook] WARNING: print() found in ${filePath}`);
+        console.error(`[Hook] WARNING: ${dp.name} found in ${filePath}`);
         matches.slice(0, 5).forEach(m => console.error(m));
-        console.error('[Hook] Remove print() statements before committing. Use logging module instead.');
-      }
-    }
-
-    // Java/Kotlin files: check for System.out.println and e.printStackTrace()
-    if (/\.(java|kt|kts)$/.test(filePath)) {
-      lines.forEach((line, idx) => {
-        const trimmed = line.trim();
-        // Skip comments
-        if (trimmed.startsWith('//') || trimmed.startsWith('*') || trimmed.startsWith('/*')) return;
-        if (/System\.(out|err)\.(println|print)\b/.test(line) || /\.printStackTrace\s*\(/.test(line)) {
-          matches.push(`${idx + 1}: ${trimmed}`);
-        }
-      });
-      if (matches.length) {
-        console.error(`[Hook] WARNING: Debug statements found in ${filePath}`);
-        matches.slice(0, 5).forEach(m => console.error(m));
-        console.error('[Hook] Remove System.out.println/e.printStackTrace() before committing. Use SLF4J/Logback instead.');
+        console.error(`[Hook] ${dp.message}`);
       }
     }
 

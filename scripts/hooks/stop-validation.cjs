@@ -5,14 +5,15 @@
  * Cross-platform (Windows, macOS, Linux)
  *
  * Runs on Stop event (after each Claude response).
- * Checks git diff for modified files with debug statements:
- * - JS/TS: console.log
- * - Python: print()
- * - Java/Kotlin: System.out.println, e.printStackTrace()
+ * Debug patterns are aggregated from the ecosystem registry — adding a new
+ * ecosystem automatically extends detection.
  */
 
 const { execSync } = require('child_process');
 const fs = require('fs');
+const { getAllDebugPatterns } = require('../lib/ecosystems/index.cjs');
+
+const DEBUG_PATTERNS = getAllDebugPatterns();
 
 let data = '';
 process.stdin.on('data', chunk => data += chunk);
@@ -35,32 +36,14 @@ process.stdin.on('end', () => {
 
       let hasDebugStatements = false;
 
-      // Check JS/TS files for console.log
-      const jsFiles = allFiles.filter(f => /\.(ts|tsx|js|jsx)$/.test(f));
-      for (const f of jsFiles) {
-        if (fs.readFileSync(f, 'utf8').includes('console.log')) {
-          console.error(`[Hook] WARNING: console.log found in ${f}`);
-          hasDebugStatements = true;
-        }
-      }
-
-      // Check Python files for print()
-      const pyFiles = allFiles.filter(f => /\.py$/.test(f));
-      for (const f of pyFiles) {
-        const content = fs.readFileSync(f, 'utf8');
-        if (/\bprint\s*\(/.test(content)) {
-          console.error(`[Hook] WARNING: print() found in ${f}`);
-          hasDebugStatements = true;
-        }
-      }
-
-      // Check Java/Kotlin files for System.out.println and e.printStackTrace()
-      const jvmFiles = allFiles.filter(f => /\.(java|kt|kts)$/.test(f));
-      for (const f of jvmFiles) {
-        const content = fs.readFileSync(f, 'utf8');
-        if (/System\.(out|err)\.(println|print)\b/.test(content) || /\.printStackTrace\s*\(/.test(content)) {
-          console.error(`[Hook] WARNING: Debug statements found in ${f}`);
-          hasDebugStatements = true;
+      for (const f of allFiles) {
+        for (const dp of DEBUG_PATTERNS) {
+          if (!dp.extensions.test(f)) continue;
+          const content = fs.readFileSync(f, 'utf8');
+          if (dp.pattern.test(content)) {
+            console.error(`[Hook] WARNING: ${dp.name} found in ${f}`);
+            hasDebugStatements = true;
+          }
         }
       }
 
