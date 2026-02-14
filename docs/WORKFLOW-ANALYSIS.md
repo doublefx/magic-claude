@@ -346,11 +346,16 @@ User: "Add a health check endpoint to the API"
 | **Test coverage delegation** | `/test-coverage` now delegates to ecosystem TDD agents (`ts-tdd-guide`, `jvm-tdd-guide`, `python-tdd-guide`) for RED-GREEN-REFACTOR test generation |
 | **Auto-learn** | `evaluate-session.cjs` emits `ACTION REQUIRED` message; `rules/continuous-learning.md` instructs Claude to proactively run `/learn` when patterns are detected |
 
+### Resolved (v2.2.2)
+
+| Gap | Resolution |
+|-----|-----------|
+| **Orchestrate -> Eval** | Opt-in `--with-evals <name>` flag on `/orchestrate feature` and `proactive-orchestration`. Phase 1.5 runs `/eval define`, Phase 4.5 runs `/eval check`. Results included in REPORT verdict. |
+
 ### Remaining Gaps (Deferred)
 
 | Gap | Current | Impact | Priority |
 |-----|---------|--------|----------|
-| **Orchestrate -> Eval** | Does not define or check evals | Medium -- advanced workflow, best as opt-in flag | Low |
 | **Checkpoint -> Eval** | Independent systems | Low -- narrow audience (users of both checkpoint AND eval) | Low |
 | **Ecosystem cache reuse** | Commands re-detect ecosystem via project markers | Negligible -- detection is essentially free (file existence check) | Lowest |
 

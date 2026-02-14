@@ -42,6 +42,16 @@ This skill runs in the **main context** (no `context: fork`) because it needs mu
    - If user says "just do it" or similar: skip plan review, proceed to Phase 2
    - If user modifies the plan: incorporate feedback, re-present if needed
 
+### Phase 1.5: EVAL DEFINE (opt-in)
+
+When the user includes `--with-evals <name>` or explicitly requests eval-driven development:
+
+1. Run `/eval define <name>` to create capability and regression eval criteria based on the approved plan
+2. Present eval definitions to user for confirmation
+3. Store in `.claude/evals/<name>.md`
+
+**Skip this phase** unless the user explicitly requests evals.
+
 ### Phase 2: TDD
 
 1. Detect ecosystem from project markers:
@@ -79,6 +89,16 @@ This skill runs in the **main context** (no `context: fork`) because it needs mu
    - **python-reviewer** for `.py` files
 4. Mark task as completed via TaskUpdate
 
+### Phase 4.5: EVAL CHECK (opt-in)
+
+When evals were defined in Phase 1.5:
+
+1. Run `/eval check <name>` to verify implementation meets criteria
+2. Record pass@3 (capability) and pass^3 (regression) metrics
+3. Include results in Phase 5 report
+
+**Skip this phase** unless Phase 1.5 was executed.
+
 ### Phase 5: REPORT
 
 Produce a final orchestration report:
@@ -87,13 +107,14 @@ Produce a final orchestration report:
 ORCHESTRATION REPORT
 ====================
 
-Pipeline: PLAN -> TDD -> VERIFY -> REVIEW
+Pipeline: PLAN -> [EVAL DEFINE] -> TDD -> VERIFY -> REVIEW -> [EVAL CHECK]
 Ecosystem: [TypeScript/JVM/Python]
 
 PLAN:     [APPROVED by user]
 TDD:      [X tests written, Y% coverage]
 VERIFY:   [Build OK, Types OK, Lint OK, Tests X/Y passed]
 REVIEW:   [APPROVE/WARN/BLOCK]
+EVALS:    [X/Y capability, X/Y regression] (if --with-evals)
 
 Verdict:  SHIP / NEEDS WORK / BLOCKED
 
@@ -132,3 +153,4 @@ When `proactive-orchestration` fires, it subsumes all three phases -- the indivi
 - `*-tdd-guide` agents - Ecosystem-specific TDD specialists
 - `*-build-resolver` agents - Ecosystem-specific build error resolution
 - `*-security-reviewer` agents - Ecosystem-specific security analysis
+- `/eval` command - Eval-driven development (opt-in via `--with-evals`)

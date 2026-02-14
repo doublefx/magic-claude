@@ -77,6 +77,11 @@ The `feature` workflow follows the same phases as `proactive-orchestration`:
 - Invoke **planner** agent (opus) to analyze requirements
 - Present plan and WAIT for user confirmation
 
+### Phase 1.5: EVAL DEFINE (opt-in, `--with-evals <name>`)
+- Run `/eval define <name>` to create capability and regression eval criteria
+- Prompt user to review and confirm eval definitions before implementation
+- Eval definitions stored in `.claude/evals/<name>.md`
+
 ### Phase 2: TDD
 - Detect ecosystem and dispatch to **ts-tdd-guide**, **jvm-tdd-guide**, or **python-tdd-guide**
 - Create task via TaskCreate to track progress
@@ -93,6 +98,11 @@ The `feature` workflow follows the same phases as `proactive-orchestration`:
 - For language-specific review: **java-reviewer**, **kotlin-reviewer**, **python-reviewer**
 - Mark task completed via TaskUpdate
 
+### Phase 4.5: EVAL CHECK (opt-in, `--with-evals <name>`)
+- Run `/eval check <name>` to verify implementation meets defined criteria
+- Record capability pass@3 and regression pass^3 metrics
+- Include eval results in the final report
+
 ### Phase 5: REPORT
 Produce orchestration report with verdict: **SHIP** / **NEEDS WORK** / **BLOCKED**
 
@@ -104,6 +114,12 @@ If NEEDS WORK, include remediation:
 | Test failures | "Run `/tdd` to fix" |
 | Coverage gaps | "Run `/test-coverage`" |
 | Security issues | "Fix and re-run `/code-review`" |
+| Eval failures | "Review failing criteria, fix, re-run `/eval check <name>`" |
+
+When `--with-evals` is used, include eval metrics in the report:
+```
+EVALS:    [X/Y capability passing, pass@3: Z%] [X/Y regression passing, pass^3: Z%]
+```
 
 ## Parallel Execution
 
@@ -124,6 +140,7 @@ Combine outputs into single report
 
 $ARGUMENTS:
 - `feature <description>` - Full feature workflow (recommended for most tasks)
+- `feature --with-evals <name> <description>` - Full feature workflow with eval-driven verification
 - `bugfix <description>` - Bug fix workflow
 - `refactor <description>` - Refactoring workflow
 - `security <description>` - Security review workflow

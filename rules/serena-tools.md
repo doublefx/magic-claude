@@ -1,6 +1,6 @@
 # Serena Tool Preference
 
-When `SERENA_INSTALLED=true`, prefer Serena MCP tools for code navigation over native equivalents:
+When `SERENA_INSTALLED=true`, prefer Serena MCP tools for code navigation over native equivalents. Serena tools return only the symbols and relationships you need, greatly reducing token usage compared to reading entire files or grepping across the codebase.
 
 | Task | Instead of | Use |
 |------|-----------|-----|
