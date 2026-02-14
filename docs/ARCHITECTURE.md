@@ -94,13 +94,20 @@ magic-claude/
 |   |-- test-coverage.md    # /test-coverage - Coverage reporting
 |   |-- update-docs.md      # /update-docs - Sync documentation
 |
-|-- rules/            # Always-follow guidelines (copy to ~/.claude/rules/)
+|-- rules/            # Always-follow guidelines (13 total, copy to ~/.claude/rules/)
 |   |-- security.md         # Mandatory security checks
 |   |-- coding-style.md     # Immutability, file organization
 |   |-- testing.md          # TDD, 80% coverage requirement
 |   |-- git-workflow.md     # Commit format, PR process
 |   |-- agents.md           # When to delegate to subagents
 |   |-- performance.md      # Model selection, context management
+|   |-- java-style.md       # Java/Kotlin coding conventions
+|   |-- python-style.md     # Python coding conventions (PEP 8, type hints)
+|   |-- patterns.md         # Design patterns and anti-patterns
+|   |-- hooks.md            # Hook development guidelines
+|   |-- continuous-learning.md  # Auto-extract patterns from sessions
+|   |-- claude-mem-tools.md # claude-mem MCP tool usage rules
+|   |-- serena-tools.md     # Serena MCP tool usage rules
 |
 |-- hooks/            # Trigger-based automations
 |   |-- hooks.json                # All hooks config (14 event types supported)
