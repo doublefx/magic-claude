@@ -57,8 +57,6 @@ Complete schema with ALL fields and options.
   "keywords": ["keyword1", "keyword2"],
   "commands": "./commands",
   "skills": "./skills",
-  "agents": "./agents",
-  "hooks": "./hooks/hooks.json",
   "engines": {
     "claude-code": ">=1.0.0"
   }
@@ -77,11 +75,13 @@ Complete schema with ALL fields and options.
 | `homepage` | string | No | Project homepage URL |
 | `repository` | string | No | Repository URL (GitHub, GitLab, etc.) |
 | `keywords` | array[string] | No | Search keywords (5-10 items recommended) |
-| `commands` | string | No | Path to commands directory (default: "./commands") |
-| `skills` | string | No | Path to skills directory (default: "./skills") |
-| `agents` | string | No | Path to agents directory (default: "./agents") |
-| `hooks` | string | No | Path to hooks.json file (default: "./hooks/hooks.json") |
+| `commands` | string\|array | No | Additional command files/dirs (default `commands/` auto-discovered) |
+| `skills` | string\|array | No | Additional skill dirs (default `skills/` auto-discovered) |
+| `agents` | string\|array | No | Additional agent files (default `agents/` auto-discovered) |
+| `hooks` | string\|array\|object | No | Additional hook configs or inline (default `hooks/hooks.json` auto-discovered) |
 | `engines` | object | No | Version requirements (claude-code minimum version) |
+
+> **Note:** `commands/`, `agents/`, `skills/`, and `hooks/hooks.json` are auto-discovered from their default locations. Only specify these fields for **non-default** custom paths. Custom paths supplement defaults, they don't replace them.
 
 ## Component Overview Table
 

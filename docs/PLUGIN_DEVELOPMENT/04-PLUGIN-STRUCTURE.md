@@ -83,13 +83,13 @@ my-plugin/
   "keywords": ["keyword1", "keyword2", "keyword3"],
   "commands": "./commands",
   "skills": "./skills",
-  "agents": "./agents",
-  "hooks": "./hooks/hooks.json",
   "engines": {
     "claude-code": ">=1.0.0"
   }
 }
 ```
+
+> **Note:** `agents/`, `hooks/hooks.json`, and `skills/` are auto-discovered from their default locations. You only need to specify `commands`, `skills`, `agents`, or `hooks` in plugin.json if using **non-default** paths (e.g., `"agents": "./custom/agents/reviewer.md"`). Custom paths **supplement** defaults, they don't replace them.
 
 **Field Reference:**
 
@@ -103,10 +103,10 @@ my-plugin/
 | `homepage` | string | No | Project homepage URL |
 | `repository` | string | No | Repository URL |
 | `keywords` | array | No | Search keywords (5-10 recommended) |
-| `commands` | string | No | Path to commands dir (default: "./commands") |
-| `skills` | string | No | Path to skills dir (default: "./skills") |
-| `agents` | string | No | Path to agents dir (default: "./agents") |
-| `hooks` | string | No | Path to hooks.json (default: "./hooks/hooks.json") |
+| `commands` | string\|array | No | Additional command files/dirs (default `commands/` auto-discovered) |
+| `skills` | string\|array | No | Additional skill dirs (default `skills/` auto-discovered) |
+| `agents` | string\|array | No | Additional agent files (default `agents/` auto-discovered) |
+| `hooks` | string\|array\|object | No | Additional hook configs or inline (default `hooks/hooks.json` auto-discovered) |
 | `engines` | object | No | Version requirements |
 
 **Minimal Valid plugin.json:**
@@ -147,8 +147,6 @@ my-plugin/
   ],
   "commands": "./commands",
   "skills": "./skills",
-  "agents": "./agents",
-  "hooks": "./hooks/hooks.json",
   "engines": {
     "claude-code": ">=1.0.0"
   }
@@ -424,14 +422,12 @@ Run /setup-rules --install to copy to ~/.claude/rules/
 
 **Disabling Components:**
 
-To disable discovery, set path to `null` in plugin.json:
+To disable auto-discovery of a component, set its path to `null` in plugin.json:
 
 ```json
 {
-  "commands": null,      // No commands
-  "agents": "./agents",  // Load agents
-  "skills": null,        // No skills
-  "hooks": "./hooks/hooks.json"  // Load hooks
+  "commands": null,      // Disable commands auto-discovery
+  "skills": null         // Disable skills auto-discovery
 }
 ```
 
