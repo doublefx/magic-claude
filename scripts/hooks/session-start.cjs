@@ -70,9 +70,12 @@ function readStdin() {
 
 /**
  * Check if claude-mem MCP plugin is installed
- * Checks user settings for enabledPlugins containing 'claude-mem'
+ * Fast path: check CLAUDE_MEM_INSTALLED env var (cached from previous session-start)
+ * Slow path: check ~/.claude/settings.json enabledPlugins for claude-mem entry
  */
 function isClaudeMemInstalled() {
+  if (process.env.CLAUDE_MEM_INSTALLED === 'true') return true;
+
   try {
     const homeDir = require('os').homedir();
     const settingsPath = path.join(homeDir, '.claude', 'settings.json');
@@ -272,6 +275,11 @@ async function main() {
 
       // Persist workspace status
       envLines.push(`export IS_WORKSPACE="${isInWorkspace()}"`);
+
+      // Persist claude-mem status
+      if (claudeMemInstalled) {
+        envLines.push(`export CLAUDE_MEM_INSTALLED="true"`);
+      }
 
       // Persist Serena status
       if (serenaStatus.installed) {

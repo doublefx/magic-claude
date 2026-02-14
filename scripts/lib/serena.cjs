@@ -75,11 +75,29 @@ const LANGUAGE_PATTERNS = {
 // =============================================================================
 
 /**
- * Check if Serena is installed (cached in CLAUDE_ENV_FILE)
+ * Check if Serena is installed
+ * Fast path: check SERENA_INSTALLED env var (cached from previous session-start)
+ * Explicit disable: SERENA_INSTALLED=false overrides settings detection
+ * Slow path: check ~/.claude/settings.json enabledPlugins for serena entry
  * @returns {boolean}
  */
 function isSerenaInstalled() {
-  return process.env.SERENA_INSTALLED === 'true';
+  if (process.env.SERENA_INSTALLED === 'true') return true;
+  if (process.env.SERENA_INSTALLED === 'false') return false;
+
+  try {
+    const homeDir = require('os').homedir();
+    const settingsPath = path.join(homeDir, '.claude', 'settings.json');
+    if (!fs.existsSync(settingsPath)) return false;
+
+    const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
+    const enabledPlugins = settings.enabledPlugins || {};
+    return Object.keys(enabledPlugins).some(
+      key => key.startsWith('serena') && enabledPlugins[key] === true
+    );
+  } catch {
+    return false;
+  }
 }
 
 /**
