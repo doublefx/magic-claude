@@ -1,5 +1,5 @@
 ---
-description: Sync documentation from source-of-truth to docs/ directory. Detects ecosystem and reads appropriate config files.
+description: Sync documentation from source-of-truth to docs/ directory
 ---
 
 # Update Documentation

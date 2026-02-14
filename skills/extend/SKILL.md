@@ -21,7 +21,7 @@ Generate new plugin components that follow existing patterns, contain real domai
 /extend --list                       # Show existing components at all levels
 ```
 
-## When This Skill Applies
+## When to Activate
 
 - Adding support for a new language/ecosystem (Go, Rust, Swift, C#, Ruby, etc.)
 - Creating individual components (a new reviewer agent, a new patterns skill, etc.)

@@ -1,5 +1,5 @@
 ---
-description: Generate and run end-to-end tests. Detects ecosystem and dispatches to the appropriate E2E testing specialist.
+description: Generate and run end-to-end tests with ecosystem-aware dispatch
 argument-hint: "[test description or user flow]"
 ---
 

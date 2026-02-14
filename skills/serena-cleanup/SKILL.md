@@ -5,7 +5,7 @@ context: fork
 
 # /serena-cleanup - Safe Cleanup & Removal
 
-## When to Use
+## When to Activate
 
 - Removing Serena integration from a project
 - Cleaning up test/debug artifacts

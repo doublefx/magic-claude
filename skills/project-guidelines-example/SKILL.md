@@ -11,7 +11,7 @@ Based on a real production application: [Zenith](https://zenith.chat) - AI-power
 
 ---
 
-## When to Use
+## When to Activate
 
 Reference this skill when working on the specific project it's designed for. Project skills contain:
 - Architecture overview

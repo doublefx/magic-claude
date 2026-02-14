@@ -8,6 +8,13 @@ user-invocable: false
 
 This skill provides comprehensive knowledge of modern CI/CD patterns, best practices, and implementation strategies for building robust deployment pipelines.
 
+## When to Activate
+
+- Implementing deployment pipelines (GitHub Actions, GitLab CI, Bitbucket Pipelines)
+- Designing caching strategies for CI builds
+- Setting up matrix builds or security scanning
+- Configuring deployment strategies (blue-green, canary, rolling)
+
 ## Pipeline Stages
 
 ### Build Stage

@@ -1,5 +1,5 @@
 ---
-description: Manage eval-driven development workflow - define capability/regression evals before coding, then verify implementation meets criteria
+description: Eval-driven development - define evals before coding, verify after
 argument-hint: "[define|check|report|list] [feature-name]"
 ---
 

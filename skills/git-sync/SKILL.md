@@ -15,7 +15,7 @@ Recent commits:
 Sync reminder log:
 !`cat .git/serena-sync-reminder.log 2>/dev/null || echo "No sync log found"`
 
-## When to Use
+## When to Activate
 
 - After pulling/merging external changes
 - After rebasing

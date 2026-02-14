@@ -10,6 +10,12 @@ agent: Explore
 
 Universal coding standards applicable across all projects.
 
+## When to Activate
+
+- Writing new TypeScript, JavaScript, React, or Node.js code
+- Reviewing code quality and enforcing consistent style
+- Setting up new projects with coding conventions
+
 ## Code Quality Principles
 
 ### 1. Readability First

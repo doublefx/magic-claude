@@ -1,9 +1,6 @@
 ---
-description: Extract reusable patterns from the current session and save them as skills for future use
-arguments:
-  - name: pattern
-    description: Optional description of the specific pattern to extract (e.g., "redis connection pooling fix")
-    required: false
+description: Extract reusable patterns from the current session and save as skills
+argument-hint: "[pattern description]"
 ---
 
 # /learn - Extract Reusable Patterns
@@ -33,7 +30,7 @@ If you specify a pattern description, focus the extraction on that specific area
 
 ## Skill Storage Locations
 
-**⚠️ IMPORTANT: Paths are relative to the CURRENT WORKING PROJECT, not the plugin repository.**
+**IMPORTANT: Paths are relative to the CURRENT WORKING PROJECT, not the plugin repository.**
 
 **Choose the right level based on skill scope:**
 
@@ -45,8 +42,8 @@ If you specify a pattern description, focus the extraction on that specific area
 **Default: Project-level** - Most learned patterns are project-specific.
 
 **NEVER create skills in:**
-- ❌ The plugin's `skills/` directory (that's for plugin-provided skills only)
-- ❌ `{PROJECT_ROOT}/skills/` (wrong path - must be in `.claude/skills/learned/`)
+- The plugin's `skills/` directory (that's for plugin-provided skills only)
+- `{PROJECT_ROOT}/skills/` (wrong path - must be in `.claude/skills/learned/`)
 
 ## What to Extract
 
@@ -103,7 +100,7 @@ user-invocable: false
 [Code example if applicable]
 ```
 
-## When to Use
+## When to Activate
 
 [Trigger conditions - what should activate this skill]
 ```

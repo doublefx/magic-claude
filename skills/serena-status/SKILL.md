@@ -5,7 +5,7 @@ context: fork
 
 # /serena-status - Configuration Diagnostics
 
-## When to Use
+## When to Activate
 
 - Troubleshooting Serena issues
 - Verifying setup completion

@@ -10,6 +10,13 @@ agent: architect
 
 Backend architecture patterns and best practices for scalable server-side applications.
 
+## When to Activate
+
+- Designing API endpoints (REST, GraphQL)
+- Optimizing database queries and caching
+- Structuring backend services with Node.js, Express, or Next.js
+- Implementing error handling and authentication patterns
+
 ## API Design Patterns
 
 ### RESTful API Structure

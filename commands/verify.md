@@ -1,5 +1,5 @@
 ---
-description: Run comprehensive verification on current codebase state - build, types, lint, tests, and security checks across all ecosystems
+description: Run comprehensive verification - build, types, lint, tests, security
 ---
 
 # Verification Command

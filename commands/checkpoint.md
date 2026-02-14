@@ -1,5 +1,5 @@
 ---
-description: Create verification checkpoints in your workflow to track progress and compare state changes over time
+description: Create verification checkpoints to track progress and state changes
 ---
 
 # Checkpoint Command

@@ -8,6 +8,13 @@ user-invocable: false
 
 Modern Python development patterns emphasizing type safety, performance, and developer experience with cutting-edge tooling.
 
+## When to Activate
+
+- Setting up Python projects (pyproject.toml, uv, poetry)
+- Writing async Python code or type-annotated modules
+- Configuring virtual environments and packaging
+- Testing with pytest and modern Python tooling
+
 ## Project Structure
 
 ### Standard Python Package Layout

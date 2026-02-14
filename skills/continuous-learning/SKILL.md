@@ -8,6 +8,12 @@ allowed-tools: Read, Grep, Glob, Write
 
 Automatically evaluates Claude Code sessions on end to extract reusable patterns that can be saved as learned skills.
 
+## When to Activate
+
+- At session end (triggered automatically by Stop hook)
+- When a non-trivial problem has been solved during the session
+- When reusable patterns or workarounds are discovered
+
 ## How It Works
 
 This skill runs as a **Stop hook** at the end of each session:

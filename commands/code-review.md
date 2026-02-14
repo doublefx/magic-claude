@@ -1,5 +1,5 @@
 ---
-description: Comprehensive security and quality review of uncommitted changes with severity-based reporting
+description: Security and quality review of uncommitted changes with severity reporting
 ---
 
 # Code Review

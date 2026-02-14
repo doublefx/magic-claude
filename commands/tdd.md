@@ -1,5 +1,5 @@
 ---
-description: Enforce test-driven development workflow. Scaffold interfaces, generate tests FIRST, then implement minimal code to pass. Ensure 80%+ coverage.
+description: Enforce test-driven development - tests first, then implement (80%+)
 ---
 
 # TDD Command

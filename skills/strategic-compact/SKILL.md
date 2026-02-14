@@ -8,6 +8,13 @@ disable-model-invocation: true
 
 Suggests manual `/compact` at strategic points in your workflow rather than relying on arbitrary auto-compaction.
 
+## When to Activate
+
+- After completing an exploration phase before starting implementation
+- After finishing a milestone or significant task
+- Before switching to a different area of the codebase
+- When tool call count approaches compaction threshold
+
 ## Why Strategic Compaction?
 
 Auto-compaction triggers at arbitrary points:

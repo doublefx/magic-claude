@@ -1,5 +1,5 @@
 ---
-description: Detect project ecosystem and incrementally fix build, type check, and lint errors with the appropriate specialized agent
+description: Incrementally fix build, type check, and lint errors per ecosystem
 ---
 
 # Build and Fix

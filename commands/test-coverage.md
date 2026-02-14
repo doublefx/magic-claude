@@ -1,5 +1,5 @@
 ---
-description: Analyze test coverage and generate missing tests to reach 80%+ coverage threshold. Detects ecosystem and uses appropriate coverage tools.
+description: Analyze test coverage and generate missing tests to reach 80%+ threshold
 ---
 
 # Test Coverage

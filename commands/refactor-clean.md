@@ -1,5 +1,5 @@
 ---
-description: Safely identify and remove dead code with test verification - never deletes without running tests first
+description: Safely remove dead code with test verification before deletion
 ---
 
 # Refactor Clean

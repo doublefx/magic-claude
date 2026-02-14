@@ -1,5 +1,5 @@
 ---
-description: Sequential agent workflow for complex tasks - orchestrates multiple specialized agents with structured handoffs
+description: Sequential multi-agent workflow for complex tasks with handoffs
 argument-hint: "[workflow-type] [task description]"
 ---
 

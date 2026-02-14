@@ -8,7 +8,7 @@ allowed-tools: Read, Grep, Glob, Bash(npm run *), Bash(npx *), Bash(node tests/*
 
 A comprehensive verification system for Claude Code sessions across all ecosystems.
 
-## When to Use
+## When to Activate
 
 Invoke this skill:
 - After completing a feature or significant code change

@@ -10,6 +10,13 @@ agent: architect
 
 Modern frontend patterns for React, Next.js, and performant user interfaces.
 
+## When to Activate
+
+- Building React or Next.js components
+- Implementing state management patterns
+- Optimizing frontend performance (lazy loading, memoization)
+- Applying accessibility and UI best practices
+
 ## Component Patterns
 
 ### Composition Over Inheritance

@@ -1,14 +1,12 @@
 ---
-description: Complete automated setup for your project (workspace detection, package manager, tools, dependencies)
+description: Complete automated setup (workspace, package manager, tools, deps)
 command: node "${CLAUDE_PLUGIN_ROOT}/scripts/setup-complete.cjs"
 disable-model-invocation: false
-context: fork
-allowed-tools: Read, Write, Edit, Bash, Bash(mcp-cli *), Grep, Glob, AskUserQuestion, TaskCreate, TaskUpdate, TaskList, Skill
 ---
 
 # Complete Project Setup
 
-## ⚠️ CRITICAL: Task Tracking Required
+## CRITICAL: Task Tracking Required
 
 **YOU MUST use TaskCreate at the start to create tasks for ALL steps below, then TaskUpdate as you complete each one.**
 
@@ -104,10 +102,10 @@ $ /setup
 === Project Setup ===
 Detected: Single Node.js project
 Package manager: npm (from package-lock.json)
-✓ All tools available
+[OK]All tools available
 
 Ready to proceed? [Y/n] y
-✓ Setup complete!
+[OK]Setup complete!
 ```
 
 ### Monorepo/Workspace
@@ -116,17 +114,17 @@ $ cd my-monorepo
 $ /setup
 
 === Project Setup ===
-⚠️  Workspace detected (3 packages)
+WARNING: Workspace detected (3 packages)
 No root package.json found
 
 Initialize workspace root? [Y/n] y
 Preferred package manager [pnpm]: pnpm
 
-✓ Created workspace root
-✓ Configured pnpm workspace
+[OK]Created workspace root
+[OK]Configured pnpm workspace
 
 Run install? [Y/n] y
-✓ Installed dependencies
+[OK]Installed dependencies
 
 Setup complete!
 ```
@@ -139,10 +137,10 @@ $ /setup --yes
 Workspace detected: pnpm-workspace
 Packages: 5 (3 nodejs, 2 python)
 
-✓ Workspace already configured
-✓ Package manager: pnpm
-✓ All tools available
-✓ Dependencies installed
+[OK]Workspace already configured
+[OK]Package manager: pnpm
+[OK]All tools available
+[OK]Dependencies installed
 
 Setup complete!
 ```
@@ -182,22 +180,22 @@ workspace-root/
 ## Which Command Should I Use?
 
 ### Choose `/setup` when:
-- ✓ First-time project setup
-- ✓ You want everything configured automatically
-- ✓ New team member onboarding
-- ✓ "Just make it work" scenarios
+- First-time project setup
+- You want everything configured automatically
+- New team member onboarding
+- "Just make it work" scenarios
 
 ### Choose `/setup-pm` when:
-- ✓ Switching package managers (npm → pnpm)
-- ✓ Checking current package manager detection
-- ✓ Fixing package manager config only
-- ✓ **WITHOUT** touching workspace structure or dependencies
+- Switching package managers (npm -> pnpm)
+- Checking current package manager detection
+- Fixing package manager config only
+- **WITHOUT** touching workspace structure or dependencies
 
 ### Choose `/setup-ecosystem` when:
-- ✓ Initializing workspace root for monorepo
-- ✓ Checking which development tools are installed
-- ✓ Installing dependencies after adding packages
-- ✓ **WITHOUT** changing package manager settings
+- Initializing workspace root for monorepo
+- Checking which development tools are installed
+- Installing dependencies after adding packages
+- **WITHOUT** changing package manager settings
 
 ## Command Hierarchy
 

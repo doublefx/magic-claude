@@ -8,7 +8,7 @@ allowed-tools: Read, Write, Edit, Bash, Bash(mcp-cli *), Grep, Glob, AskUserQues
 
 This skill provides the complete workflow for Serena MCP integration. Invoke via `/serena-setup` or when called from `/setup`.
 
-## When This Workflow Applies
+## When to Activate
 
 - First time setting up Serena in a project
 - After `/setup` command (handles Serena portion)
