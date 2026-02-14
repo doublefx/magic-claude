@@ -247,17 +247,26 @@ skills/
   "hooks": {
     "PreToolUse": [ { /* hook rules */ } ],
     "PostToolUse": [ { /* hook rules */ } ],
+    "PostToolUseFailure": [ { /* hook rules */ } ],
+    "PermissionRequest": [ { /* hook rules */ } ],
+    "Notification": [ { /* hook rules */ } ],
+    "SubagentStart": [ { /* hook rules */ } ],
+    "SubagentStop": [ { /* hook rules */ } ],
+    "UserPromptSubmit": [ { /* hook rules */ } ],
     "SessionStart": [ { /* hook rules */ } ],
     "SessionEnd": [ { /* hook rules */ } ],
     "PreCompact": [ { /* hook rules */ } ],
-    "Stop": [ { /* hook rules */ } ]
+    "Setup": [ { /* hook rules */ } ],
+    "Stop": [ { /* hook rules */ } ],
+    "TeammateIdle": [ { /* hook rules */ } ],
+    "TaskCompleted": [ { /* hook rules */ } ]
   }
 }
 ```
 
 **Each hook rule contains:**
-- `matcher`: CEL expression
-- `hooks`: Array of commands
+- `matcher`: String/regex pattern (some events don't support matchers)
+- `hooks`: Array of handlers (`type`: `command`, `prompt`, or `agent`)
 - `description`: Explanation
 
 ### 6. Rules Directory (Optional)
@@ -653,6 +662,6 @@ claude-code publish my-plugin.tgz
 
 ---
 
-**Last Updated:** 2025-01-27
-**Version:** 2.0.0
+**Last Updated:** 2026-02-14
+**Version:** 3.1.0
 **Status:** Complete Specification

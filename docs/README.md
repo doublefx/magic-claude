@@ -31,7 +31,7 @@ Full documentation index. Pick a starting point based on what you need.
 | Doc | Description |
 |-----|-------------|
 | [FEATURES.md](FEATURES.md) | Complete feature documentation with examples |
-| [AGENT-CATALOG.md](AGENT-CATALOG.md) | All 27 agents with use cases and configuration |
+| [AGENT-CATALOG.md](AGENT-CATALOG.md) | All 27 agents and 36 skills with use cases and configuration |
 | [PERFORMANCE.md](PERFORMANCE.md) | Benchmarks, token budgets, optimization tips |
 
 ## Architecture & Internals

@@ -37,13 +37,18 @@ Hooks fire automatically during every workflow. They are the connective tissue.
 
 ### Lifecycle
 
-| Hook | What It Does |
-|------|-------------|
-| `session-start.cjs` | Load previous context, detect ecosystem, detect package manager, check Serena |
-| `session-end.cjs` | Persist session log |
-| `evaluate-session.cjs` | Detect extractable patterns, suggest `/learn` (SessionEnd + PreCompact) |
-| `stop-validation.cjs` | Check ALL modified files for debug statements (every Claude response) |
-| `post-task-update.cjs` | Inject "Code Review Recommended" when task marked completed |
+| Hook | Event | What It Does |
+|------|-------|-------------|
+| `session-start.cjs` | SessionStart | Load previous context, detect ecosystem, detect package manager, check Serena |
+| `session-end.cjs` | SessionEnd | Persist session log |
+| `evaluate-session.cjs` | SessionEnd + PreCompact | Detect extractable patterns, suggest `/learn` |
+| `stop-validation.cjs` | Stop | Check ALL modified files for debug statements (every Claude response) |
+| `post-task-update.cjs` | PostToolUse (TaskUpdate) | Inject "Code Review Recommended" when task marked completed |
+| `task-completed.cjs` | TaskCompleted | Advisory quality gate: verify tests and review code before task completion |
+| `notify.cjs` | Notification | Cross-platform desktop notification when Claude needs input |
+| `inject-prompt-context.cjs` | UserPromptSubmit | Inject dynamic context (branch, tasks, time) into prompts |
+| `permission-filter.cjs` | PermissionRequest | Auto-approve safe bash commands (tests, linting, builds) |
+| `pre-compact.cjs` | PreCompact | Save state before context compaction |
 
 ### Resolved: TypeScript/JavaScript Security Hook
 
@@ -351,6 +356,16 @@ User: "Add a health check endpoint to the API"
 | Gap | Resolution |
 |-----|-----------|
 | **Orchestrate -> Eval** | Opt-in `--with-evals <name>` flag on `/orchestrate feature` and `proactive-orchestration`. Phase 1.5 runs `/eval define`, Phase 4.5 runs `/eval check`. Results included in REPORT verdict. |
+
+### Resolved (v2.5.0)
+
+| Gap | Resolution |
+|-----|-----------|
+| **TaskCompleted hook** | `task-completed.cjs` provides advisory quality gate for task completion events (both regular tasks and Agent Teams) |
+| **Notification hook** | `notify.cjs` provides cross-platform desktop notification when Claude needs user input |
+| **Hook validation tests** | `tests/hooks/hooks.test.cjs` validates hooks.json structure, event types, handler fields, script existence, and matcher validity (17 tests) |
+| **Hook UX** | All 18 hook handlers now include `statusMessage` fields for custom spinner text during execution |
+| **Agent Teams reference** | `skills/agent-teams/SKILL.md` provides pre-configured team scenarios with token cost guard rails (gated by `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`) |
 
 ### Remaining Gaps (Deferred)
 

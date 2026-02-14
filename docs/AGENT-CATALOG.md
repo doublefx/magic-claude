@@ -1,9 +1,9 @@
 # Agent & Skill Catalog
 
-**Version**: 3.0.0
-**Last Updated**: 2026-02-09
+**Version**: 3.1.0
+**Last Updated**: 2026-02-14
 **Total Agents**: 27
-**Total Skills**: 28
+**Total Skills**: 36
 
 ---
 
@@ -20,6 +20,8 @@
 2. [Architecture Skills](#architecture-skills)
 3. [Testing Skills](#testing-skills)
 4. [Advanced Skills](#advanced-skills)
+5. [Coordination Skills](#coordination-skills)
+6. [Serena Integration Skills](#serena-integration-skills)
 
 ---
 
@@ -821,6 +823,92 @@ Gradle Optimization Report
 
 ---
 
+### Coordination Skills
+
+#### agent-teams
+**Path**: `skills/agent-teams/SKILL.md`
+**Description**: Guide for Agent Teams coordination when `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` is enabled
+
+**Prerequisite**: `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` must be set
+
+**Pre-Configured Scenarios**:
+- Parallel code review (security, quality, performance reviewers)
+- Competing hypothesis debugging (multiple investigators)
+- Cross-layer feature work (backend, frontend, tests)
+- Research and architecture exploration
+
+**Guard Rails**: Max 3 teammates, focused spawn prompts, minimize broadcasts, delegate verbose I/O to subagents
+
+---
+
+#### extend
+**Path**: `skills/extend/SKILL.md`
+**Description**: Generate new plugin components following existing patterns
+
+**Covers**:
+- Scaffold new agents, skills, hooks, commands, rules
+- Follow existing naming conventions and structure
+- Auto-integrate with plugin.json
+
+---
+
+#### claude-mem-context
+**Path**: `skills/claude-mem-context/SKILL.md`
+**Description**: Cross-session historical context via claude-mem MCP
+
+**Covers**:
+- Query past decisions and architecture rationale
+- Search debugging patterns and resolved issues
+- Bridge context across sessions
+
+---
+
+#### clickhouse-io
+**Path**: `skills/clickhouse-io/SKILL.md`
+**Description**: ClickHouse database patterns and query optimization
+
+**Covers**:
+- Analytical query optimization
+- Data engineering patterns
+- High-performance analytical workloads
+
+---
+
+#### project-guidelines-example
+**Path**: `skills/project-guidelines-example/SKILL.md`
+**Description**: Template for project-specific skills
+
+**Covers**:
+- Example architecture documentation
+- File structure conventions
+- Code patterns and testing requirements
+
+---
+
+### Serena Integration Skills
+
+#### serena-setup
+**Path**: `skills/serena-setup/SKILL.md`
+**Description**: Complete Serena MCP setup workflow
+
+#### serena-status
+**Path**: `skills/serena-status/SKILL.md`
+**Description**: Serena configuration diagnostics
+
+#### serena-cleanup
+**Path**: `skills/serena-cleanup/SKILL.md`
+**Description**: Safe Serena cleanup and removal
+
+#### serena-code-navigation
+**Path**: `skills/serena-code-navigation/SKILL.md`
+**Description**: Serena MCP code navigation tool mapping
+
+#### git-sync
+**Path**: `skills/git-sync/SKILL.md`
+**Description**: Analyze git changes and report codebase impact
+
+---
+
 ## Usage Examples
 
 ### Example 1: Python Code Review Workflow
@@ -895,14 +983,16 @@ pytest
 - 1 CI/CD agent
 - 2 utility agents (doc-updater, setup-agent)
 
-**27 Skills**:
+**36 Skills**:
 - 3 coding standards skills (TS/JS, JVM, Python)
 - 3 backend pattern skills (TS/JS, JVM, Python)
 - 3 TDD workflow skills (TS/JS, JVM, Python)
 - 3 security review skills (TS/JS, JVM, Python)
-- 3 proactive skills (review, planning, TDD)
-- 4 language/build tool skills (python, kotlin, maven, gradle)
-- 8 general/advanced skills
+- 4 proactive skills (orchestration, review, planning, TDD)
+- 5 language/build tool skills (python, kotlin, maven, gradle, ci-cd)
+- 5 Serena integration skills (setup, status, cleanup, code-navigation, git-sync)
+- 4 coordination/domain skills (agent-teams, claude-mem-context, clickhouse-io, extend)
+- 6 general/advanced skills (continuous-learning, strategic-compact, eval-harness, verification-loop, frontend-patterns, project-guidelines-example)
 
 **Best Practices**:
 - Use language-specific agents for code review
@@ -910,7 +1000,8 @@ pytest
 - Use planner for task breakdown
 - Use architect for system design
 - Combine multiple agents for comprehensive review
+- Use Agent Teams for parallel exploration (when experimental flag is enabled)
 
 ---
 
-*Agent & Skill Catalog Version: 3.0 | Last Updated: 2026-02-09*
+*Agent & Skill Catalog Version: 3.1 | Last Updated: 2026-02-14*

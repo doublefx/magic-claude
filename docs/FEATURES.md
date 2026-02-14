@@ -1,7 +1,7 @@
 # Features Documentation
 
-**Version**: 3.0.0
-**Last Updated**: 2026-01-25
+**Version**: 3.1.0
+**Last Updated**: 2026-02-14
 
 ---
 
@@ -13,7 +13,8 @@
 4. [Build Tools](#build-tools)
 5. [CI/CD Generation](#cicd-generation)
 6. [Security Scanning](#security-scanning)
-7. [Performance](#performance)
+7. [Agent Teams](#agent-teams-experimental)
+8. [Performance](#performance)
 
 ---
 
@@ -813,6 +814,60 @@ vim src/database.py
 
 ---
 
+## Agent Teams (Experimental)
+
+### Overview
+
+Agent Teams coordinate multiple Claude Code instances working in parallel with a shared task list and inter-agent messaging. Requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`.
+
+### When to Use
+
+| Scenario | Use | Why |
+|----------|-----|-----|
+| Focused task, result only | **Subagent** (Task tool) | Lower tokens, no coordination overhead |
+| Sequential pipeline | **`/orchestrate`** | Structured handoffs, proven workflow |
+| Parallel exploration, agents need to talk | **Agent Teams** | Inter-agent messaging, shared task list |
+| Quick delegation | **Subagent** (Task tool) | Fast, disposable, minimal context |
+
+**Default to subagents.** Only use Agent Teams when parallel exploration with inter-agent communication genuinely adds value.
+
+### Pre-Configured Scenarios
+
+The `agent-teams` skill provides ready-to-use team configurations:
+
+1. **Parallel Code Review** -- 3 reviewers (security, quality, performance) examine changes simultaneously
+2. **Competing Hypothesis Debugging** -- Multiple investigators test different theories in parallel
+3. **Cross-Layer Feature Work** -- Backend, frontend, and tests teammates with file ownership
+4. **Research and Architecture Exploration** -- Multiple approaches evaluated simultaneously
+
+### Token Cost Guard Rails
+
+- Max 3 teammates unless explicitly requested
+- Focused spawn prompts (only task-specific context)
+- Minimize broadcasts (use targeted messages)
+- Delegate verbose I/O to subagents within teammates
+- Set clear completion criteria
+
+### Quality Gates
+
+Use `TeammateIdle` and `TaskCompleted` hooks to enforce standards:
+
+```json
+{
+  "TaskCompleted": [{
+    "hooks": [{
+      "type": "command",
+      "command": "npm test 2>&1 || (echo 'Tests must pass' >&2 && exit 2)",
+      "statusMessage": "Running test gate..."
+    }]
+  }]
+}
+```
+
+Exit code 2 blocks the action and feeds stderr back as feedback.
+
+---
+
 ## Performance
 
 ### Project Detection Performance
@@ -847,10 +902,10 @@ vim src/database.py
 | Test Category | Tests | Time |
 |--------------|-------|------|
 | Unit tests (lib) | 60+ | 0.5s |
-| Unit tests (hooks) | 30+ | 1.0s |
-| Integration tests | 50+ | 3.5s |
-| E2E tests | 20+ | 5.0s |
-| **Total** | **156+** | **~10s** |
+| Unit tests (hooks) | 47+ | 1.0s |
+| Integration tests | 80+ | 3.5s |
+| E2E tests | 30+ | 5.0s |
+| **Total** | **247** | **~10s** |
 
 ### Tool Performance (2026 Improvements)
 
@@ -883,4 +938,4 @@ Magic Claude provides:
 
 ---
 
-*Features Documentation Version: 1.0 | Last Updated: 2026-01-25*
+*Features Documentation Version: 3.1 | Last Updated: 2026-02-14*

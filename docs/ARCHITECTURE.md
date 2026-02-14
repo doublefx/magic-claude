@@ -12,7 +12,7 @@ magic-claude/
 |   |-- plugin.json         # Plugin metadata and component paths
 |   |-- marketplace.json    # Marketplace catalog for /plugin marketplace add
 |
-|-- agents/           # Specialized subagents for delegation (27 total)
+|-- agents/           # Specialized subagents for delegation (27 agents)
 |   |-- planner.md              # Feature implementation planning
 |   |-- architect.md            # System design decisions
 |   |-- ts-tdd-guide.md         # TypeScript/JavaScript TDD
@@ -40,7 +40,7 @@ magic-claude/
 |   |-- gradle-expert.md        # Gradle build optimization
 |   |-- ci-cd-architect.md      # CI/CD pipeline generation
 |
-|-- skills/           # Workflow definitions and domain knowledge (27 total)
+|-- skills/           # Workflow definitions and domain knowledge (36 total)
 |   |-- coding-standards/           # TypeScript/JS best practices
 |   |-- jvm-coding-standards/       # Java/Kotlin best practices
 |   |-- python-coding-standards/    # Python best practices
@@ -54,6 +54,10 @@ magic-claude/
 |   |-- security-review/            # TypeScript/JS security checklist
 |   |-- jvm-security-review/        # JVM security checklist
 |   |-- python-security-review/     # Python security checklist
+|   |-- proactive-orchestration/    # Full pipeline orchestrator (PLAN->TDD->VERIFY->REVIEW)
+|   |-- proactive-planning/         # Standalone planning for complex tasks
+|   |-- proactive-tdd/              # Standalone TDD enforcement
+|   |-- proactive-review/           # Standalone code quality review
 |   |-- continuous-learning/        # Auto-extract patterns from sessions
 |   |-- strategic-compact/          # Manual compaction suggestions
 |   |-- eval-harness/               # Verification loop evaluation
@@ -67,6 +71,12 @@ magic-claude/
 |   |-- claude-mem-context/         # Cross-session historical context
 |   |-- extend/                     # Generate new plugin components
 |   |-- project-guidelines-example/ # Template for project-specific guidelines
+|   |-- agent-teams/                # Agent Teams coordination guide (experimental)
+|   |-- serena-setup/               # Serena MCP setup workflow
+|   |-- serena-status/              # Serena configuration diagnostics
+|   |-- serena-cleanup/             # Safe Serena cleanup and removal
+|   |-- serena-code-navigation/     # Serena code navigation tool mapping
+|   |-- git-sync/                   # Git changes impact analysis
 |
 |-- commands/         # Slash commands for quick execution (14 total)
 |   |-- tdd.md              # /tdd - Test-driven development
@@ -93,25 +103,35 @@ magic-claude/
 |   |-- performance.md      # Model selection, context management
 |
 |-- hooks/            # Trigger-based automations
-|   |-- hooks.json                # All hooks config (PreToolUse, PostToolUse, Stop, etc.)
-|   |-- memory-persistence/       # Session lifecycle hooks
-|   |-- strategic-compact/        # Compaction suggestions
+|   |-- hooks.json                # All hooks config (14 event types supported)
 |
 |-- scripts/          # Cross-platform Node.js scripts
 |   |-- lib/                     # Shared utilities
 |   |   |-- utils.cjs            # Cross-platform file/path/system utilities
 |   |   |-- package-manager.cjs  # Package manager detection and selection
 |   |   |-- ecosystems/          # Auto-discoverable ecosystem modules
-|   |-- hooks/                   # Hook implementations (9 total)
-|   |   |-- session-start.js     # Load context on session start
-|   |   |-- session-end.js       # Save state on session end
-|   |   |-- pre-compact.js       # Pre-compaction state saving
-|   |   |-- suggest-compact.js   # Strategic compaction suggestions
-|   |   |-- evaluate-session.js  # Extract patterns from sessions
+|   |-- hooks/                   # Hook implementations (21 total)
+|   |   |-- session-start.cjs    # Load context on session start
+|   |   |-- session-end.cjs      # Save state on session end
+|   |   |-- pre-compact.cjs      # Pre-compaction state saving
+|   |   |-- suggest-compact.cjs  # Strategic compaction suggestions
+|   |   |-- evaluate-session.cjs # Extract patterns from sessions
 |   |   |-- smart-formatter.js   # Universal auto-formatter
 |   |   |-- python-security.js   # Python security scanning
 |   |   |-- java-security.js     # Java security scanning
+|   |   |-- typescript-security.js # TypeScript/JS security scanning
 |   |   |-- maven-advisor.js     # Maven/Gradle best practices
+|   |   |-- inject-prompt-context.cjs  # Dynamic context injection
+|   |   |-- permission-filter.cjs      # Auto-approve safe commands
+|   |   |-- pre-commit-review.cjs      # Code review before git commit
+|   |   |-- post-task-update.cjs       # Review suggestion on task completion
+|   |   |-- pr-url-logger.cjs          # Log PR URLs after creation
+|   |   |-- stop-validation.cjs        # Debug statement check on stop
+|   |   |-- console-log-detector.cjs   # Debug statement detection
+|   |   |-- typescript-checker.cjs     # TypeScript type checking
+|   |   |-- pyright-checker.cjs        # Python type checking
+|   |   |-- task-completed.cjs         # TaskCompleted quality gate
+|   |   |-- notify.cjs                 # Desktop notifications
 |   |-- setup-package-manager.cjs # Interactive PM setup
 |
 |-- templates/        # CI/CD and deployment templates
@@ -123,7 +143,7 @@ magic-claude/
 |   |-- helm/                    # Helm charts
 |   |-- security/                # Security scanning configs
 |
-|-- tests/            # Test suite (150 tests)
+|-- tests/            # Test suite (247 tests)
 |   |-- unit/                    # Unit tests
 |   |-- integration/             # Integration tests
 |   |-- e2e/                     # End-to-end tests

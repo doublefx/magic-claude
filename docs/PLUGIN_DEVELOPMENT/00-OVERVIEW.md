@@ -115,10 +115,11 @@ Complete schema with ALL fields and options.
 - **Activation:** Explicit reference or `context: fork`
 
 ### Hooks
-- **Trigger Events:** PreToolUse, PostToolUse, SessionStart, SessionEnd, PreCompact, Stop
-- **Key Fields:** `matcher` (CEL expression), `hooks` (command array), `description`
+- **Trigger Events (14):** PreToolUse, PostToolUse, PostToolUseFailure, PermissionRequest, Notification, SubagentStart, SubagentStop, UserPromptSubmit, SessionStart, SessionEnd, PreCompact, Setup, Stop, TeammateIdle, TaskCompleted
+- **Handler Types:** `command` (shell), `prompt` (single LLM call), `agent` (multi-turn subagent)
+- **Key Fields:** `matcher` (string/regex pattern), `hooks` (handler array), `description`
 - **Execution:** Node.js scripts with stdin/stdout JSON
-- **Blocking:** Only PreToolUse can block execution
+- **Blocking:** PreToolUse and PermissionRequest can block (exit 1); TeammateIdle and TaskCompleted can block with feedback (exit 2)
 
 ### Plugin.json
 - **Location:** `.claude-plugin/plugin.json`
@@ -336,7 +337,7 @@ npm run setup
 
 ---
 
-**Last Updated:** 2025-01-27
-**Version:** 2.0.0
+**Last Updated:** 2026-02-14
+**Version:** 3.1.0
 **Status:** Complete Specification
 **License:** MIT

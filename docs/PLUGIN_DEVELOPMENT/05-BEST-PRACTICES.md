@@ -981,5 +981,5 @@ Start simple, provide deeper information for advanced users.
 
 ---
 
-**Last Updated:** 2025-01-27
-**Version:** 2.0.0
+**Last Updated:** 2026-02-14
+**Version:** 3.1.0

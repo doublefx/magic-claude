@@ -6,6 +6,34 @@ This document describes the capabilities and limitations of Claude Code's hook m
 
 **Key Finding**: Hook matchers support only basic string/regex patterns. Complex conditional logic must be implemented via runtime filtering in hook scripts.
 
+### Hook Event Types (14 Total)
+
+| Event | When It Fires | Matcher Support |
+|-------|--------------|-----------------|
+| `PreToolUse` | Before tool execution | Yes |
+| `PostToolUse` | After successful tool execution | Yes |
+| `PostToolUseFailure` | After tool execution fails | Yes |
+| `PermissionRequest` | When permission is needed | Yes |
+| `Notification` | When Claude needs user attention | Yes |
+| `SubagentStart` | Before subagent launches | Yes |
+| `SubagentStop` | After subagent completes | Yes |
+| `UserPromptSubmit` | When user submits a prompt | Ignored (fires unconditionally) |
+| `SessionStart` | When session begins | Yes |
+| `SessionEnd` | When session ends | Yes |
+| `PreCompact` | Before context compaction | Yes |
+| `Setup` | During initial setup | Yes |
+| `Stop` | When Claude stops responding | No |
+| `TeammateIdle` | When Agent Teams teammate has no tasks | No |
+| `TaskCompleted` | When a task is marked complete | No |
+
+### Hook Handler Types (3 Types)
+
+| Type | Description | Timeout Default |
+|------|-------------|-----------------|
+| `command` | Execute a shell command | 600s |
+| `prompt` | Single LLM call (no tool access) | 30s |
+| `agent` | Multi-turn subagent with tool access | 60s |
+
 ---
 
 ## Hook Matcher Capabilities
@@ -156,10 +184,17 @@ function commandExists(cmd) {
 
 **CRITICAL**: Hooks MUST pass through the context to stdout, even if they make no modifications.
 
-### 2. Error Reporting
+### 2. Error Reporting and Exit Codes
+
+| Exit Code | Behavior |
+|-----------|----------|
+| `0` | Success -- continue execution |
+| `1` | Block execution (PreToolUse, PermissionRequest only) |
+| `2` | Block + feed stderr back as feedback (TeammateIdle, TaskCompleted -- prevents action, teammate/task continues working) |
 
 - Use `console.error()` for warnings and advisories (shown to user)
 - Use `process.exit(1)` to block tool execution
+- Use `process.exit(2)` to block with feedback (Agent Teams quality gates)
 - Errors on stderr are shown but don't block execution unless exit code is non-zero
 
 **Example: Blocking Hook**
@@ -179,12 +214,45 @@ if (shouldWarn) {
 console.log(input); // Pass through
 ```
 
-### 3. Performance Considerations
+**Example: Quality Gate (Agent Teams)**
+```javascript
+// TeammateIdle or TaskCompleted hook
+const testResult = execSync('npm test 2>&1', { encoding: 'utf8' });
+if (testResult.includes('FAIL')) {
+  console.error('Tests must pass before completing task');
+  process.exit(2); // Blocks action, feeds back to teammate
+}
+```
 
-- Hooks run synchronously before/after each tool use
+### 3. Handler Fields
+
+Each handler in the `hooks` array supports these fields:
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `type` | string | Yes | `"command"`, `"prompt"`, or `"agent"` |
+| `command` | string | For command type | Shell command to execute |
+| `statusMessage` | string | No | Custom spinner message during execution |
+| `async` | boolean | No | Run in background (command type only, non-blocking) |
+| `timeout` | number | No | Override default timeout (ms) |
+| `once` | boolean | No | Run only once per session |
+
+**statusMessage Example:**
+```json
+{
+  "type": "command",
+  "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/smart-formatter.js\"",
+  "statusMessage": "Formatting code..."
+}
+```
+
+### 4. Performance Considerations
+
+- Hooks run synchronously before/after each tool use (unless `async: true`)
 - Keep hooks fast (<100ms ideally)
 - Use caching for expensive operations (e.g., project type detection)
 - Gracefully handle missing tools (don't error, just skip)
+- Use `async: true` for non-critical hooks that can run in the background
 
 ---
 
@@ -277,11 +345,22 @@ describe('smart-formatter', () => {
 
 ## Summary
 
-**Hook Matcher Capabilities** (PRD v2.1):
+**Hook Event Types** (14 total):
+- PreToolUse, PostToolUse, PostToolUseFailure, PermissionRequest, Notification
+- SubagentStart, SubagentStop, UserPromptSubmit, SessionStart, SessionEnd
+- PreCompact, Setup, Stop, TeammateIdle, TaskCompleted
+
+**Hook Handler Types** (3 types):
+- `command` (shell execution, 600s default timeout)
+- `prompt` (single LLM call, 30s default timeout)
+- `agent` (multi-turn subagent, 60s default timeout)
+
+**Hook Matcher Capabilities**:
 - ✅ Tool name matching with regex
 - ✅ Simple field comparisons with `matches`
 - ✅ Boolean AND (`&&`) operator
 - ❌ Function calls, property access, complex expressions
+- Note: Some events (Stop, TeammateIdle, TaskCompleted) don't support matchers
 
 **Solution**: Runtime filtering in hook scripts
 - Simple matchers in hooks.json
@@ -293,11 +372,13 @@ describe('smart-formatter', () => {
 - Read JSON context from stdin
 - Write JSON context to stdout (pass through)
 - Use stderr for user messages
-- Exit with code 1 to block execution
+- Exit code 0 = success, 1 = block, 2 = block with feedback
+- Use `statusMessage` for custom spinner text during hook execution
 
 ---
 
 **References**:
-- PRD v2.1: `/docs/prd/PRD-enterprise-stack-extension.md` (lines 317-453)
+- Official hooks documentation: https://docs.anthropic.com/en/docs/claude-code/hooks
 - Current hooks: `/hooks/hooks.json`
-- Implementation plan: `/docs/prd/IMPLEMENTATION-EXECUTION-PLAN.md`
+- Hook validation tests: `/tests/hooks/hooks.test.cjs`
+- Plugin dev reference: `/docs/PLUGIN_DEVELOPMENT/03-HOOKS.md`
