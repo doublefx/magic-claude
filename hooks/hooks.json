@@ -211,6 +211,17 @@
         "description": "Evaluate session for extractable patterns"
       }
     ],
+    "TaskCompleted": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/task-completed.cjs\""
+          }
+        ],
+        "description": "Advisory quality gate: log recommendation to verify tests and review code before task completion"
+      }
+    ],
     "Notification": [
       {
         "matcher": "permission_prompt|idle_prompt",

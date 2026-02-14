@@ -1,16 +1,22 @@
 # Hooks System - Complete Reference
 
+**Official Documentation Sources:**
+- Hooks Reference: https://code.claude.com/docs/en/hooks
+- Hooks Guide (quickstart): https://code.claude.com/docs/en/hooks-guide
+- Plugins Reference (plugin hooks): https://code.claude.com/docs/en/plugins-reference
+- Documentation Index: https://code.claude.com/docs/llms.txt
+
 ## What Are Hooks?
 
 Hooks are user-defined shell commands that execute at specific points in Claude Code's lifecycle. They provide deterministic control over behavior, ensuring certain actions always happen rather than relying on the LLM to choose to run them.
 
 **Key Characteristics:**
-- Event-driven with 12 hook types
-- Shell commands (bash, python, node) with JSON stdin/stdout
+- Event-driven with 14 hook types
+- Three handler types: `command` (shell), `prompt` (single LLM call), `agent` (multi-turn subagent)
 - Support regex pattern matching for tool names
 - PreToolUse and PermissionRequest can block/allow/deny operations
-- Stop and SubagentStop can force Claude to continue
-- Execute with 60-second default timeout (configurable per hook)
+- Stop, SubagentStop, TeammateIdle, and TaskCompleted can block actions
+- Default timeouts: 600s for command, 30s for prompt, 60s for agent (configurable per hook)
 - All matching hooks run in parallel
 
 **Use Cases:**
@@ -61,6 +67,14 @@ Hooks are user-defined shell commands that execute at specific points in Claude 
                     └───────────┬───────────┘
                                 ↓
                     ┌───────────────────────┐
+                    │    TeammateIdle       │← (can block idle, teams only)
+                    └───────────┬───────────┘
+                                ↓
+                    ┌───────────────────────┐
+                    │   TaskCompleted       │← (can block completion)
+                    └───────────┬───────────┘
+                                ↓
+                    ┌───────────────────────┐
                     │        Stop           │← (can force continue)
                     └───────────┬───────────┘
                                 ↓
@@ -97,6 +111,8 @@ Hooks are user-defined shell commands that execute at specific points in Claude 
     "Stop": [ /* array of hook rules */ ],
     "SubagentStart": [ /* array of hook rules */ ],
     "SubagentStop": [ /* array of hook rules */ ],
+    "TeammateIdle": [ /* array of hook rules */ ],
+    "TaskCompleted": [ /* array of hook rules */ ],
     "PreCompact": [ /* array of hook rules */ ],
     "Setup": [ /* array of hook rules */ ],
     "SessionStart": [ /* array of hook rules */ ],
@@ -122,6 +138,8 @@ Each hook type contains an array of hook rule objects.
 | **SubagentStart** | Spawning a subagent | NO | JSON | Track subagent creation |
 | **SubagentStop** | Subagent finishes | YES (force continue) | JSON | Validate subagent completion |
 | **Stop** | Claude finishes responding | YES (force continue) | JSON | Final validation |
+| **TeammateIdle** | Agent team teammate about to go idle | YES (exit code 2 only) | JSON | Quality gates for teammates |
+| **TaskCompleted** | Task being marked as completed | YES (exit code 2 only) | JSON | Enforce completion criteria |
 | **PreCompact** | Before context compaction | NO | JSON | Save state |
 | **Setup** | With --init/--maintenance | NO | JSON | One-time setup tasks |
 | **SessionEnd** | Session terminates | NO | JSON | Cleanup, persistence |
@@ -153,15 +171,30 @@ Each hook type contains an array of hook rule objects.
 | `hooks` | array | Yes | Array of hook commands to execute |
 | `description` | string | No | Human-readable explanation of what hook does |
 
-### Hook Command Fields
+### Hook Handler Fields
+
+**Common Fields (all handler types):**
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `type` | string | Yes | `"command"` for bash commands, `"prompt"` for LLM evaluation |
-| `command` | string | For command | The bash/shell command to execute |
-| `prompt` | string | For prompt | Prompt sent to LLM (use `$ARGUMENTS` for input JSON) |
-| `timeout` | number | No | Timeout in seconds (default: 60) |
+| `type` | string | Yes | `"command"`, `"prompt"`, or `"agent"` |
+| `timeout` | number | No | Seconds before canceling. Defaults: 600 for command, 30 for prompt, 60 for agent |
+| `statusMessage` | string | No | Custom spinner message displayed while the hook runs |
 | `once` | boolean | No | Skills only: run hook only once per session |
+
+**Command Hook Fields (`type: "command"`):**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `command` | string | Yes | The bash/shell command to execute |
+| `async` | boolean | No | If `true`, runs in background without blocking. Results delivered on next conversation turn. Only for command hooks |
+
+**Prompt and Agent Hook Fields (`type: "prompt"` or `type: "agent"`):**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `prompt` | string | Yes | Prompt sent to model (use `$ARGUMENTS` for input JSON) |
+| `model` | string | No | Model to use for evaluation. Defaults to a fast model |
 
 ### Prompt-Based Hooks (type: "prompt")
 
@@ -199,6 +232,74 @@ Instead of executing bash commands, prompt-based hooks use an LLM (Haiku) to mak
 - Complex context-aware decisions
 - Natural language understanding needed
 - Bash hooks for simple, deterministic rules
+
+### Agent-Based Hooks (type: "agent")
+
+Agent-based hooks spawn a subagent that can use tools like Read, Grep, and Glob to verify conditions before returning a decision. Unlike prompt hooks (single LLM call), agent hooks support multi-turn tool access (up to 50 turns).
+
+**Most useful for:** `Stop`, `SubagentStop`, `PreToolUse`, `TaskCompleted`
+
+```json
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "agent",
+            "prompt": "Verify that all unit tests pass. Run the test suite and check the results. $ARGUMENTS",
+            "timeout": 120
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+**Response Schema (same as prompt hooks):**
+```json
+{
+  "ok": true,       // true = allow action, false = prevent
+  "reason": "..."   // Required when ok is false
+}
+```
+
+**When to use agent vs prompt hooks:**
+- **Agent hooks:** When verification requires inspecting files or running commands
+- **Prompt hooks:** When the decision can be made from the hook input data alone
+- **Command hooks:** For deterministic rules and side effects
+
+### Async Hooks (Background Execution)
+
+Set `"async": true` on command hooks to run them in the background without blocking Claude. Only available for `type: "command"` hooks.
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/path/to/run-tests.sh",
+            "async": true,
+            "timeout": 120
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+**Key behaviors:**
+- Claude continues working immediately while the hook executes
+- Results are delivered on the next conversation turn when the hook finishes
+- Decision fields (`decision`, `permissionDecision`, `continue`) have no effect since the action already proceeded
+- `systemMessage` and `additionalContext` from JSON output are delivered when the hook completes
+- Each execution creates a separate background process (no deduplication across firings)
 
 ## Complete Input Schemas for Each Hook Type
 
@@ -284,7 +385,27 @@ Same structure as PreToolUse. Matches same tool patterns.
 ### PostToolUseFailure Input Schema
 
 **Fired:** After a tool fails
-Same structure as PostToolUse with error information in `tool_response`.
+
+Same structure as PostToolUse, plus error-specific fields:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `error` | string | Description of what went wrong |
+| `is_interrupt` | boolean | Whether the failure was caused by user interruption |
+
+```json
+{
+  "session_id": "abc123",
+  "hook_event_name": "PostToolUseFailure",
+  "tool_name": "Bash",
+  "tool_input": { "command": "npm test" },
+  "tool_use_id": "toolu_01ABC123...",
+  "error": "Command exited with non-zero status code 1",
+  "is_interrupt": false
+}
+```
+
+Decision control: return `additionalContext` via `hookSpecificOutput` to provide context alongside the error.
 
 ### UserPromptSubmit Input Schema
 
@@ -315,6 +436,7 @@ Same structure as PostToolUse with error information in `tool_response`.
   "permission_mode": "default",
   "hook_event_name": "Notification",
   "message": "Claude needs your permission to use Bash",
+  "title": "Permission needed",
   "notification_type": "permission_prompt"
 }
 ```
@@ -351,6 +473,17 @@ Same structure as PostToolUse with error information in `tool_response`.
 }
 ```
 
+SubagentStart hooks cannot block subagent creation, but can inject context:
+
+```json
+{
+  "hookSpecificOutput": {
+    "hookEventName": "SubagentStart",
+    "additionalContext": "Follow security guidelines for this task"
+  }
+}
+```
+
 ### SubagentStop Input Schema
 
 **Fired:** When subagent finishes
@@ -367,6 +500,84 @@ Same structure as PostToolUse with error information in `tool_response`.
   "agent_id": "def456",
   "agent_transcript_path": "/path/to/session/subagents/agent-def456.jsonl"
 }
+```
+
+### TeammateIdle Input Schema
+
+**Fired:** When an agent team teammate is about to go idle
+**Can Block:** YES (exit code 2 only — no JSON decision control)
+**Matchers:** None (fires on every occurrence)
+
+```json
+{
+  "session_id": "abc123",
+  "transcript_path": "/path/to/session.jsonl",
+  "cwd": "/project",
+  "permission_mode": "default",
+  "hook_event_name": "TeammateIdle",
+  "teammate_name": "researcher",
+  "team_name": "my-project"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `teammate_name` | string | Name of the teammate about to go idle |
+| `team_name` | string | Name of the team |
+
+**Decision control:** Exit code only. Exit 2 prevents the teammate from going idle (stderr fed back as feedback). No JSON decision fields.
+
+```bash
+#!/bin/bash
+# Block idle if build artifact is missing
+if [ ! -f "./dist/output.js" ]; then
+  echo "Build artifact missing. Run the build before stopping." >&2
+  exit 2
+fi
+exit 0
+```
+
+### TaskCompleted Input Schema
+
+**Fired:** When a task is being marked as completed (via TaskUpdate or when agent team teammate finishes with in-progress tasks)
+**Can Block:** YES (exit code 2 only — no JSON decision control)
+**Matchers:** None (fires on every occurrence)
+
+```json
+{
+  "session_id": "abc123",
+  "transcript_path": "/path/to/session.jsonl",
+  "cwd": "/project",
+  "permission_mode": "default",
+  "hook_event_name": "TaskCompleted",
+  "task_id": "task-001",
+  "task_subject": "Implement user authentication",
+  "task_description": "Add login and signup endpoints",
+  "teammate_name": "implementer",
+  "team_name": "my-project"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `task_id` | string | Identifier of the task being completed |
+| `task_subject` | string | Title of the task |
+| `task_description` | string | Detailed description (may be absent) |
+| `teammate_name` | string | Name of the teammate completing (may be absent) |
+| `team_name` | string | Name of the team (may be absent) |
+
+**Decision control:** Exit code only. Exit 2 prevents task completion (stderr fed back as feedback). No JSON decision fields.
+
+```bash
+#!/bin/bash
+INPUT=$(cat)
+TASK_SUBJECT=$(echo "$INPUT" | jq -r '.task_subject')
+
+if ! npm test 2>&1; then
+  echo "Tests not passing. Fix failing tests before completing: $TASK_SUBJECT" >&2
+  exit 2
+fi
+exit 0
 ```
 
 ### PreCompact Input Schema
@@ -444,13 +655,31 @@ fi
   "cwd": "/project",
   "permission_mode": "default",
   "hook_event_name": "SessionEnd",
-  "reason": "exit"  // "clear", "logout", "prompt_input_exit", "other"
+  "reason": "other"  // "clear", "logout", "prompt_input_exit", "bypass_permissions_disabled", "other"
 }
 ```
 
 ## Matchers (Pattern Matching)
 
 Matchers use regex patterns to match tool names. They are case-sensitive.
+
+### Matcher Support by Hook Type
+
+Not all hook types support matchers. Hooks without matcher support fire on every occurrence:
+
+| Hook Type | Matcher Field | Values |
+|-----------|---------------|--------|
+| PreToolUse, PostToolUse, PostToolUseFailure, PermissionRequest | tool name | `Bash`, `Edit\|Write`, `mcp__.*` |
+| SessionStart | how session started | `startup`, `resume`, `clear`, `compact` |
+| SessionEnd | why session ended | `clear`, `logout`, `prompt_input_exit`, `bypass_permissions_disabled`, `other` |
+| Notification | notification type | `permission_prompt`, `idle_prompt`, `auth_success`, `elicitation_dialog` |
+| SubagentStart, SubagentStop | agent type name | `Bash`, `Explore`, `Plan`, or custom agent names |
+| PreCompact | compaction trigger | `manual`, `auto` |
+| Setup | setup trigger | `init`, `maintenance` |
+| **UserPromptSubmit** | **no matcher support** | always fires |
+| **Stop** | **no matcher support** | always fires |
+| **TeammateIdle** | **no matcher support** | always fires |
+| **TaskCompleted** | **no matcher support** | always fires |
 
 ### Matcher Syntax Reference
 
@@ -584,6 +813,8 @@ Hooks communicate via exit codes, stdout, and stderr.
 | UserPromptSubmit | Blocks prompt, erases it, shows stderr to user |
 | Stop | Blocks stoppage, shows stderr to Claude |
 | SubagentStop | Blocks stoppage, shows stderr to subagent |
+| TeammateIdle | Prevents teammate from going idle, stderr fed back as feedback |
+| TaskCompleted | Prevents task from being marked completed, stderr fed back as feedback |
 | Setup, SessionStart, SessionEnd, Notification, PreCompact | Shows stderr to user only |
 
 ### JSON Output Structure
@@ -612,6 +843,8 @@ Control whether a tool call proceeds:
 | `"allow"` | Bypasses permission system. Reason shown to user, not Claude. |
 | `"deny"` | Prevents tool execution. Reason shown to Claude. |
 | `"ask"` | Shows confirmation dialog. Reason shown to user, not Claude. |
+
+**Note:** PreToolUse previously used top-level `decision` and `reason` fields, but these are deprecated for this event. Use `hookSpecificOutput.permissionDecision` and `hookSpecificOutput.permissionDecisionReason` instead. Other events like PostToolUse and Stop continue to use top-level `decision` and `reason`.
 
 **Can also modify tool inputs with `updatedInput`:**
 
@@ -1010,7 +1243,7 @@ def perform_action(data):
 | `CLAUDE_PROJECT_DIR` | All hooks | Absolute path to project root |
 | `CLAUDE_PLUGIN_ROOT` | Plugin hooks | Absolute path to plugin directory |
 | `CLAUDE_ENV_FILE` | SessionStart, Setup | File path for persisting env vars |
-| `CLAUDE_CODE_REMOTE` | All hooks | `"true"` if remote (web), empty if local CLI |
+| `CLAUDE_CODE_REMOTE` | All hooks | Set to `"true"` in remote web environments, not set in local CLI |
 | `HOME` | All hooks | User home directory |
 | `PWD` | All hooks | Current working directory |
 
@@ -1179,7 +1412,7 @@ hooks:
 ---
 ```
 
-**Supported events for component hooks:** PreToolUse, PostToolUse, Stop
+**Supported events for component hooks:** All hook events are supported. For subagents, `Stop` hooks are automatically converted to `SubagentStop` since that is the event that fires when a subagent completes.
 
 **Skill-only option:** `once: true` - Run hook only once per session
 
@@ -1216,6 +1449,6 @@ hooks:
 
 ---
 
-**Last Updated:** 2026-01-28
-**Version:** 3.0.0
-**Status:** Complete Specification - Based on Official Claude Code Docs
+**Last Updated:** 2026-02-14
+**Version:** 3.1.0
+**Status:** Complete Specification - Based on Official Claude Code Docs (includes TeammateIdle, TaskCompleted, agent hooks, async hooks)

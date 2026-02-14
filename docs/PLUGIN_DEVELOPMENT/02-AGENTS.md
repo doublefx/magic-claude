@@ -1,5 +1,12 @@
 # Agents - Complete Reference
 
+**Official Documentation Sources:**
+- Subagents: https://code.claude.com/docs/en/sub-agents
+- Agent Teams: https://code.claude.com/docs/en/agent-teams
+- Agent Teams Costs: https://code.claude.com/docs/en/costs
+- CLI Reference (--agents flag): https://code.claude.com/docs/en/cli-reference
+- Documentation Index: https://code.claude.com/docs/llms.txt
+
 ## What Are Agents?
 
 Agents (also called subagents) are specialized AI assistants that handle specific types of tasks. Each subagent runs in its own context window with a custom system prompt, specific tool access, and independent permissions. When Claude encounters a task that matches a subagent's description, it delegates to that subagent, which works independently and returns results.
@@ -696,14 +703,19 @@ claude --agents '{
 ```
 
 The `--agents` flag accepts JSON with these fields:
-- `description`: When Claude should delegate to this agent
-- `prompt`: The system prompt (equivalent to markdown body in file-based agents)
-- `tools`: Array of tool names
-- `model`: Model alias or "inherit"
-- `disallowedTools`: Array of tools to deny
-- `permissionMode`: Permission mode string
-- `skills`: Array of skill names
-- `hooks`: Hook definitions object
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `description` | Yes | When Claude should delegate to this agent |
+| `prompt` | Yes | The system prompt (equivalent to markdown body in file-based agents) |
+| `tools` | No | Array of tool names (e.g., `["Read", "Grep", "Glob"]`). Supports `Task(agent_type)` syntax. Inherits all if omitted |
+| `disallowedTools` | No | Array of tool names to explicitly deny |
+| `model` | No | Model alias: `sonnet`, `opus`, `haiku`, or `inherit` (default) |
+| `skills` | No | Array of skill names to preload into context |
+| `mcpServers` | No | Array of MCP server names (strings) or `{name: config}` objects |
+| `maxTurns` | No | Maximum number of agentic turns before the subagent stops |
+| `permissionMode` | No | Permission mode string (e.g., `"acceptEdits"`, `"plan"`) |
+| `hooks` | No | Hook definitions object scoped to this agent |
 
 ## Model Selection Guide
 
@@ -803,6 +815,90 @@ You MUST follow the **tdd-workflow** skill for TDD tasks.
 | `refactor-cleaner` | haiku | Dead code removal | Read, Bash, Grep |
 | `doc-updater` | haiku | Documentation updates | Read, Write, Edit |
 
+## Agent Teams (Experimental)
+
+Agent teams coordinate multiple Claude Code instances working together. One session acts as the **team lead**, coordinating work and assigning tasks. **Teammates** work independently, each in its own context window, and can communicate directly with each other.
+
+**Status:** Experimental, disabled by default. Enable via `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` in environment or settings.json.
+
+### Agent Teams vs Subagents
+
+|  | Subagents | Agent Teams |
+|--|-----------|-------------|
+| **Context** | Own window; results return to caller | Own window; fully independent |
+| **Communication** | Report results back to main agent only | Teammates message each other directly |
+| **Coordination** | Main agent manages all work | Shared task list with self-coordination |
+| **Best for** | Focused tasks where only the result matters | Complex work requiring discussion and collaboration |
+| **Token cost** | Lower: results summarized back to main context | Higher: each teammate is a separate Claude instance (~7x in plan mode) |
+
+### When to Use Agent Teams
+
+Agent teams add coordination overhead and use significantly more tokens than subagents. Use them only when parallel exploration genuinely adds value:
+
+- **Multi-perspective code review** — 3 reviewers (security, performance, test coverage) examining the same PR simultaneously
+- **Competing hypothesis debugging** — teammates testing different theories in parallel and challenging each other's findings
+- **Cross-layer coordination** — frontend + backend + tests, each owned by a different teammate working on different files
+- **Research and architecture exploration** — multiple teammates researching different approaches
+
+### When NOT to Use Agent Teams
+
+- Sequential tasks (use `/orchestrate` or subagents instead)
+- Same-file edits (causes overwrites)
+- Work with many dependencies between steps
+- Routine single-feature development
+- When token budget is a concern
+
+### Token Cost Awareness
+
+Agent teams consume significantly more tokens than a single session:
+- Each teammate maintains its own full context window
+- All teammates load CLAUDE.md, MCP configs, and skills at spawn
+- Broadcasts multiply costs by team size
+- Recommendation: max 2-3 teammates, focused spawn prompts, minimize broadcasts
+- Delegate verbose I/O (tests, logs) to subagents within teammates, not teammates themselves
+
+### Quality Gates with Hooks
+
+Use `TeammateIdle` and `TaskCompleted` hooks to enforce quality before teammates finish:
+
+```json
+{
+  "hooks": {
+    "TaskCompleted": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/verify-task-completion.cjs\""
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+Exit code 2 blocks the action and feeds stderr back as feedback. See [Hooks Reference](03-HOOKS.md#teammateidle-input-schema) for full schemas.
+
+### Display Modes
+
+| Mode | Description | Requirements |
+|------|-------------|--------------|
+| `auto` (default) | Split panes if in tmux, otherwise in-process | None |
+| `in-process` | All teammates in main terminal. Shift+Up/Down to select | Any terminal |
+| `tmux` | Each teammate in its own pane | tmux or iTerm2 |
+
+Set via `--teammate-mode` flag or `teammateMode` in settings.json.
+
+### Limitations
+
+- No session resumption with in-process teammates
+- Task status can lag (teammates may not mark tasks as completed)
+- One team per session, no nested teams
+- Lead is fixed (cannot promote a teammate)
+- All teammates start with lead's permission mode
+- Split panes not supported in VS Code terminal, Windows Terminal, or Ghostty
+
 ## Complete Reference Checklist
 
 ### Creating an Agent
@@ -820,9 +916,9 @@ You MUST follow the **tdd-workflow** skill for TDD tasks.
 
 ---
 
-**Last Updated:** 2026-02-08
-**Version:** 3.0.0
-**Status:** Complete Specification
+**Last Updated:** 2026-02-14
+**Version:** 3.1.0
+**Status:** Complete Specification (includes Agent Teams, updated CLI schema)
 
 **Strategy:**
 - **Opus:** Planning, architecture, security review (1-2 agents)
@@ -1503,5 +1599,5 @@ Check:
 
 ---
 
-**Last Updated:** 2026-02-08
-**Version:** 3.0.0
+**Last Updated:** 2026-02-14
+**Version:** 3.1.0

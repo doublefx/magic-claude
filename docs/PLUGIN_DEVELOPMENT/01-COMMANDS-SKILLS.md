@@ -1,5 +1,11 @@
 # Commands and Skills - Complete Reference
 
+**Official Documentation Sources:**
+- Skills: https://code.claude.com/docs/en/skills
+- Plugins Reference (commands): https://code.claude.com/docs/en/plugins-reference
+- Plugins Overview: https://code.claude.com/docs/en/plugins
+- Documentation Index: https://code.claude.com/docs/llms.txt
+
 ## Commands (Slash Commands)
 
 Commands are user-triggered actions that execute when a user types `/command-name`. They can be Markdown files with frontmatter or Node.js scripts.
@@ -1209,6 +1215,6 @@ const token = "ghp_xyz789"         // NEVER
 
 ---
 
-**Last Updated:** 2026-01-28
-**Version:** 2.1.0
+**Last Updated:** 2026-02-14
+**Version:** 3.1.0
 **Status:** Complete Specification (Updated with Official Claude Code Skills Documentation)
