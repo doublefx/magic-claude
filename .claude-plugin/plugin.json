@@ -31,8 +31,6 @@
     "mcp",
     "semantic-analysis"
   ],
-  "agents": "./agents",
   "commands": "./commands",
-  "hooks": "./hooks/hooks.json",
   "skills": "./skills"
 }
