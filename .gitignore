@@ -36,7 +36,6 @@ examples/sessions/*.tmp
 /plugin.json
 
 # Development-only files (not shipped with plugin)
-tests/
 vitest.config.js
 eslint.config.js
 knip.json
