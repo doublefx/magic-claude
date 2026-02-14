@@ -38,6 +38,7 @@ When installed as a plugin, use these slash commands:
 /setup             # Complete automated setup (RECOMMENDED for first-time)
 /setup-pm          # Package manager only (when switching npm→pnpm, etc.)
 /setup-ecosystem   # Workspace & tools only (for monorepo initialization)
+/setup-rules       # Install plugin rules to ~/.claude/rules/
 
 # Development Workflow
 /tdd               # Test-driven development workflow

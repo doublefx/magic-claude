@@ -84,7 +84,6 @@ my-plugin/
   "commands": "./commands",
   "skills": "./skills",
   "agents": "./agents",
-  "rules": "./rules",
   "hooks": "./hooks/hooks.json",
   "engines": {
     "claude-code": ">=1.0.0"
@@ -107,7 +106,6 @@ my-plugin/
 | `commands` | string | No | Path to commands dir (default: "./commands") |
 | `skills` | string | No | Path to skills dir (default: "./skills") |
 | `agents` | string | No | Path to agents dir (default: "./agents") |
-| `rules` | string | No | Path to rules dir (default: "./rules") |
 | `hooks` | string | No | Path to hooks.json (default: "./hooks/hooks.json") |
 | `engines` | object | No | Version requirements |
 
@@ -150,7 +148,6 @@ my-plugin/
   "commands": "./commands",
   "skills": "./skills",
   "agents": "./agents",
-  "rules": "./rules",
   "hooks": "./hooks/hooks.json",
   "engines": {
     "claude-code": ">=1.0.0"
@@ -269,13 +266,13 @@ skills/
 - `hooks`: Array of handlers (`type`: `command`, `prompt`, or `agent`)
 - `description`: Explanation
 
-### 6. Rules Directory (Optional)
+### 6. Rules Directory (NOT Auto-Loaded)
 
 **Location:** `rules/`
 
 **Contents:**
 - Markdown files (`.md`) with project guidelines
-- Auto-loaded into context when plugin is active
+- **NOT auto-loaded from plugins** - Claude Code only loads rules from `~/.claude/rules/` (user-level) or `.claude/rules/` (project-level)
 
 **Structure:**
 
@@ -287,10 +284,12 @@ rules/
 └── security.md          # Security guidelines
 ```
 
-**Rules:**
+**Installation Required:**
 - Standard markdown format
 - No frontmatter required
-- Auto-loaded, no explicit activation
+- Must be copied to `~/.claude/rules/` to take effect
+- Use `/setup-rules --install` to install plugin rules
+- The `/setup` command includes rules installation automatically
 
 ### 7. Scripts Directory (Optional)
 
@@ -404,9 +403,11 @@ Claude Code discovers:
   - Agents from ./agents
   - Skills from ./skills
   - Hooks from ./hooks/hooks.json
-  - Rules from ./rules
   ↓
 Plugin is registered and available
+  ↓
+NOTE: Rules in rules/ are NOT auto-loaded.
+Run /setup-rules --install to copy to ~/.claude/rules/
 ```
 
 ### Plugin Discovery
@@ -419,7 +420,7 @@ Plugin is registered and available
 | Agents | Directory in plugin.json | Yes |
 | Skills | Directory in plugin.json | Yes |
 | Hooks | File path in plugin.json | Yes (if specified) |
-| Rules | Directory in plugin.json | Yes (if specified) |
+| Rules | `~/.claude/rules/` or `.claude/rules/` | No (manual install required) |
 
 **Disabling Components:**
 

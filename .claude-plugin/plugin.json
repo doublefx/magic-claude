@@ -1,6 +1,6 @@
 {
   "name": "magic-claude",
-  "version": "2.5.0",
+  "version": "2.6.0",
   "description": "Enterprise Stack Extension - Claude Code plugin for Python, Java, Kotlin, Gradle, Maven, and CI/CD pipelines",
   "author": {
     "name": "doublefx",
@@ -15,7 +15,6 @@
     "skills",
     "hooks",
     "commands",
-    "rules",
     "tdd",
     "code-review",
     "security",
@@ -32,6 +31,8 @@
     "mcp",
     "semantic-analysis"
   ],
+  "agents": "./agents",
   "commands": "./commands",
+  "hooks": "./hooks/hooks.json",
   "skills": "./skills"
 }

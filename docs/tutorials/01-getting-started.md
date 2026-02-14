@@ -17,9 +17,14 @@
 # 2. Install the plugin
 /plugin install magic-claude@magic-claude
 
-# 3. Verify installation
+# 3. Install plugin rules (NOT auto-loaded from plugins)
+/setup-rules --install
+
+# 4. Verify installation
 # You should see no errors in the output
 ```
+
+> **Important:** Claude Code does not auto-load rules from plugins. After installing, run `/setup-rules --install` (or `/setup` which includes it) to copy rules to `~/.claude/rules/`.
 
 ### Option B: Manual Installation
 

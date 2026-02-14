@@ -12,7 +12,8 @@
  * 1. Workspace detection and initialization
  * 2. Package manager detection
  * 3. Ecosystem detection
- * 4. Serena integration (main setup work)
+ * 4. Rules installation (copies plugin rules to ~/.claude/rules/)
+ * 5. Serena integration (main setup work)
  */
 
 const path = require('path');
@@ -168,8 +169,13 @@ async function main() {
     console.log('○ No recognized project types detected');
   }
 
-  // Step 4: Serena Integration
-  console.log('\n━━━ Step 4: Serena Integration ━━━\n');
+  // Step 4: Rules Installation
+  console.log('\n━━━ Step 4: Rules Installation ━━━\n');
+
+  runScript('setup-rules.cjs', ['--install'], { verbose });
+
+  // Step 5: Serena Integration
+  console.log('\n━━━ Step 5: Serena Integration ━━━\n');
 
   const serenaInstalled = isSerenaInstalled();
   const serenaSetupComplete = isSerenaSetupComplete();
@@ -223,7 +229,7 @@ async function main() {
     console.log('   To install: /plugin install serena');
   }
 
-  // Step 5: Final Summary
+  // Step 6: Final Summary
   console.log('\n━━━ Setup Summary ━━━\n');
 
   const hasPackageJson = fs.existsSync(path.join(process.cwd(), 'package.json'));

@@ -141,6 +141,22 @@ function detectSetupNeeds() {
     }
   }
 
+  // Check for missing plugin rules
+  const pluginRulesDir = path.join(process.env.CLAUDE_PLUGIN_ROOT || path.join(__dirname, '..', '..'), 'rules');
+  const userRulesDir = path.join(require('os').homedir(), '.claude', 'rules');
+
+  if (fs.existsSync(pluginRulesDir)) {
+    const pluginRules = fs.readdirSync(pluginRulesDir).filter(f => f.endsWith('.md'));
+    const installedRules = fs.existsSync(userRulesDir)
+      ? fs.readdirSync(userRulesDir).filter(f => f.endsWith('.md'))
+      : [];
+    const missingRules = pluginRules.filter(f => !installedRules.includes(f));
+
+    if (missingRules.length > 0) {
+      issues.push(`${missingRules.length} plugin rule(s) not installed to ~/.claude/rules/ - run /setup-rules --install`);
+    }
+  }
+
   // Simplified setup detection: check .serena/project.yml
   const serenaSetupComplete = isSerenaSetupComplete();
 

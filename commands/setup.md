@@ -18,8 +18,9 @@ TaskCreate for each step:
 4. "Detect project ecosystems"
 5. "Verify development tools"
 6. "Install dependencies" (ask user first)
-7. "Run Serena setup" (if installed - INVOKE /serena-setup skill)
-8. "Verify setup complete" (.serena/project.yml exists)
+7. "Install plugin rules" (copies rules to ~/.claude/rules/)
+8. "Run Serena setup" (if installed - INVOKE /serena-setup skill)
+9. "Verify setup complete" (.serena/project.yml exists)
 
 Mark each task in_progress before starting, completed when done.
 Do NOT skip tasks - if a step is not applicable, mark it completed with a note.
@@ -35,10 +36,11 @@ Automated, interactive setup that handles everything:
 4. **Ecosystem Detection** - Identifies Node.js, Python, Java, Rust projects
 5. **Tool Checking** - Verifies required development tools
 6. **Dependency Installation** - Installs workspace and package dependencies
-7. **Configuration** - Sets up .claude/ configs
-8. **Serena Integration** - **INVOKE /serena-setup skill** (activate, onboard, memories, CLAUDE.md migration)
+7. **Rules Installation** - Copies plugin rules to `~/.claude/rules/`
+8. **Configuration** - Sets up .claude/ configs
+9. **Serena Integration** - **INVOKE /serena-setup skill** (activate, onboard, memories, CLAUDE.md migration)
 
-## Step 8: Serena Integration (CRITICAL)
+## Step 9: Serena Integration (CRITICAL)
 
 When Serena MCP is detected (check `mcp-cli info plugin_serena_serena/get_current_config`):
 
@@ -205,11 +207,15 @@ workspace-root/
 │   ├── Detect current package manager
 │   ├── Set global/project preference
 │   └── Show detection priority
-└── /setup-ecosystem (Granular - Workspace & Tools)
-    ├── Detect workspace structure
-    ├── Initialize workspace root
-    ├── Check development tools
-    └── Install dependencies
+├── /setup-ecosystem (Granular - Workspace & Tools)
+│   ├── Detect workspace structure
+│   ├── Initialize workspace root
+│   ├── Check development tools
+│   └── Install dependencies
+└── /setup-rules (Granular - Rules Only)
+    ├── Check rule installation status
+    ├── Install/update managed rules
+    └── Uninstall managed rules
 ```
 
 **Think of it like Git:**
@@ -239,4 +245,5 @@ workspace-root/
 
 - `/setup-pm` - Configure package manager only (granular control)
 - `/setup-ecosystem` - Workspace and tools only (granular control)
-- Both commands are orchestrated by `/setup` for convenience
+- `/setup-rules` - Install plugin rules to `~/.claude/rules/`
+- All three commands are orchestrated by `/setup` for convenience

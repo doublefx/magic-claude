@@ -21,6 +21,7 @@ const testFiles = [
   'lib/tool-detection.test.cjs',
   'lib/workspace-commands.test.cjs',
   'lib/serena.test.cjs',
+  'lib/setup-rules.test.cjs',
   'hooks/hooks.test.cjs',
   'hooks/serena-hooks.test.cjs'
 ];

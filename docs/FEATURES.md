@@ -930,6 +930,9 @@ Magic Claude provides:
 - **One-command CI/CD generation** for 3 platforms
 - **Security scanning** integrated into workflows
 - **Excellent performance** with 2026 tooling
+- **13 project rules** for security, coding style, testing, and more (install via `/setup-rules`)
+
+> **Note:** Plugin rules are NOT auto-loaded by Claude Code. Run `/setup-rules --install` or `/setup` to copy them to `~/.claude/rules/`.
 
 **Next Steps**:
 - Read [AGENT-CATALOG.md](AGENT-CATALOG.md) for agent details

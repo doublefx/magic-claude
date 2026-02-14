@@ -78,7 +78,7 @@ magic-claude/
 |   |-- serena-code-navigation/     # Serena code navigation tool mapping
 |   |-- git-sync/                   # Git changes impact analysis
 |
-|-- commands/         # Slash commands for quick execution (14 total)
+|-- commands/         # Slash commands for quick execution (15 total)
 |   |-- tdd.md              # /tdd - Test-driven development
 |   |-- plan.md             # /plan - Implementation planning
 |   |-- e2e.md              # /e2e - E2E test generation
@@ -89,6 +89,7 @@ magic-claude/
 |   |-- checkpoint.md       # /checkpoint - Save verification state
 |   |-- verify.md           # /verify - Run verification loop
 |   |-- setup-pm.md         # /setup-pm - Configure package manager
+|   |-- setup-rules.md      # /setup-rules - Install plugin rules
 |   |-- eval.md             # /eval - Run evaluation harness
 |   |-- orchestrate.md      # /orchestrate - Multi-agent orchestration
 |   |-- test-coverage.md    # /test-coverage - Coverage reporting
@@ -140,6 +141,7 @@ magic-claude/
 |   |   |-- task-completed.cjs         # TaskCompleted quality gate
 |   |   |-- notify.cjs                 # Desktop notifications
 |   |-- setup-package-manager.cjs # Interactive PM setup
+|   |-- setup-rules.cjs          # Plugin rules installation
 |
 |-- templates/        # CI/CD and deployment templates
 |   |-- github-actions/          # GitHub Actions workflows

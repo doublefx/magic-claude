@@ -9,7 +9,7 @@ This documentation provides COMPREHENSIVE, EXHAUSTIVE guidance for developing Cl
 - **Agents** - Specialized AI subagents with custom models, tools, and skills
 - **Skills** - Reusable domain knowledge and workflows
 - **Hooks** - Event-driven automation on tool execution and session lifecycle
-- **Rules** - Project-specific guidelines and conventions
+- **Rules** - Project-specific guidelines (requires manual install to `~/.claude/rules/`)
 - **Plugin Manifest** - Central configuration (plugin.json)
 
 ## Quick Architecture
@@ -29,7 +29,7 @@ my-plugin/
 │       └── config.json         # Optional skill config
 ├── hooks/
 │   └── hooks.json              # Event automation rules
-└── rules/                       # Project guidelines
+└── rules/                       # Project guidelines (manual install to ~/.claude/rules/)
     └── guideline-name.md
 ```
 
@@ -58,8 +58,7 @@ Complete schema with ALL fields and options.
   "commands": "./commands",
   "skills": "./skills",
   "agents": "./agents",
-  "rules": "./rules",
-  "hooks": "./hooks",
+  "hooks": "./hooks/hooks.json",
   "engines": {
     "claude-code": ">=1.0.0"
   }
@@ -81,7 +80,6 @@ Complete schema with ALL fields and options.
 | `commands` | string | No | Path to commands directory (default: "./commands") |
 | `skills` | string | No | Path to skills directory (default: "./skills") |
 | `agents` | string | No | Path to agents directory (default: "./agents") |
-| `rules` | string | No | Path to rules directory (default: "./rules") |
 | `hooks` | string | No | Path to hooks.json file (default: "./hooks/hooks.json") |
 | `engines` | object | No | Version requirements (claude-code minimum version) |
 
@@ -93,7 +91,7 @@ Complete schema with ALL fields and options.
 | **Agents** | Specialized assistants | `.md` only | User mentions or delegation | Custom per-agent |
 | **Skills** | Reusable knowledge | `/SKILL.md` or `.md` | Referenced explicitly | Claude (guidance) |
 | **Hooks** | Event automation | `hooks.json` | Event trigger | Node.js only |
-| **Rules** | Project guidelines | `.md` | Auto-loaded into context | Claude (guidance) |
+| **Rules** | Project guidelines | `.md` | Manual install to `~/.claude/rules/` | Claude (guidance) |
 
 ## Component Field Summary
 
