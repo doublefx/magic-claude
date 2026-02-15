@@ -1,11 +1,11 @@
 ---
-description: Analyze external git changes and report their impact on codebase understanding. Processes sync reminder logs, identifies affected areas, and produces an actionable change impact report.
+description: Invoke automatically after git pull, merge, rebase, or branch switch to analyze external changes and report their impact. Produces an actionable change impact report with severity classification.
 context: fork
 agent: Explore
 allowed-tools: Read, Grep, Glob, Bash(git *)
 ---
 
-# /git-sync - Analyze Git Changes and Report Impact
+# Git Sync - Analyze Changes and Report Impact
 
 ## Current Git State
 
@@ -14,14 +14,6 @@ Recent commits:
 
 Sync reminder log:
 !`cat .git/serena-sync-reminder.log 2>/dev/null || echo "No sync log found"`
-
-## When to Activate
-
-- After pulling/merging external changes
-- After rebasing
-- After branch switching
-- When sync reminder log has entries
-- Periodically during long sessions
 
 ## Workflow
 
@@ -131,19 +123,4 @@ Next sync reminder: After next pull/merge
 
 ## Automatic Sync Detection
 
-Git hooks (installed by `/serena-setup` or manually) trigger reminders:
-
-```bash
-# In .git/hooks/post-merge
-#!/bin/bash
-echo "$(date -u '+%Y-%m-%d %H:%M:%S UTC') - $GIT_REFLOG_ACTION" >> .git/serena-sync-reminder.log
-echo "External changes detected. Run /git-sync to analyze impact."
-```
-
-## Best Practices
-
-1. **Sync after every pull** - keeps understanding current
-2. **Don't ignore HIGH severity** - stale understanding causes wrong decisions
-3. **Re-explore affected modules** - read the actual code, don't assume
-4. **Check breaking changes** - API signature changes affect callers
-5. **Review new patterns** - new dependencies or patterns may need adoption
+Git hooks (installed via `/serena-setup` or manually from `templates/serena/git-hooks/`) write to `.git/serena-sync-reminder.log` after pull, merge, rebase, or branch switch operations. This skill reads that log to understand what changed.
