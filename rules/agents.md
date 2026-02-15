@@ -1,4 +1,12 @@
+<!-- managed by magic-claude plugin -->
 # Agent Orchestration
+
+## Feature Implementation Priority (MANDATORY)
+
+For complex feature requests that involve writing code:
+1. **NEVER** use EnterPlanMode — use the `proactive-orchestration` skill instead
+2. The orchestrator coordinates: PLAN -> TDD -> VERIFY -> REVIEW in sequence
+3. EnterPlanMode is ONLY for pure research/exploration or explicit `/plan` commands
 
 ## Available Agents
 
@@ -6,7 +14,7 @@ Located in `~/.claude/agents/`:
 
 | Agent | Purpose | When to Use |
 |-------|---------|-------------|
-| planner | Implementation planning | Complex features, refactoring |
+| planner | Implementation planning | Via orchestration skill or `/plan` |
 | architect | System design | Architectural decisions |
 | ts-tdd-guide | TypeScript/JS TDD | New TS/JS features, bug fixes |
 | jvm-tdd-guide | JVM TDD | New Java/Kotlin features, bug fixes |
@@ -25,14 +33,16 @@ Located in `~/.claude/agents/`:
 | jvm-refactor-cleaner | JVM dead code | Code maintenance |
 | python-refactor-cleaner | Python dead code | Code maintenance |
 | doc-updater | Documentation | Updating docs |
+| git-sync | Git change analysis | After git pull/merge/rebase (background) |
 
 ## Immediate Agent Usage
 
 No user prompt needed:
-1. Complex feature requests - Use **planner** agent
+1. Complex feature requests - Invoke **proactive-orchestration** skill (NOT EnterPlanMode)
 2. Code just written/modified - Use **code-reviewer** agent
 3. Bug fix or new feature - Use appropriate **tdd-guide** agent (ts/jvm/python)
 4. Architectural decision - Use **architect** agent
+5. After git pull/merge/rebase - Use **git-sync** agent in background
 
 ## Parallel Task Execution
 
