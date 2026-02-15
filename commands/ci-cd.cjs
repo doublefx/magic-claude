@@ -7,6 +7,8 @@ const fs = require('fs');
 const path = require('path');
 const { detectProjectType } = require('../scripts/lib/detect-project-type.cjs');
 
+const PLUGIN_ROOT = process.env.CLAUDE_PLUGIN_ROOT || path.join(__dirname, '..');
+
 // Platform configurations
 const PLATFORMS = {
   'github-actions': {
@@ -115,7 +117,7 @@ async function generatePipeline(platform = 'github-actions', cwd = process.cwd()
   console.log(`Selected template: ${templateFile}`);
 
   // Read template
-  const templatePath = path.join(__dirname, '..', 'templates', platformConfig.templateDir, templateFile);
+  const templatePath = path.join(PLUGIN_ROOT, 'templates', platformConfig.templateDir, templateFile);
 
   if (!fs.existsSync(templatePath)) {
     return {
@@ -178,7 +180,7 @@ async function generateAdditionalFiles(fileTypes = [], cwd = process.cwd()) {
           : null;
 
         if (dockerfileTemplate) {
-          const templatePath = path.join(__dirname, '..', 'templates', 'docker', dockerfileTemplate);
+          const templatePath = path.join(PLUGIN_ROOT, 'templates', 'docker', dockerfileTemplate);
           const outputPath = path.join(cwd, 'Dockerfile');
 
           if (fs.existsSync(outputPath)) {
@@ -196,7 +198,7 @@ async function generateAdditionalFiles(fileTypes = [], cwd = process.cwd()) {
           }
 
           // Also copy .dockerignore
-          const dockerignorePath = path.join(__dirname, '..', 'templates', 'docker', '.dockerignore');
+          const dockerignorePath = path.join(PLUGIN_ROOT, 'templates', 'docker', '.dockerignore');
           const dockerignoreOutput = path.join(cwd, '.dockerignore');
           if (!fs.existsSync(dockerignoreOutput)) {
             const dockerignoreContent = fs.readFileSync(dockerignorePath, 'utf8');
@@ -225,7 +227,7 @@ async function generateAdditionalFiles(fileTypes = [], cwd = process.cwd()) {
         ];
 
         for (const file of k8sFiles) {
-          const templatePath = path.join(__dirname, '..', 'templates', 'kubernetes', file);
+          const templatePath = path.join(PLUGIN_ROOT, 'templates', 'kubernetes', file);
           const outputPath = path.join(k8sDir, file);
 
           if (!fs.existsSync(outputPath)) {
@@ -250,7 +252,7 @@ async function generateAdditionalFiles(fileTypes = [], cwd = process.cwd()) {
         ];
 
         for (const { src, dest } of securityFiles) {
-          const templatePath = path.join(__dirname, '..', 'templates', 'security', src);
+          const templatePath = path.join(PLUGIN_ROOT, 'templates', 'security', src);
           const outputPath = path.join(cwd, dest);
 
           if (!fs.existsSync(outputPath)) {
