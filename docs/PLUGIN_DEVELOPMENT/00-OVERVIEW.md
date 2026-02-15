@@ -17,49 +17,53 @@ This documentation provides COMPREHENSIVE, EXHAUSTIVE guidance for developing Cl
 ```
 my-plugin/
 ├── .claude-plugin/
-│   └── plugin.json              # Plugin metadata and manifest
-├── commands/                    # Slash commands (markdown or Node.js)
+│   └── plugin.json              # Plugin metadata and manifest (optional)
+├── commands/                    # Slash commands (legacy; use skills/ for new)
 │   ├── command1.md             # Markdown-based command
 │   └── script-command.cjs       # Node.js-based command
 ├── agents/                      # Specialized subagents
 │   └── agent-name.md           # Agent with custom model/tools
-├── skills/                      # Reusable workflows
+├── skills/                      # Reusable workflows (preferred)
 │   └── skill-name/
 │       ├── SKILL.md            # Skill content
 │       └── config.json         # Optional skill config
 ├── hooks/
 │   └── hooks.json              # Event automation rules
+├── .mcp.json                    # MCP server definitions (optional)
+├── .lsp.json                    # LSP server configurations (optional)
 └── rules/                       # Project guidelines (manual install to ~/.claude/rules/)
     └── guideline-name.md
 ```
 
 ## Plugin Metadata (plugin.json)
 
-Complete schema with ALL fields and options.
+**File:** `.claude-plugin/plugin.json` (optional)
 
-**File:** `.claude-plugin/plugin.json`
+The manifest is optional. If omitted, Claude Code auto-discovers components in default locations and derives the plugin name from the directory name. If included, `name` is the only required field.
 
-### All Plugin Fields
+### Complete Schema
 
 ```json
 {
   "name": "plugin-name",
-  "version": "1.0.0",
-  "description": "Human-readable plugin description",
+  "version": "1.2.0",
+  "description": "Brief plugin description",
   "author": {
     "name": "Author Name",
-    "email": "email@example.com",
+    "email": "author@example.com",
     "url": "https://github.com/username"
   },
+  "homepage": "https://docs.example.com/plugin",
+  "repository": "https://github.com/author/plugin",
   "license": "MIT",
-  "homepage": "https://github.com/username/plugin-name",
-  "repository": "https://github.com/username/plugin-name",
   "keywords": ["keyword1", "keyword2"],
-  "commands": "./commands",
-  "skills": "./skills",
-  "engines": {
-    "claude-code": ">=1.0.0"
-  }
+  "commands": ["./custom/commands/special.md"],
+  "agents": "./custom/agents/",
+  "skills": "./custom/skills/",
+  "hooks": "./config/hooks.json",
+  "mcpServers": "./mcp-config.json",
+  "outputStyles": "./styles/",
+  "lspServers": "./.lsp.json"
 }
 ```
 
@@ -67,30 +71,34 @@ Complete schema with ALL fields and options.
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `name` | string | Yes | Plugin identifier (lowercase, hyphens only, unique) |
-| `version` | string | Yes | Semantic versioning (e.g., "1.0.0", "2.3.4-beta") |
-| `description` | string | Yes | One-line description shown in plugin marketplace |
+| `name` | string | Yes | Plugin identifier (kebab-case, no spaces, unique). Used for namespacing. |
+| `version` | string | No | Semantic version (e.g., "1.0.0"). Plugin.json takes priority over marketplace entry. |
+| `description` | string | No | Brief explanation of plugin purpose |
 | `author` | object | No | Plugin creator details (name, email, url) |
 | `license` | string | No | License type (MIT, Apache-2.0, GPL-3.0, etc.) |
-| `homepage` | string | No | Project homepage URL |
-| `repository` | string | No | Repository URL (GitHub, GitLab, etc.) |
-| `keywords` | array[string] | No | Search keywords (5-10 items recommended) |
-| `commands` | string\|array | No | Additional command files/dirs (default `commands/` auto-discovered) |
+| `homepage` | string | No | Documentation URL |
+| `repository` | string | No | Source code URL |
+| `keywords` | array[string] | No | Discovery tags (5-10 recommended) |
+| `commands` | string\|array | No | Additional command files/dirs (default `commands/` auto-discovered). Legacy; use `skills/`. |
 | `skills` | string\|array | No | Additional skill dirs (default `skills/` auto-discovered) |
 | `agents` | string\|array | No | Additional agent files (default `agents/` auto-discovered) |
 | `hooks` | string\|array\|object | No | Additional hook configs or inline (default `hooks/hooks.json` auto-discovered) |
-| `engines` | object | No | Version requirements (claude-code minimum version) |
+| `mcpServers` | string\|array\|object | No | MCP server config paths or inline (default `.mcp.json` auto-discovered) |
+| `outputStyles` | string\|array | No | Additional output style files/directories |
+| `lspServers` | string\|array\|object | No | LSP server configs for code intelligence (default `.lsp.json` auto-discovered) |
 
-> **Note:** `commands/`, `agents/`, `skills/`, and `hooks/hooks.json` are auto-discovered from their default locations. Only specify these fields for **non-default** custom paths. Custom paths supplement defaults, they don't replace them.
+> **Note:** `commands/`, `agents/`, `skills/`, `hooks/hooks.json`, `.mcp.json`, and `.lsp.json` are auto-discovered from their default locations. Only specify these fields for **non-default** custom paths. Custom paths supplement defaults, they don't replace them. Set to `null` to disable auto-discovery.
 
 ## Component Overview Table
 
 | Component | Purpose | File Format | Activation | Model Control |
 |-----------|---------|-------------|-----------|---|
-| **Commands** | User-triggered actions | `.md` or `.cjs` | User types `/name` | Claude (or disabled) |
+| **Commands** | User-triggered actions (legacy) | `.md` or `.cjs` | User types `/name` | Claude (or disabled) |
 | **Agents** | Specialized assistants | `.md` only | User mentions or delegation | Custom per-agent |
-| **Skills** | Reusable knowledge | `/SKILL.md` or `.md` | Referenced explicitly | Claude (guidance) |
+| **Skills** | Reusable knowledge (preferred) | `/SKILL.md` or `.md` | Referenced explicitly | Claude (guidance) |
 | **Hooks** | Event automation | `hooks.json` | Event trigger | Node.js only |
+| **MCP Servers** | External tool integration | `.mcp.json` | Auto-start on enable | External server |
+| **LSP Servers** | Code intelligence | `.lsp.json` | Auto-start per language | External server |
 | **Rules** | Project guidelines | `.md` | Manual install to `~/.claude/rules/` | Claude (guidance) |
 
 ## Component Field Summary
@@ -113,16 +121,16 @@ Complete schema with ALL fields and options.
 - **Activation:** Explicit reference or `context: fork`
 
 ### Hooks
-- **Trigger Events (14):** PreToolUse, PostToolUse, PostToolUseFailure, PermissionRequest, Notification, SubagentStart, SubagentStop, UserPromptSubmit, SessionStart, SessionEnd, PreCompact, Setup, Stop, TeammateIdle, TaskCompleted
+- **Trigger Events (14):** PreToolUse, PostToolUse, PostToolUseFailure, PermissionRequest, Notification, SubagentStart, SubagentStop, UserPromptSubmit, SessionStart, SessionEnd, PreCompact, Stop, TeammateIdle, TaskCompleted
 - **Handler Types:** `command` (shell), `prompt` (single LLM call), `agent` (multi-turn subagent)
 - **Key Fields:** `matcher` (string/regex pattern), `hooks` (handler array), `description`
 - **Execution:** Node.js scripts with stdin/stdout JSON
 - **Blocking:** PreToolUse and PermissionRequest can block (exit 1); TeammateIdle and TaskCompleted can block with feedback (exit 2)
 
-### Plugin.json
+### Plugin.json (Optional)
 - **Location:** `.claude-plugin/plugin.json`
-- **Purpose:** Central metadata registry
-- **Usage:** Auto-discovery of components
+- **Purpose:** Central metadata registry (optional; components auto-discovered without it)
+- **Required fields:** Only `name` (if manifest is present)
 - **${CLAUDE_PLUGIN_ROOT}:** Environment variable for absolute paths
 
 ## Key Concepts in Detail
@@ -335,7 +343,7 @@ npm run setup
 
 ---
 
-**Last Updated:** 2026-02-14
-**Version:** 3.1.0
-**Status:** Complete Specification
+**Last Updated:** 2026-02-15
+**Version:** 4.0.0
+**Status:** Aligned with official Claude Code plugin specification
 **License:** MIT
