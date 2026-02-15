@@ -1,9 +1,8 @@
 #!/bin/bash
-# Serena Git Hook: post-merge
-# Reminds to sync memories after merge/pull
+# Git Hook: post-merge
+# Logs merges/pulls for /git-sync change impact analysis
 
-echo "[Serena] External changes detected after merge."
-echo "         Run /git-sync to update memories."
+echo "[git-sync] External changes detected after merge. Run /git-sync to analyze impact."
 
 # Log for later processing
 LOG_FILE=".git/serena-sync-reminder.log"

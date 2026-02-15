@@ -1,14 +1,13 @@
 #!/bin/bash
-# Serena Git Hook: post-rewrite
-# Reminds to sync memories after amend/rebase -i
+# Git Hook: post-rewrite
+# Logs history rewrites for /git-sync change impact analysis
 #
 # Arguments:
 #   $1 - command that caused the rewrite (amend or rebase)
 
 COMMAND="$1"
 
-echo "[Serena] History rewritten via $COMMAND."
-echo "         Run /git-sync to update memories."
+echo "[git-sync] History rewritten via $COMMAND. Run /git-sync to analyze impact."
 
 # Log for later processing
 LOG_FILE=".git/serena-sync-reminder.log"

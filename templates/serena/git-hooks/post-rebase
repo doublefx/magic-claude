@@ -1,9 +1,8 @@
 #!/bin/bash
-# Serena Git Hook: post-rebase
-# Reminds to sync memories after rebase
+# Git Hook: post-rebase
+# Logs rebases for /git-sync change impact analysis
 
-echo "[Serena] External changes detected after rebase."
-echo "         Run /git-sync to update memories."
+echo "[git-sync] External changes detected after rebase. Run /git-sync to analyze impact."
 
 # Log for later processing
 LOG_FILE=".git/serena-sync-reminder.log"
