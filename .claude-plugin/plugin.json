@@ -30,7 +30,5 @@
     "serena",
     "mcp",
     "semantic-analysis"
-  ],
-  "commands": "./commands",
-  "skills": "./skills"
+  ]
 }

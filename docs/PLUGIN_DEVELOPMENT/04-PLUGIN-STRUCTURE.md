@@ -129,12 +129,12 @@ If you include a manifest, `name` is the only required field.
 }
 ```
 
-**Complete plugin.json (magic-claude example):**
+**Real-world plugin.json (magic-claude, using auto-discovery):**
 
 ```json
 {
   "name": "magic-claude",
-  "version": "2.6.1",
+  "version": "2.7.0",
   "description": "Enterprise Stack Extension - Claude Code plugin for Python, Java, Kotlin, Gradle, Maven, and CI/CD pipelines",
   "author": {
     "name": "doublefx",
@@ -153,11 +153,11 @@ If you include a manifest, `name` is the only required field.
     "python",
     "java",
     "ci-cd"
-  ],
-  "commands": "./commands",
-  "skills": "./skills"
+  ]
 }
 ```
+
+> This manifest relies entirely on auto-discovery for `commands/`, `agents/`, `skills/`, and `hooks/hooks.json`. No component path fields are needed when using default locations.
 
 ### 2. Commands Directory (Legacy)
 
