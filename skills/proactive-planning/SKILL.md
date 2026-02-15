@@ -1,6 +1,6 @@
 ---
 name: proactive-planning
-description: Proactive implementation planning. Claude invokes this automatically for complex tasks, architectural changes, or unclear requirements before writing code.
+description: "Standalone planning ONLY - for architectural discussions, requirement analysis, and design decisions where NO code will be written. If the task involves writing code, DEFER to proactive-orchestration instead. Only fires for pure planning without TDD/review pipeline."
 user-invocable: false
 context: fork
 agent: planner

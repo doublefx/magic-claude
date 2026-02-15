@@ -1,20 +1,30 @@
 ---
 name: proactive-orchestration
-description: Automatically orchestrates the full development pipeline when Claude detects complex feature requests, multi-file implementations, or architectural changes. Coordinates planning, TDD, verification, and review in sequence. Fires for non-trivial feature work. Does NOT fire for simple bug fixes, single-file edits, documentation, or refactoring.
+description: "MANDATORY for complex features: You MUST invoke this skill INSTEAD OF EnterPlanMode when detecting complex feature requests, multi-file implementations, or architectural changes. NEVER use EnterPlanMode for feature implementation - use this orchestrator which coordinates PLAN -> TDD -> VERIFY -> REVIEW in sequence. Only use EnterPlanMode for pure research/exploration tasks or when user explicitly types /plan. Does NOT fire for simple bug fixes, single-file edits, documentation, or refactoring."
 user-invocable: false
 ---
 
 # Proactive Orchestration
 
-Automatically orchestrates the full development pipeline for complex feature work. Coordinates planning, TDD, verification, and review in sequence with user confirmation gates between phases.
+## CRITICAL: Overrides EnterPlanMode for Feature Work
 
-## When Claude Should Invoke This Skill
+This skill **REPLACES** EnterPlanMode for all feature implementation tasks.
+
+- **WRONG**: Using EnterPlanMode when user asks to implement a feature
+- **WRONG**: Using EnterPlanMode when user asks to add new functionality
+- **WRONG**: Planning without follow-through to TDD, verification, and review
+
+- **CORRECT**: Invoke this skill for any non-trivial feature implementation
+- **CORRECT**: Only use EnterPlanMode for pure research/exploration or explicit `/plan`
+
+## When Claude MUST Invoke This Skill
 
 **MUST trigger when detecting:**
 - Complex feature requests involving multiple components or files
 - Architectural changes (new endpoints, new services, new modules)
 - "Add", "implement", "build", "create" combined with non-trivial scope indicators
 - Multi-step feature descriptions requiring planning before coding
+- Any request where you would normally use EnterPlanMode AND the task involves writing code
 
 **MUST NOT trigger on:**
 - Simple bug fixes ("fix this null pointer", "handle the null case")
@@ -23,6 +33,8 @@ Automatically orchestrates the full development pipeline for complex feature wor
 - Configuration changes ("update tsconfig", "add dependency")
 - Refactoring (has its own workflow via `/refactor-clean`)
 - Explicit single-command requests ("run /tdd", "run /code-review")
+- Pure research or exploration (use EnterPlanMode or Explore agent)
+- When user explicitly types `/plan` (respect the explicit command)
 
 ## Why No Context Fork
 
