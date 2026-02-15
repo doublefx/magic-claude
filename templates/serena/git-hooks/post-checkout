@@ -1,6 +1,6 @@
 #!/bin/bash
 # Git Hook: post-checkout
-# Logs branch switches for /git-sync change impact analysis
+# Logs branch switches with SHAs for git-sync agent impact analysis
 #
 # Arguments:
 #   $1 - previous HEAD
@@ -9,9 +9,11 @@
 
 # Only trigger on branch checkout
 if [ "$3" = "1" ]; then
-  echo "[git-sync] Branch switched. Run /git-sync to analyze impact."
+  BEFORE="$1"
+  AFTER="$2"
 
-  # Log for later processing
+  echo "[git-sync] Branch switched. The git-sync agent will analyze impact."
+
   LOG_FILE=".git/serena-sync-reminder.log"
-  echo "$(date -u '+%Y-%m-%d %H:%M:%S UTC') - post-checkout (branch)" >> "$LOG_FILE"
+  echo "$(date -u '+%Y-%m-%d %H:%M:%S UTC') - post-checkout before=${BEFORE} after=${AFTER}" >> "$LOG_FILE"
 fi

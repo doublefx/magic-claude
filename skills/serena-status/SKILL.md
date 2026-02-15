@@ -138,7 +138,7 @@ Run: /serena-setup (will offer to install)
 
 **Pending syncs**:
 ```
-Run: /git-sync to process external changes
+The git-sync agent will run automatically to analyze impact
 ```
 
 **JetBrains not available**:

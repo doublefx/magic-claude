@@ -1,9 +1,11 @@
 #!/bin/bash
 # Git Hook: post-rebase
-# Logs rebases for /git-sync change impact analysis
+# Logs rebases with SHAs for git-sync agent impact analysis
 
-echo "[git-sync] External changes detected after rebase. Run /git-sync to analyze impact."
+BEFORE=$(git rev-parse ORIG_HEAD 2>/dev/null)
+AFTER=$(git rev-parse HEAD 2>/dev/null)
 
-# Log for later processing
+echo "[git-sync] Rebase complete. The git-sync agent will analyze impact."
+
 LOG_FILE=".git/serena-sync-reminder.log"
-echo "$(date -u '+%Y-%m-%d %H:%M:%S UTC') - post-rebase" >> "$LOG_FILE"
+echo "$(date -u '+%Y-%m-%d %H:%M:%S UTC') - post-rebase before=${BEFORE} after=${AFTER}" >> "$LOG_FILE"

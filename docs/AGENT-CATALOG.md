@@ -904,7 +904,8 @@ Gradle Optimization Report
 **Description**: Serena MCP code navigation tool mapping
 
 #### git-sync
-**Path**: `skills/git-sync/SKILL.md`
+**Path**: `agents/git-sync.md`
+**Type**: Agent (background, invoked automatically after git operations)
 **Description**: Analyze git changes and report codebase impact
 
 ---
@@ -990,7 +991,8 @@ pytest
 - 3 security review skills (TS/JS, JVM, Python)
 - 4 proactive skills (orchestration, review, planning, TDD)
 - 5 language/build tool skills (python, kotlin, maven, gradle, ci-cd)
-- 5 Serena integration skills (setup, status, cleanup, code-navigation, git-sync)
+- 4 Serena integration skills (setup, status, cleanup, code-navigation)
+- 1 git-sync agent (background, auto-invoked after git operations)
 - 4 coordination/domain skills (agent-teams, claude-mem-context, clickhouse-io, extend)
 - 6 general/advanced skills (continuous-learning, strategic-compact, eval-harness, verification-loop, frontend-patterns, project-guidelines-example)
 

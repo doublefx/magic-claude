@@ -1,14 +1,24 @@
 #!/bin/bash
 # Git Hook: post-rewrite
-# Logs history rewrites for /git-sync change impact analysis
+# Logs history rewrites with SHAs for git-sync agent impact analysis
 #
 # Arguments:
 #   $1 - command that caused the rewrite (amend or rebase)
+# Stdin:
+#   Lines of "old-sha new-sha [extra]" for each rewritten commit
 
 COMMAND="$1"
+AFTER=$(git rev-parse HEAD 2>/dev/null)
 
-echo "[git-sync] History rewritten via $COMMAND. Run /git-sync to analyze impact."
+# Read the first old SHA from stdin as the baseline
+FIRST_OLD=""
+while IFS=' ' read -r OLD_SHA NEW_SHA REST; do
+  if [ -z "$FIRST_OLD" ]; then
+    FIRST_OLD="$OLD_SHA"
+  fi
+done
 
-# Log for later processing
+echo "[git-sync] History rewritten via ${COMMAND}. The git-sync agent will analyze impact."
+
 LOG_FILE=".git/serena-sync-reminder.log"
-echo "$(date -u '+%Y-%m-%d %H:%M:%S UTC') - post-rewrite ($COMMAND)" >> "$LOG_FILE"
+echo "$(date -u '+%Y-%m-%d %H:%M:%S UTC') - post-rewrite (${COMMAND}) before=${FIRST_OLD:-unknown} after=${AFTER}" >> "$LOG_FILE"

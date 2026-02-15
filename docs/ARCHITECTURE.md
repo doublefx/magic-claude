@@ -12,7 +12,7 @@ magic-claude/
 |   |-- plugin.json         # Plugin metadata and component paths
 |   |-- marketplace.json    # Marketplace catalog for /plugin marketplace add
 |
-|-- agents/           # Specialized subagents for delegation (27 agents)
+|-- agents/           # Specialized subagents for delegation (28 agents)
 |   |-- planner.md              # Feature implementation planning
 |   |-- architect.md            # System design decisions
 |   |-- ts-tdd-guide.md         # TypeScript/JavaScript TDD
@@ -39,8 +39,9 @@ magic-claude/
 |   |-- maven-expert.md         # Maven build optimization
 |   |-- gradle-expert.md        # Gradle build optimization
 |   |-- ci-cd-architect.md      # CI/CD pipeline generation
+|   |-- git-sync.md             # Git changes impact analysis (background)
 |
-|-- skills/           # Workflow definitions and domain knowledge (36 total)
+|-- skills/           # Workflow definitions and domain knowledge (35 total)
 |   |-- coding-standards/           # TypeScript/JS best practices
 |   |-- jvm-coding-standards/       # Java/Kotlin best practices
 |   |-- python-coding-standards/    # Python best practices
@@ -76,7 +77,6 @@ magic-claude/
 |   |-- serena-status/              # Serena configuration diagnostics
 |   |-- serena-cleanup/             # Safe Serena cleanup and removal
 |   |-- serena-code-navigation/     # Serena code navigation tool mapping
-|   |-- git-sync/                   # Git changes impact analysis
 |
 |-- commands/         # Slash commands for quick execution (15 total)
 |   |-- tdd.md              # /tdd - Test-driven development

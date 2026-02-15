@@ -162,30 +162,29 @@ For each hook type (`post-merge`, `post-rebase`, `post-checkout`, `post-rewrite`
    fi
    ```
 
-2. **If hook exists**: Append Serena reminder to the end
+2. **If hook exists**: Append git-sync reminder to the end
    ```bash
    # Append to existing hook (preserve original functionality)
-   cat >> .git/hooks/post-merge << 'EOF'
+   cat >> .git/hooks/post-merge << 'HOOK_EOF'
 
-   # --- Serena sync reminder (added by magic-claude) ---
-   echo "[Serena] External changes detected. Run /git-sync to update memories."
-   echo "$(date -u '+%Y-%m-%d %H:%M:%S UTC') - post-merge" >> .git/serena-sync-reminder.log
-   # --- End Serena section ---
-   EOF
+   # --- git-sync reminder (added by magic-claude) ---
+   BEFORE=$(git rev-parse ORIG_HEAD 2>/dev/null)
+   AFTER=$(git rev-parse HEAD 2>/dev/null)
+   COUNT=$(git rev-list --count "${BEFORE}..${AFTER}" 2>/dev/null || echo "?")
+   echo "[git-sync] Merged ${COUNT} commit(s). The git-sync agent will analyze impact."
+   echo "$(date -u '+%Y-%m-%d %H:%M:%S UTC') - post-merge before=${BEFORE} after=${AFTER} count=${COUNT}" >> .git/serena-sync-reminder.log
+   # --- End git-sync section ---
+   HOOK_EOF
    ```
 
-3. **If hook doesn't exist**: Create new hook with shebang
+3. **If hook doesn't exist**: Copy template from plugin
    ```bash
-   cat > .git/hooks/post-merge << 'EOF'
-   #!/bin/bash
-   # Serena sync reminder (added by magic-claude)
-   echo "[Serena] External changes detected. Run /git-sync to update memories."
-   echo "$(date -u '+%Y-%m-%d %H:%M:%S UTC') - post-merge" >> .git/serena-sync-reminder.log
-   EOF
+   cp "${CLAUDE_PLUGIN_ROOT}/templates/serena/git-hooks/post-merge" .git/hooks/post-merge
    chmod +x .git/hooks/post-merge
    ```
 
 4. Repeat for all hook types: `post-rebase`, `post-checkout`, `post-rewrite`
+   - Templates are in `${CLAUDE_PLUGIN_ROOT}/templates/serena/git-hooks/`
 
 **Serena section marker** allows future updates/removal without affecting other hooks
 
@@ -210,7 +209,7 @@ Git Hooks: ${INSTALLED/SKIPPED}
 
 Next Steps:
 1. Check status anytime with /serena-status
-2. Sync after git operations: /git-sync
+2. The git-sync agent runs automatically after git operations
 ```
 
 ## Idempotency
