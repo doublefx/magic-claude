@@ -109,6 +109,67 @@ suspend fun fetchData(): Result = coroutineScope {
 }
 ```
 
+## Design Principles
+
+### SOLID
+
+**S — Single Responsibility:**
+```java
+// GOOD: Each class has one reason to change
+@Service class OrderService { ... }      // business logic
+@Repository class OrderRepository { ... } // data access
+@Component class OrderValidator { ... }    // validation
+```
+
+**O — Open/Closed:**
+```java
+// GOOD: Strategy pattern — extend by adding implementations, not modifying
+interface PricingStrategy { BigDecimal calculate(Order order); }
+class StandardPricing implements PricingStrategy { ... }
+class DiscountPricing implements PricingStrategy { ... }
+// Add new pricing without modifying existing code
+```
+
+**L — Liskov Substitution:**
+```java
+// GOOD: Subtypes are substitutable
+interface Shape { double area(); }
+class Circle implements Shape { double area() { return PI * r * r; } }
+class Square implements Shape { double area() { return side * side; } }
+// Any Shape works anywhere Shape is expected
+```
+
+**I — Interface Segregation:**
+```java
+// GOOD: Focused interfaces
+interface Readable { byte[] read(String key); }
+interface Writable { void write(String key, byte[] data); }
+// Consumers depend only on what they need
+
+// BAD: Fat interface
+interface Storage { byte[] read(String k); void write(String k, byte[] d); void delete(String k); List<String> list(); }
+```
+
+**D — Dependency Inversion:**
+```java
+// GOOD: Constructor injection with interfaces
+@Service
+class OrderService {
+  private final OrderRepository repository;  // interface, not JpaRepository
+  OrderService(OrderRepository repository) { this.repository = repository; }
+}
+```
+
+### DRY
+- Extract shared logic to utility classes or base classes
+- Use generics to avoid type-specific duplication
+- Shared validation/conversion logic belongs in dedicated components
+
+### YAGNI
+- Don't add unused service methods "for completeness"
+- Don't create abstractions until you have 2+ concrete implementations
+- Prefer direct calls over event bus until you need decoupling
+
 ## General Principles
 
 ### File Organization

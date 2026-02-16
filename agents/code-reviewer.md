@@ -126,6 +126,33 @@ For language-specific idiomatic review, delegate to:
 - `.groovy` files -> **magic-claude:groovy-reviewer** (DSL patterns, Spock tests, Gradle scripts)
 - `.py` files -> **magic-claude:python-reviewer** (PEP 8, type hints, security, performance)
 
+## Design Principle Checks
+
+### YAGNI (grep before suggesting improvements)
+- Before suggesting "implement this properly," grep for actual callers
+- Unused code should be **removed**, not improved
+- If a feature is suggested "for completeness" or "professionalism," verify it's needed
+- Flag speculative generality (abstractions without concrete users)
+
+### DRY (structural duplication)
+- Check for copy-pasted logic across files (not just identical lines)
+- Flag same pattern implemented differently in multiple places
+- Suggest extraction when 3+ instances of similar logic exist
+
+### SOLID
+- **S**: Flag classes/functions doing multiple unrelated things
+- **O**: Flag modifications to core abstractions instead of extensions
+- **L**: Flag subclass/implementation that breaks parent contract
+- **I**: Flag interfaces/types requiring consumers to depend on methods they don't use
+- **D**: Flag high-level modules directly depending on low-level implementations
+
+## Structured Review Context
+
+When invoked via orchestration (Phase 4), you may receive:
+- **Plan reference**: Check that implementation matches the approved plan
+- **Git range** (`BASE_SHA..HEAD_SHA`): Review only the changes in scope
+- If plan context is provided, verify plan alignment — did the implementation match requirements?
+
 ## Independent Verification (CRITICAL)
 
 When reviewing code produced by another agent (TDD agent, build-resolver, etc.):

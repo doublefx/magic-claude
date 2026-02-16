@@ -94,6 +94,9 @@ This skill runs in the **main context** (no `context: fork`) because it needs mu
    - If user confirms: proceed to Phase 2
    - If user says "just do it" or similar: skip plan review, proceed to Phase 2
    - If user modifies the plan: incorporate feedback, re-present if needed
+4. **Persist the approved plan** to `.claude/plans/YYYY-MM-DD-<feature-name>.md`
+   - This ensures the plan survives session loss, compaction, or exit
+   - Record the git SHA at plan approval time for later review context
 
 ### Phase 1.5: EVAL DEFINE (opt-in)
 
@@ -114,7 +117,8 @@ When the user includes `--with-evals <name>` or explicitly requests eval-driven 
 2. Create a task via TaskCreate to track progress
 3. Invoke the appropriate TDD agent via Task tool
 4. The agent follows RED-GREEN-REFACTOR cycle per the `magic-claude:tdd` command workflow
-5. Verify 80%+ coverage before proceeding
+5. **Mid-point review checkpoint**: If the plan has more than 5 implementation steps, invoke a lightweight code-reviewer check after step ~3 to catch drift early. Fix issues before continuing.
+6. Verify 80%+ coverage before proceeding
 
 ### Phase 3: VERIFY
 
@@ -132,15 +136,18 @@ When the user includes `--with-evals <name>` or explicitly requests eval-driven 
 ### Phase 4: REVIEW
 
 1. Invoke **magic-claude:code-reviewer** agent (opus) via Task tool for comprehensive review
-2. For security-sensitive changes, also invoke the ecosystem-specific security reviewer:
+   - **Pass plan context**: Include the approved plan from Phase 1 (or read from `.claude/plans/` file) so the reviewer can check plan alignment
+   - **Pass git range**: Provide `BASE_SHA..HEAD_SHA` for the changes being reviewed (BASE_SHA recorded at Phase 1 approval)
+2. Process review feedback using the **`magic-claude:receiving-code-review`** skill — verify before implementing, push back when wrong, YAGNI check suggestions
+3. For security-sensitive changes, also invoke the ecosystem-specific security reviewer:
    - **magic-claude:ts-security-reviewer** for TypeScript/JavaScript
    - **magic-claude:jvm-security-reviewer** for JVM
    - **magic-claude:python-security-reviewer** for Python
-3. For language-specific idiomatic review, invoke:
+4. For language-specific idiomatic review, invoke:
    - **magic-claude:java-reviewer** for `.java` files
    - **magic-claude:kotlin-reviewer** for `.kt` files
    - **magic-claude:python-reviewer** for `.py` files
-4. Mark task as completed via TaskUpdate
+5. Mark task as completed via TaskUpdate
 
 ### Phase 4.5: EVAL CHECK (opt-in)
 

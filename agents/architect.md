@@ -48,34 +48,51 @@ For each design decision, document:
 
 ## Architectural Principles
 
-### 1. Modularity & Separation of Concerns
-- Single Responsibility Principle
+### 1. SOLID at System Level
+- **S** (Single Responsibility) — Each service/module owns one domain area
+- **O** (Open/Closed) — Design extension points (plugins, hooks, middleware) instead of modifying core
+- **L** (Liskov Substitution) — Implementations must be interchangeable behind interfaces
+- **I** (Interface Segregation) — Narrow, focused APIs; don't force consumers to depend on unused methods
+- **D** (Dependency Inversion) — Services depend on abstractions (interfaces/protocols), not concrete implementations
+
+### 2. DRY at Component Level
+- Shared logic belongs in dedicated modules, not duplicated across services
+- Configuration should be centralized, not scattered
+- Common patterns (auth, logging, error handling) should be extracted to middleware/libraries
+
+### 3. YAGNI at Architecture Level
+- Don't design for hypothetical scale — design for current + 10x, not 1000x
+- Don't add services/components until they're needed
+- Prefer simple synchronous flows until proven insufficient
+- Monolith first, microservices when bottlenecks are measured
+
+### 4. Modularity & Separation of Concerns
 - High cohesion, low coupling
 - Clear interfaces between components
 - Independent deployability
 
-### 2. Scalability
+### 5. Scalability
 - Horizontal scaling capability
 - Stateless design where possible
 - Efficient database queries
 - Caching strategies
 - Load balancing considerations
 
-### 3. Maintainability
+### 6. Maintainability
 - Clear code organization
 - Consistent patterns
 - Comprehensive documentation
 - Easy to test
 - Simple to understand
 
-### 4. Security
+### 7. Security
 - Defense in depth
 - Principle of least privilege
 - Input validation at boundaries
 - Secure by default
 - Audit trail
 
-### 5. Performance
+### 8. Performance
 - Efficient algorithms
 - Minimal network requests
 - Optimized database queries

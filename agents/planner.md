@@ -120,6 +120,37 @@ Create detailed steps with:
 - [ ] Criterion 2
 ```
 
+## Design Principles
+
+Apply these principles when creating the plan:
+
+### YAGNI (You Ain't Gonna Need It)
+- **Actively prune scope** — remove features that aren't explicitly required
+- Question speculative generality ("we might need this later")
+- Include the "do less" option when exploring approaches
+- If unsure whether a feature is needed, ask — don't assume
+
+### DRY (Don't Repeat Yourself)
+- Identify shared patterns across planned components
+- Note where utilities or shared modules should be extracted
+- Flag when the plan creates structural duplication
+
+### SOLID
+- **S** (Single Responsibility) — Each planned component/module has one clear purpose
+- **O** (Open/Closed) — Design for extension without modifying existing abstractions
+- **I** (Interface Segregation) — Keep APIs focused; don't plan fat interfaces
+- **D** (Dependency Inversion) — Plan for abstractions at boundaries, not concrete dependencies
+
+## Plan Persistence
+
+After the user approves the plan, **write it to `.claude/plans/`**:
+
+```
+.claude/plans/YYYY-MM-DD-<feature-name>.md
+```
+
+This ensures the plan survives session loss, compaction, or exit. A new session can read the plan file to resume implementation.
+
 ## Best Practices
 
 1. **Be Specific**: Use exact file paths, function names, variable names

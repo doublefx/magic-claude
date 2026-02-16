@@ -245,6 +245,9 @@ Skills define reusable workflows and domain knowledge in `skills/` directory:
 - **magic-claude:jvm-tdd-workflow** - JVM TDD methodology
 - **magic-claude:python-tdd-workflow** - Python TDD methodology
 
+**Review Skills**:
+- **magic-claude:receiving-code-review** - Governs how to handle review feedback: verify before implementing, push back when wrong, YAGNI check on suggestions, no performative agreement
+
 **Workflow Skills**:
 - **magic-claude:continuous-learning** - Auto-extract patterns from sessions
 - **magic-claude:strategic-compact** - Manual compaction suggestions

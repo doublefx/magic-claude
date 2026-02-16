@@ -154,6 +154,67 @@ pythonVersion = "3.12"
 typeCheckingMode = "strict"
 ```
 
+## Design Principles
+
+### SOLID
+
+**S — Single Responsibility:**
+```python
+# GOOD: Each module has one purpose
+# order_service.py — business logic
+# order_repository.py — data access
+# order_schema.py — validation/serialization
+```
+
+**O — Open/Closed:**
+```python
+# GOOD: Protocol-based extension
+from typing import Protocol
+
+class Formatter(Protocol):
+    def format(self, data: dict) -> str: ...
+
+class JsonFormatter:
+    def format(self, data: dict) -> str: return json.dumps(data)
+
+class CsvFormatter:
+    def format(self, data: dict) -> str: ...
+
+# Add new formats without modifying existing code
+```
+
+**I — Interface Segregation:**
+```python
+# GOOD: Narrow protocols
+class Readable(Protocol):
+    def read(self, key: str) -> bytes: ...
+
+class Writable(Protocol):
+    def write(self, key: str, data: bytes) -> None: ...
+
+# Consumers depend only on what they need
+def process(source: Readable) -> None: ...  # doesn't need write
+```
+
+**D — Dependency Inversion:**
+```python
+# GOOD: Depend on protocols, not concrete classes
+class OrderService:
+    def __init__(self, repo: OrderRepository) -> None:  # Protocol, not SqlAlchemyRepo
+        self._repo = repo
+```
+
+### DRY
+- Extract shared logic to utility modules
+- Use base classes or mixins for shared behavior (but prefer composition)
+- Shared Pydantic validators belong in a common module
+
+### YAGNI
+- Don't add unused API endpoints "for completeness"
+- Don't create ABC until you have 2+ concrete implementations
+- Prefer simple functions over class hierarchies until complexity demands it
+- Don't add `**kwargs` "for future extensibility"
+
 ## General Principles
 
 ### Decimal for Money
