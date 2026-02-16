@@ -87,6 +87,8 @@ This skill runs in the **main context** (no `context: fork`) because it needs mu
 1. Invoke the **magic-claude:planner** agent (opus) via Task tool to analyze the request
    - If Phase 0 ran: include the architect's output as input context for the planner
    - The planner translates architecture decisions into actionable implementation steps
+   - **If requirements are vague:** the planner will refine them through one-question-at-a-time dialogue before planning
+   - **If multiple approaches exist:** the planner will propose 2-3 options with trade-offs and a recommendation
 2. Present the implementation plan to the user
 3. **WAIT for user confirmation** before proceeding
    - If user confirms: proceed to Phase 2

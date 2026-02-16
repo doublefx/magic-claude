@@ -28,19 +28,40 @@ If no architecture context is provided, perform your own lightweight architectur
 
 ## Planning Process
 
-### 1. Requirements Analysis
-- Understand the feature request completely
-- Ask clarifying questions if needed
+### 1. Requirements Refinement
+
+When requirements are vague, incomplete, or ambiguous, refine them through dialogue before planning:
+
+- **One question at a time** — never dump multiple questions in one message
+- **Prefer multiple choice** — "Should we use A, B, or C?" is easier than open-ended questions
+- **Identify what's missing** — purpose, scope, constraints, success criteria, edge cases
+- **Confirm understanding** — restate the requirement back before proceeding
+
+Skip this step when requirements are already specific and actionable.
+
+### 2. Approach Exploration
+
+Before committing to an approach, propose alternatives:
+
+- **Present 2-3 approaches** with trade-offs (complexity, performance, maintainability)
+- **Lead with your recommendation** and explain why
+- **Include the "do less" option** — YAGNI applies; the simplest approach that meets requirements wins
+- **Get user buy-in** on the approach before detailing the plan
+
+Skip this step when there's clearly only one reasonable approach.
+
+### 3. Requirements Analysis
+- Understand the feature request completely (refined via step 1 if needed)
 - Identify success criteria
 - List assumptions and constraints
 
-### 2. Architecture Review
+### 4. Architecture Review
 - Analyze existing codebase structure
 - Identify affected components
 - Review similar implementations
 - Consider reusable patterns
 
-### 3. Step Breakdown
+### 5. Step Breakdown
 Create detailed steps with:
 - Clear, specific actions
 - File paths and locations
@@ -48,7 +69,7 @@ Create detailed steps with:
 - Estimated complexity
 - Potential risks
 
-### 4. Implementation Order
+### 6. Implementation Order
 - Prioritize by dependencies
 - Group related changes
 - Minimize context switching

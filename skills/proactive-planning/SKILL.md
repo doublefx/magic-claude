@@ -28,6 +28,14 @@ For complex multi-file features, `magic-claude:proactive-orchestration` handles 
 
 ## Planning Process
 
+### 0. Requirements Refinement (when needed)
+
+When the request is vague or ambiguous, refine before planning:
+- Ask **one question at a time** — never dump multiple questions
+- **Prefer multiple choice** over open-ended when possible
+- Confirm understanding by restating the requirement back
+- Skip when requirements are already specific and actionable
+
 ### 1. Requirements Analysis
 
 - Restate the requirement in clear terms
@@ -35,6 +43,13 @@ For complex multi-file features, `magic-claude:proactive-orchestration` handles 
 - List explicit requirements
 - Note implicit requirements
 - Flag ambiguous areas
+
+### 1.5. Approach Exploration (when multiple valid paths exist)
+
+- Present **2-3 approaches** with trade-offs (complexity, performance, maintainability)
+- Lead with your recommendation and explain why
+- Include the "do less" option — YAGNI applies
+- Get user buy-in before detailing the plan
 
 ### 2. Risk Assessment
 
