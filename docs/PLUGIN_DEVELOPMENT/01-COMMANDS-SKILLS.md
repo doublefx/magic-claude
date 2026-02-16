@@ -1213,8 +1213,78 @@ const token = "ghp_xyz789"         // NEVER
 - [ ] Code examples
 - [ ] Related resources section
 
+## Writing and Testing Skills (TDD for Documentation)
+
+Writing effective skills follows the same discipline as writing effective code: **test-driven development**.
+
+### The TDD Cycle for Skills
+
+| TDD Concept | Skill Creation |
+|-------------|----------------|
+| Test case | Pressure scenario with subagent |
+| Production code | Skill document (SKILL.md) |
+| Test fails (RED) | Agent violates rule without skill (baseline) |
+| Test passes (GREEN) | Agent complies with skill present |
+| Refactor | Close loopholes while maintaining compliance |
+
+**Process:**
+1. **RED** — Run pressure scenarios WITHOUT the skill. Document exact failures and rationalizations verbatim.
+2. **GREEN** — Write minimal skill addressing those specific failures. Verify agents now comply.
+3. **REFACTOR** — Find new rationalizations agents discover, add explicit counters, re-test until bulletproof.
+
+### Claude Search Optimization (CSO)
+
+Descriptions are how Claude decides which skills to load. Critical rules:
+
+- **Description = when to use, NEVER what it does**
+- Start with `"Use when..."` to focus on triggering conditions
+- Never summarize the skill's workflow (testing revealed Claude takes description as shortcut, skipping actual skill content)
+- Write in third person (injected into system prompt)
+
+```yaml
+# BAD: Summarizes workflow — Claude may follow this instead of reading skill
+description: Use when executing plans - dispatches subagent per task with code review between tasks
+
+# GOOD: Just triggering conditions
+description: Use when executing implementation plans with independent tasks in the current session
+```
+
+### Pressure Testing Skills
+
+Discipline-enforcing skills (TDD, verification, debugging) need testing under pressure. Pressure types to combine:
+
+| Type | Example |
+|------|---------|
+| Time pressure | "$15k/min revenue loss" |
+| Sunk cost | "4 hours already invested" |
+| Authority | "Senior engineer says skip it" |
+| Exhaustion | "It's 8pm, dinner plans at 8:30" |
+| Social | "Everyone on the call wants to move on" |
+
+Good pressure scenarios: concrete options with real constraints, force agent to act (not discuss), combine 2-3 pressures.
+
+### Bulletproofing Against Rationalization
+
+For skills that enforce discipline:
+
+1. **Rationalization tables** — Every excuse agents made during RED phase goes in a table with "Reality" rebuttals
+2. **Red flags lists** — Thoughts that mean "STOP, you're rationalizing"
+3. **Explicit loophole closure** — Don't just state the rule, forbid specific workarounds
+4. **Foundation principle** — "Violating the letter of the rules is violating the spirit of the rules"
+
+### Reference
+
+This methodology is adapted from [obra/superpowers' writing-skills](https://github.com/obra/superpowers/tree/main/skills/writing-skills), which provides:
+
+- `SKILL.md` — Complete guide to TDD for documentation
+- `testing-skills-with-subagents.md` — Pressure testing methodology
+- `anthropic-best-practices.md` — Official Anthropic skill authoring guide
+- `persuasion-principles.md` — Cialdini's principles applied to skill design
+- `graphviz-conventions.dot` — Flowchart style rules
+- `render-graphs.js` — Render skill flowcharts to SVG
+
 ---
 
-**Last Updated:** 2026-02-14
-**Version:** 3.1.0
-**Status:** Complete Specification (Updated with Official Claude Code Skills Documentation)
+**Last Updated:** 2026-02-16
+**Version:** 3.2.0
+**Status:** Complete Specification (Updated with Skill Testing Methodology)
