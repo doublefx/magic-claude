@@ -1,5 +1,5 @@
 ---
-description: Display Serena configuration diagnostics. Shows installation status, project activation, memory count, git hooks status, and JetBrains availability.
+description: Use when checking Serena configuration state or troubleshooting Serena setup issues.
 context: fork
 ---
 

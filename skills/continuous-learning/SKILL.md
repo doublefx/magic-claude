@@ -1,6 +1,6 @@
 ---
 name: continuous-learning
-description: Automatically extract reusable patterns from Claude Code sessions and save them as learned skills for future use.
+description: Use when session contains error resolutions, user corrections, workarounds, or reusable patterns worth preserving. Also triggered by ContinuousLearning hook signal.
 allowed-tools: Read, Grep, Glob, Write
 ---
 

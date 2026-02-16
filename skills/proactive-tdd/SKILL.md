@@ -1,6 +1,6 @@
 ---
 name: proactive-tdd
-description: Proactive test-driven development enforcement. Claude invokes this automatically when writing new features, fixing bugs, or implementing business logic to ensure tests are written first.
+description: Use when writing new features, fixing bugs, or implementing business logic in isolation (not part of a full orchestration pipeline). Does NOT fire when proactive-orchestration is active.
 user-invocable: false
 context: fork
 ---
@@ -24,6 +24,28 @@ Claude should proactively use TDD methodology when:
 For isolated TDD needs (adding tests to existing code, bug fix with reproduction test), this skill handles TDD directly.
 
 For complex multi-file features, `proactive-orchestration` coordinates TDD as part of the full pipeline (planning, TDD, verification, review). This skill fires only when TDD is needed without the full orchestration pipeline.
+
+## Iron Law
+
+<HARD-GATE>
+NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST.
+If you write implementation code before a test exists and fails, DELETE the
+implementation and start over. No exceptions.
+</HARD-GATE>
+
+## Anti-Rationalization
+
+If you catch yourself thinking any of these, STOP — you're rationalizing:
+
+| Thought | Reality |
+|---------|---------|
+| "This is too simple for tests" | Simple code is the easiest to test. Write the test. |
+| "I'll add tests after I write the code" | That's not TDD. Delete the code and write the test first. |
+| "The test would just be trivial" | Trivial tests catch regressions. Write it. |
+| "Let me get the code working first" | Code written without tests tends to stay untested. Test first. |
+| "This is just a refactor, no new tests needed" | Run existing tests. If none cover it, add them before refactoring. |
+
+**Violating the letter of the rules is violating the spirit of the rules.**
 
 ## Workflow
 

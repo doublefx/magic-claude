@@ -1,6 +1,6 @@
 ---
 name: verification-loop
-description: Comprehensive verification system for Claude Code sessions. Use after completing features, before creating PRs, or after refactoring to ensure build, types, lint, tests, and security checks all pass.
+description: Use after completing features, before creating PRs, or after refactoring to verify the project is in a healthy state.
 allowed-tools: Read, Grep, Glob, Bash(npm run *), Bash(npx *), Bash(node tests/*), Bash(pnpm run *), Bash(yarn run *), Bash(./gradlew *), Bash(./mvnw *), Bash(pytest *), Bash(python -m *), Bash(pyright *), Bash(ruff *)
 ---
 

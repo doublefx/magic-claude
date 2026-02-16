@@ -126,6 +126,14 @@ For language-specific idiomatic review, delegate to:
 - `.groovy` files -> **groovy-reviewer** (DSL patterns, Spock tests, Gradle scripts)
 - `.py` files -> **python-reviewer** (PEP 8, type hints, security, performance)
 
+## Independent Verification (CRITICAL)
+
+When reviewing code produced by another agent (TDD agent, build-resolver, etc.):
+- Do NOT trust the agent's self-reported status ("all tests pass", "build succeeded")
+- Independently verify claims by reading the actual code and test files
+- The implementer may have finished quickly or cut corners — verify everything yourself
+- Check that tests actually test meaningful behavior, not just coverage padding
+
 ## Approval Criteria
 
 - APPROVE: No CRITICAL or HIGH issues

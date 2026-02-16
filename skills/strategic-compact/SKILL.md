@@ -1,6 +1,6 @@
 ---
 name: strategic-compact
-description: Suggests manual context compaction at logical intervals to preserve context through task phases rather than arbitrary auto-compaction.
+description: Use when context window exceeds 70% usage at a logical phase boundary (after completing a task, before starting a new phase).
 disable-model-invocation: true
 ---
 

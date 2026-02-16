@@ -1,5 +1,5 @@
 ---
-description: Complete Serena setup workflow for new projects. Checks installation, activates project, configures languages, installs git hooks, and verifies configuration.
+description: Use when setting up Serena MCP for a new project or reconfiguring an existing Serena installation.
 context: fork
 allowed-tools: Read, Write, Edit, Bash, Bash(mcp-cli *), Grep, Glob, AskUserQuestion, TaskCreate, TaskUpdate, TaskList
 ---

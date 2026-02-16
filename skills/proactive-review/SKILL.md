@@ -1,6 +1,6 @@
 ---
 name: proactive-review
-description: Proactive code quality and security review. Claude invokes this automatically when tasks are completed, before commits, or when significant code changes are made.
+description: Use when tasks are completed, before commits, or when significant code changes have been made. Does NOT fire when proactive-orchestration is active.
 user-invocable: false
 context: fork
 agent: code-reviewer

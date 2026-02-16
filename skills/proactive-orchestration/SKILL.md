@@ -1,6 +1,6 @@
 ---
 name: proactive-orchestration
-description: "MANDATORY for complex features: You MUST invoke this skill INSTEAD OF EnterPlanMode when detecting complex feature requests, multi-file implementations, or architectural changes. NEVER use EnterPlanMode for feature implementation - use this orchestrator which coordinates PLAN -> TDD -> VERIFY -> REVIEW in sequence. Only use EnterPlanMode for pure research/exploration tasks or when user explicitly types /plan. Does NOT fire for simple bug fixes, single-file edits, documentation, or refactoring."
+description: "MANDATORY: You MUST invoke this skill INSTEAD OF EnterPlanMode when detecting complex feature requests, multi-file implementations, or architectural changes. NEVER use EnterPlanMode for feature implementation. Only use EnterPlanMode for pure research/exploration or when user explicitly types /plan. Does NOT fire for simple bug fixes, single-file edits, documentation, or refactoring."
 user-invocable: false
 ---
 
@@ -35,6 +35,27 @@ This skill **REPLACES** EnterPlanMode for all feature implementation tasks.
 - Explicit single-command requests ("run /tdd", "run /code-review")
 - Pure research or exploration (use EnterPlanMode or Explore agent)
 - When user explicitly types `/plan` (respect the explicit command)
+
+## Anti-Rationalization
+
+If you catch yourself thinking any of these, STOP — you're rationalizing:
+
+| Thought | Reality |
+|---------|---------|
+| "This is a simple feature, no pipeline needed" | If it touches multiple files, it needs the pipeline. |
+| "I'll just write the code and add tests after" | That's not TDD. Use the pipeline. |
+| "Let me explore the codebase first" | Phase 0/1 handles exploration. Invoke the skill first. |
+| "I already know how to implement this" | The plan still needs user approval. Follow the phases. |
+| "This doesn't need architecture review" | Phase 0 is conditional — it self-gates. Let it decide. |
+| "I'll use EnterPlanMode instead" | EnterPlanMode is for research ONLY. This skill replaces it for code. |
+
+**Violating the letter of the rules is violating the spirit of the rules.**
+
+<HARD-GATE>
+Do NOT write any implementation code, scaffold any files, or invoke any TDD
+agent until a plan has been presented to the user AND the user has approved it.
+This applies to EVERY feature regardless of perceived simplicity.
+</HARD-GATE>
 
 ## Why No Context Fork
 

@@ -1,5 +1,5 @@
 ---
-description: Safe Serena cleanup and removal. Backs up memories before removal, removes git hooks cleanly, and optionally restores original CLAUDE.md.
+description: Use when removing Serena MCP from a project or cleaning up after Serena uninstall.
 context: fork
 ---
 
