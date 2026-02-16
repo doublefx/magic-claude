@@ -65,7 +65,19 @@ npm test
 - Optimize performance
 - Enhance readability
 
-### Step 6: Verify Coverage
+### Step 6: Self-Review Before Handoff
+
+Before reporting completion, audit your own work:
+
+1. **Completeness** — Does the implementation cover ALL requirements from the task spec? List each requirement and confirm it's addressed.
+2. **Code quality** — Are names clear? Are functions small? Is the code readable without comments?
+3. **YAGNI** — Did you add anything beyond what was specified? Remove it.
+4. **Test coverage** — Does every spec requirement have a corresponding test? Are edge cases covered?
+5. **No leftovers** — No TODOs, no stubs, no commented-out code, no debug statements (console.log, debugger).
+
+If you find issues during self-review, fix them before reporting. Include a brief self-review summary in your completion report — the spec reviewer will use it (but won't trust it).
+
+### Step 7: Verify Coverage
 ```bash
 npm run test:coverage
 # Verify 80%+ coverage

@@ -248,6 +248,10 @@ Skills define reusable workflows and domain knowledge in `skills/` directory:
 **Review Skills**:
 - **magic-claude:receiving-code-review** - Governs how to handle review feedback: verify before implementing, push back when wrong, YAGNI check on suggestions, no performative agreement
 
+**Branch & Isolation Skills**:
+- **magic-claude:using-git-worktrees** - Isolated workspaces for feature branches (standalone, no Agent Teams required)
+- **magic-claude:finishing-feature** - Structured branch cleanup: merge locally, push + PR, keep, or discard with test verification
+
 **Workflow Skills**:
 - **magic-claude:continuous-learning** - Auto-extract patterns from sessions
 - **magic-claude:strategic-compact** - Manual compaction suggestions
