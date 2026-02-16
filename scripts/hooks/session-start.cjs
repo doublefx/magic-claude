@@ -18,7 +18,8 @@ const {
   getUserLearnedSkillsDir,
   findFiles,
   ensureDir,
-  log
+  log,
+  parseFrontmatter
 } = require('../lib/utils.cjs');
 const {
   getPackageManager,
@@ -66,6 +67,54 @@ function readStdin() {
       resolve({});
     }
   });
+}
+
+/**
+ * Read the using-magic-claude meta-skill content.
+ * Returns the raw markdown or null if not found.
+ */
+function readMetaSkill() {
+  const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT || path.join(__dirname, '..', '..');
+  const skillPath = path.join(pluginRoot, 'skills', 'using-magic-claude', 'SKILL.md');
+
+  try {
+    if (fs.existsSync(skillPath)) {
+      return fs.readFileSync(skillPath, 'utf-8');
+    }
+  } catch {
+    // Graceful degradation
+  }
+  return null;
+}
+
+/**
+ * Enumerate learned skills from a directory, returning only frontmatter metadata.
+ * Returns array of { name, description, file } objects.
+ */
+function enumerateLearnedSkills(dir) {
+  if (!dir || !fs.existsSync(dir)) return [];
+
+  const skills = [];
+  try {
+    const files = fs.readdirSync(dir).filter(f => f.endsWith('.md'));
+    for (const file of files) {
+      try {
+        const content = fs.readFileSync(path.join(dir, file), 'utf-8');
+        const { attributes } = parseFrontmatter(content);
+        skills.push({
+          name: attributes.name || file.replace(/\.md$/, ''),
+          description: attributes.description || '',
+          file
+        });
+      } catch {
+        // Skip unreadable files
+        skills.push({ name: file.replace(/\.md$/, ''), description: '', file });
+      }
+    }
+  } catch {
+    // Directory unreadable
+  }
+  return skills;
 }
 
 /**
@@ -196,12 +245,11 @@ async function main() {
     log(`[SessionStart] Found ${recentSessions.length} recent session(s)`);
   }
 
-  // Check for learned skills
+  // Check for learned skills (log only - detailed enumeration is in additionalContext output)
   const learnedSkills = findFiles(learnedDir, '*.md');
 
   if (learnedSkills.length > 0) {
     log(`[SessionStart] ${learnedSkills.length} learned skill(s) available`);
-    contextParts.push(`${learnedSkills.length} learned skill(s) available in ${learnedDir}`);
   }
 
   // Detect and report workspace status
@@ -323,7 +371,55 @@ async function main() {
     contextParts.forEach(part => log('[SessionStart] ' + part));
   }
 
-  // SessionStart hooks should output empty JSON or nothing
+  // Build additionalContext from meta-skill + learned skills + environment context
+  const additionalContextParts = [];
+
+  // 1. Inject meta-skill governance (highest priority)
+  const metaSkill = readMetaSkill();
+  if (metaSkill) {
+    additionalContextParts.push(metaSkill);
+    log('[SessionStart] Meta-skill injected: using-magic-claude');
+  }
+
+  // 2. Enumerate learned skills from both directories (frontmatter only)
+  const projectLearnedDir = getProjectLearnedSkillsDir();
+  const userLearnedDir = getUserLearnedSkillsDir();
+  const projectSkills = enumerateLearnedSkills(projectLearnedDir);
+  const userSkills = enumerateLearnedSkills(userLearnedDir);
+  const allLearnedSkills = [...projectSkills, ...userSkills];
+
+  if (allLearnedSkills.length > 0) {
+    const skillLines = allLearnedSkills.map(s =>
+      `- **${s.name}**${s.description ? `: ${s.description}` : ''}`
+    );
+    additionalContextParts.push(
+      '## Available Learned Skills\n\n' +
+      'These skills capture project-specific patterns from past sessions. ' +
+      'Check if any apply to your current task and invoke relevant ones via the `Skill` tool.\n\n' +
+      skillLines.join('\n')
+    );
+    log(`[SessionStart] Learned skills indexed: ${allLearnedSkills.length} (${projectSkills.length} project, ${userSkills.length} user)`);
+  }
+
+  // 3. Append environment context summary
+  if (contextParts.length > 0) {
+    additionalContextParts.push(
+      '## Session Environment\n\n' + contextParts.map(p => `- ${p}`).join('\n')
+    );
+  }
+
+  // Output hookSpecificOutput with additionalContext
+  if (additionalContextParts.length > 0) {
+    const additionalContext = additionalContextParts.join('\n\n---\n\n');
+    const hookOutput = {
+      hookSpecificOutput: {
+        hookEventName: 'SessionStart',
+        additionalContext
+      }
+    };
+    console.log(JSON.stringify(hookOutput));
+  }
+
   process.exit(0);
 }
 

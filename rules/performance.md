@@ -30,11 +30,11 @@ Lower context sensitivity tasks:
 - Documentation updates
 - Simple bug fixes
 
-## Ultrathink + Plan Mode
+## Ultrathink + Deep Reasoning
 
 For complex tasks requiring deep reasoning:
 1. Use `ultrathink` for enhanced thinking
-2. Enable **Plan Mode** for structured approach
+2. Use **Plan Mode** for pure research/exploration only (for features, use orchestration instead)
 3. "Rev the engine" with multiple critique rounds
 4. Use split role sub-agents for diverse analysis
 

@@ -152,6 +152,7 @@ Hooks execute Node.js scripts on tool events. Key hooks in `hooks/hooks.json`:
 - Log PR URLs after creation
 
 **SessionStart:**
+- **Inject `using-magic-claude` meta-skill via `additionalContext`** (disposition, skill governance, learned skills index)
 - Load previous session context (memory persistence)
 - Auto-detect package manager
 - **Detect setup needs and inject context for proactive help**
@@ -171,8 +172,9 @@ Hooks execute Node.js scripts on tool events. Key hooks in `hooks/hooks.json`:
 All hooks use inline Node.js via `node -e` or reference scripts in `scripts/hooks/` via `${CLAUDE_PLUGIN_ROOT}`.
 
 **Hook Message Visibility:**
-- PostToolUse hooks can inject `additionalContext` that appears in your context - **surface these messages to the user** when they contain actionable recommendations (e.g., code review suggestions)
-- Other hooks (SessionStart, Stop, PreToolUse) log to stderr - these appear in your context as `[Hook]` prefixed messages - **inform the user** when these contain important recommendations
+- SessionStart and PostToolUse hooks inject `additionalContext` that appears in your context - **surface these messages to the user** when they contain actionable recommendations
+- SessionStart `additionalContext` includes the `using-magic-claude` meta-skill (disposition, governance, learned skills index) - this is re-injected on startup, resume, clear, and compact to survive context loss
+- Other hooks (Stop, PreToolUse) log to stderr - these appear in your context as `[Hook]` prefixed messages - **inform the user** when these contain important recommendations
 
 ### Agent Orchestration
 
@@ -218,6 +220,9 @@ Specialized agents in `agents/` directory:
 **Commands = Explicit** (User-invoked via slash commands)
 
 Skills define reusable workflows and domain knowledge in `skills/` directory:
+
+**Meta-Skill** (Injected via SessionStart hook on every startup/resume/compact/clear):
+- **magic-claude:using-magic-claude** - Disposition override (quality over speed), skill governance flowchart, EnterPlanMode intercept, anti-rationalization table, learned skills reminder. Re-injected automatically to survive context loss.
 
 **Proactive Skills** (Claude invokes automatically):
 - **magic-claude:proactive-orchestration** - Full pipeline orchestrator for complex features. Top-level skill that subsumes individual proactive skills for multi-file feature work.

@@ -402,6 +402,31 @@ function grepFile(filePath, pattern) {
   return results;
 }
 
+/**
+ * Parse YAML frontmatter from a markdown file content.
+ * Returns an object with { attributes, body } where attributes
+ * is a simple key-value map from the frontmatter block.
+ * Only handles simple `key: value` pairs (no nested YAML).
+ */
+function parseFrontmatter(content) {
+  const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  if (!match) return { attributes: {}, body: content };
+
+  const frontmatterBlock = match[1];
+  const attributes = {};
+
+  for (const line of frontmatterBlock.split('\n')) {
+    const colonIdx = line.indexOf(':');
+    if (colonIdx === -1) continue;
+    const key = line.slice(0, colonIdx).trim();
+    const value = line.slice(colonIdx + 1).trim();
+    if (key) attributes[key] = value;
+  }
+
+  const body = content.slice(match[0].length).trim();
+  return { attributes, body };
+}
+
 module.exports = {
   // Platform info
   isWindows,
@@ -431,6 +456,7 @@ module.exports = {
   replaceInFile,
   countInFile,
   grepFile,
+  parseFrontmatter,
 
   // Hook I/O
   readStdinJson,

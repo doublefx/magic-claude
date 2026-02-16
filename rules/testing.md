@@ -9,7 +9,7 @@ Test Types (ALL required):
 
 ## Test-Driven Development
 
-MANDATORY workflow:
+TDD workflow (enforced by meta-skill and proactive-tdd):
 1. Write test first (RED)
 2. Run test - it should FAIL
 3. Write minimal implementation (GREEN)
