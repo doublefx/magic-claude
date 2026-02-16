@@ -382,10 +382,10 @@ ruff check . --select F401 --fix
 - Django/FastAPI/pytest configuration errors
 
 **DON'T USE when:**
-- Code needs refactoring (use python-refactor-cleaner)
-- Python best practices review (use python-reviewer)
-- New features required (use planner)
-- Security issues (use python-security-reviewer)
+- Code needs refactoring (use magic-claude:python-refactor-cleaner)
+- Python best practices review (use magic-claude:python-reviewer)
+- New features required (use magic-claude:planner)
+- Security issues (use magic-claude:python-security-reviewer)
 
 ## Success Metrics
 

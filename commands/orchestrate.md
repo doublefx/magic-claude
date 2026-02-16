@@ -5,7 +5,7 @@ argument-hint: "[workflow-type] [task description]"
 
 # Orchestrate Command
 
-Sequential agent workflow for complex tasks. This command provides explicit control over the orchestration pipeline that `proactive-orchestration` handles automatically.
+Sequential agent workflow for complex tasks. This command provides explicit control over the orchestration pipeline that `magic-claude:proactive-orchestration` handles automatically.
 
 ## Usage
 
@@ -14,7 +14,7 @@ Sequential agent workflow for complex tasks. This command provides explicit cont
 ## Workflow Types
 
 ### feature
-Full feature implementation pipeline (same phases as `proactive-orchestration`):
+Full feature implementation pipeline (same phases as `magic-claude:proactive-orchestration`):
 ```
 planner -> [ts|jvm|python]-tdd-guide -> verify -> code-reviewer -> [ts|jvm|python]-security-reviewer
 ```
@@ -71,35 +71,35 @@ Between agents, create handoff document:
 
 ## Feature Workflow Detail
 
-The `feature` workflow follows the same phases as `proactive-orchestration`:
+The `feature` workflow follows the same phases as `magic-claude:proactive-orchestration`:
 
 ### Phase 1: PLAN
-- Invoke **planner** agent (opus) to analyze requirements
+- Invoke **magic-claude:planner** agent (opus) to analyze requirements
 - Present plan and WAIT for user confirmation
 
 ### Phase 1.5: EVAL DEFINE (opt-in, `--with-evals <name>`)
-- Run `/eval define <name>` to create capability and regression eval criteria
+- Run `magic-claude:eval define <name>` to create capability and regression eval criteria
 - Prompt user to review and confirm eval definitions before implementation
 - Eval definitions stored in `.claude/evals/<name>.md`
 
 ### Phase 2: TDD
-- Detect ecosystem and dispatch to **ts-tdd-guide**, **jvm-tdd-guide**, or **python-tdd-guide**
+- Detect ecosystem and dispatch to **magic-claude:ts-tdd-guide**, **magic-claude:jvm-tdd-guide**, or **magic-claude:python-tdd-guide**
 - Create task via TaskCreate to track progress
 - Execute RED-GREEN-REFACTOR cycle
 - Verify 80%+ coverage
 
 ### Phase 3: VERIFY
-- Run `/verify full` workflow (build, types, lint, tests, debug audit)
-- If build fails, auto-invoke appropriate **build-resolver** agent
+- Run `magic-claude:verify full` workflow (build, types, lint, tests, debug audit)
+- If build fails, auto-invoke appropriate **magic-claude:build-resolver** agent
 - Re-verify after fixes
 
 ### Phase 4: REVIEW
-- Invoke **code-reviewer** agent + ecosystem-specific security reviewer
-- For language-specific review: **java-reviewer**, **kotlin-reviewer**, **python-reviewer**
+- Invoke **magic-claude:code-reviewer** agent + ecosystem-specific security reviewer
+- For language-specific review: **magic-claude:java-reviewer**, **magic-claude:kotlin-reviewer**, **magic-claude:python-reviewer**
 - Mark task completed via TaskUpdate
 
 ### Phase 4.5: EVAL CHECK (opt-in, `--with-evals <name>`)
-- Run `/eval check <name>` to verify implementation meets defined criteria
+- Run `magic-claude:eval check <name>` to verify implementation meets defined criteria
 - Record capability pass@3 and regression pass^3 metrics
 - Include eval results in the final report
 
@@ -110,11 +110,11 @@ If NEEDS WORK, include remediation:
 
 | Issue | Suggested Action |
 |-------|-----------------|
-| Build errors | "Run `/build-fix`" |
-| Test failures | "Run `/tdd` to fix" |
-| Coverage gaps | "Run `/test-coverage`" |
-| Security issues | "Fix and re-run `/code-review`" |
-| Eval failures | "Review failing criteria, fix, re-run `/eval check <name>`" |
+| Build errors | "Run `magic-claude:build-fix`" |
+| Test failures | "Run `magic-claude:tdd` to fix" |
+| Coverage gaps | "Run `magic-claude:test-coverage`" |
+| Security issues | "Fix and re-run `magic-claude:code-review`" |
+| Eval failures | "Review failing criteria, fix, re-run `magic-claude:eval check <name>`" |
 
 When `--with-evals` is used, include eval metrics in the report:
 ```
@@ -154,9 +154,9 @@ $ARGUMENTS:
 
 ## Tips
 
-1. **Start with planner** for complex features
-2. **Always include code-reviewer** before merge
-3. **Use security-reviewer** for auth/payment/PII
+1. **Start with magic-claude:planner** for complex features
+2. **Always include magic-claude:code-reviewer** before merge
+3. **Use magic-claude:security-reviewer** for auth/payment/PII
 4. **Keep handoffs concise** - focus on what next agent needs
 5. **Run verification** between agents if needed
-6. For most feature work, you don't need `/orchestrate` -- `proactive-orchestration` fires automatically
+6. For most feature work, you don't need `magic-claude:orchestrate` -- `magic-claude:proactive-orchestration` fires automatically

@@ -567,7 +567,7 @@ Invoke this agent when:
 
 ## Related Skills & Tools
 
-- **Skill**: `/gradle-patterns` - Gradle Kotlin DSL patterns and examples
+- **Skill**: `magic-claude:gradle-patterns` - Gradle Kotlin DSL patterns and examples
 - **Hook**: `maven-advisor.js` - Automatic advice for Gradle commands
 - **Tool**: `./gradlew dependencies` - Analyze dependencies
 - **Tool**: `./gradlew dependencyUpdates` - Check for updates

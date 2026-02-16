@@ -7,7 +7,7 @@ context: fork
 
 # Proactive TDD Enforcement
 
-This skill enforces test-driven development methodology when Claude is implementing new functionality. It detects the project ecosystem and delegates to the `/tdd` command workflow.
+This skill enforces test-driven development methodology when Claude is implementing new functionality. It detects the project ecosystem and delegates to the `magic-claude:tdd` command workflow.
 
 ## When Claude Should Invoke This Skill
 
@@ -23,7 +23,7 @@ Claude should proactively use TDD methodology when:
 
 For isolated TDD needs (adding tests to existing code, bug fix with reproduction test), this skill handles TDD directly.
 
-For complex multi-file features, `proactive-orchestration` coordinates TDD as part of the full pipeline (planning, TDD, verification, review). This skill fires only when TDD is needed without the full orchestration pipeline.
+For complex multi-file features, `magic-claude:proactive-orchestration` coordinates TDD as part of the full pipeline (planning, TDD, verification, review). This skill fires only when TDD is needed without the full orchestration pipeline.
 
 ## Iron Law
 
@@ -49,14 +49,14 @@ If you catch yourself thinking any of these, STOP — you're rationalizing:
 
 ## Workflow
 
-When triggered, follow the same workflow as the `/tdd` command:
+When triggered, follow the same workflow as the `magic-claude:tdd` command:
 
 1. **Detect ecosystem** from file context and project markers
-2. **Dispatch to specialist agent** (`ts-tdd-guide`, `jvm-tdd-guide`, or `python-tdd-guide`)
+2. **Dispatch to specialist agent** (`magic-claude:ts-tdd-guide`, `magic-claude:jvm-tdd-guide`, or `magic-claude:python-tdd-guide`)
 3. **Execute TDD cycle**: RED (failing test) -> GREEN (minimal implementation) -> REFACTOR -> REPEAT
 4. **Verify 80%+ coverage** using ecosystem-appropriate coverage tool
 
-See the `/tdd` command for the full ecosystem detection table, dispatch matrix, coverage requirements, and best practices.
+See the `magic-claude:tdd` command for the full ecosystem detection table, dispatch matrix, coverage requirements, and best practices.
 
 ## Proactive Triggers
 
@@ -70,11 +70,11 @@ Claude should automatically enforce TDD when:
 
 ## Related
 
-- `/tdd` command - Explicit user-invoked TDD session (single source of truth for TDD workflow)
-- `proactive-orchestration` skill - Full pipeline orchestration (includes TDD as a phase)
-- `ts-tdd-guide` agent - TypeScript/JavaScript TDD specialist
-- `jvm-tdd-guide` agent - JVM (Java/Kotlin/Groovy) TDD specialist
-- `python-tdd-guide` agent - Python TDD specialist
-- `tdd-workflow` skill - TypeScript/JavaScript TDD methodology reference
-- `jvm-tdd-workflow` skill - JVM TDD methodology reference
-- `python-tdd-workflow` skill - Python TDD methodology reference
+- `magic-claude:tdd` command - Explicit user-invoked TDD session (single source of truth for TDD workflow)
+- `magic-claude:proactive-orchestration` skill - Full pipeline orchestration (includes TDD as a phase)
+- `magic-claude:ts-tdd-guide` agent - TypeScript/JavaScript TDD specialist
+- `magic-claude:jvm-tdd-guide` agent - JVM (Java/Kotlin/Groovy) TDD specialist
+- `magic-claude:python-tdd-guide` agent - Python TDD specialist
+- `magic-claude:tdd-workflow` skill - TypeScript/JavaScript TDD methodology reference
+- `magic-claude:jvm-tdd-workflow` skill - JVM TDD methodology reference
+- `magic-claude:python-tdd-workflow` skill - Python TDD methodology reference

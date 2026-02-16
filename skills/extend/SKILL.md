@@ -26,7 +26,7 @@ Generate new plugin components that follow existing patterns, contain real domai
 - Adding support for a new language/ecosystem (Go, Rust, Swift, C#, Ruby, etc.)
 - Creating individual components (a new reviewer agent, a new patterns skill, etc.)
 - Auditing existing components with `--list`
-- Claude detects a new ecosystem in the project (e.g., user adds `go.mod`) and proactively suggests `/extend`
+- Claude detects a new ecosystem in the project (e.g., user adds `go.mod`) and proactively suggests `magic-claude:extend`
 
 ## Complete Workflow
 

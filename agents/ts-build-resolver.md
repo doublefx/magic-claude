@@ -468,11 +468,11 @@ Parameter 'market' implicitly has an 'any' type.
 - Dependency version conflicts
 
 **DON'T USE when:**
-- Code needs refactoring (use ts-refactor-cleaner)
-- Architectural changes needed (use architect)
-- New features required (use planner)
-- Tests failing (use ts-tdd-guide)
-- Security issues found (use ts-security-reviewer)
+- Code needs refactoring (use magic-claude:ts-refactor-cleaner)
+- Architectural changes needed (use magic-claude:architect)
+- New features required (use magic-claude:planner)
+- Tests failing (use magic-claude:ts-tdd-guide)
+- Security issues found (use magic-claude:ts-security-reviewer)
 
 ## Build Error Priority Levels
 

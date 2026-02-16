@@ -328,12 +328,12 @@ plugins {
 - Spring Boot upgrade compilation failures
 
 **DON'T USE when:**
-- Code needs refactoring (use jvm-refactor-cleaner)
-- Gradle build optimization (use gradle-expert)
-- Maven best practices review (use maven-expert)
-- New features required (use planner)
-- Tests failing (use jvm-tdd-guide)
-- Security issues (use jvm-security-reviewer)
+- Code needs refactoring (use magic-claude:jvm-refactor-cleaner)
+- Gradle build optimization (use magic-claude:gradle-expert)
+- Maven best practices review (use magic-claude:maven-expert)
+- New features required (use magic-claude:planner)
+- Tests failing (use magic-claude:jvm-tdd-guide)
+- Security issues (use magic-claude:jvm-security-reviewer)
 
 ## Success Metrics
 

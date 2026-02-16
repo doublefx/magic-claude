@@ -29,7 +29,7 @@ Agent Teams coordinate multiple Claude Code instances working together with a sh
 | Scenario | Use | Why |
 |----------|-----|-----|
 | Focused task, result only matters | **Subagent** (Task tool) | Lower tokens, no coordination overhead |
-| Sequential pipeline (plan -> code -> test -> review) | **`/orchestrate`** | Structured handoffs, proven workflow |
+| Sequential pipeline (plan -> code -> test -> review) | **`magic-claude:orchestrate`** | Structured handoffs, proven workflow |
 | Parallel exploration, agents need to talk | **Agent Teams** | Inter-agent messaging, shared task list |
 | Quick delegation (research, format, lint) | **Subagent** (Task tool) | Fast, disposable, minimal context |
 
@@ -177,7 +177,7 @@ Set permanently in settings.json:
 
 ## Anti-Patterns to Avoid
 
-1. **Using teams for sequential work** - Use `/orchestrate` instead
+1. **Using teams for sequential work** - Use `magic-claude:orchestrate` instead
 2. **>3 teammates without justification** - Token costs scale linearly
 3. **Broadcasting frequently** - Costs multiply by team size
 4. **Same-file editing** - Causes overwrites. Enforce file ownership

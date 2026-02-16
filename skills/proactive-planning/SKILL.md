@@ -24,7 +24,7 @@ Claude should proactively invoke this skill when:
 
 For planning without the full TDD/review pipeline (architectural discussions, requirement analysis, design decisions), this skill handles planning directly.
 
-For complex multi-file features, `proactive-orchestration` handles the full pipeline including planning as Phase 1. This skill fires only when planning is needed as a standalone activity.
+For complex multi-file features, `magic-claude:proactive-orchestration` handles the full pipeline including planning as Phase 1. This skill fires only when planning is needed as a standalone activity.
 
 ## Planning Process
 
@@ -114,7 +114,7 @@ This skill runs with `context: fork` to allow deep analysis without consuming ma
 
 ## Related
 
-- `/plan` command - Explicit user-invoked planning
-- `proactive-orchestration` skill - Full pipeline orchestration (includes planning as Phase 1)
-- `planner` agent - Full planning agent with Opus model
-- `architect` agent - System design specialist
+- `magic-claude:plan` command - Explicit user-invoked planning
+- `magic-claude:proactive-orchestration` skill - Full pipeline orchestration (includes planning as Phase 1)
+- `magic-claude:planner` agent - Full planning agent with Opus model
+- `magic-claude:architect` agent - System design specialist

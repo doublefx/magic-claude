@@ -88,4 +88,4 @@ Add to your `~/.claude/settings.json`:
 ## Related
 
 - [Advanced Topics Guide](../../docs/guides/advanced-topics.md) - Section on continuous learning
-- `/learn` command - Manual pattern extraction mid-session
+- `magic-claude:learn` command - Manual pattern extraction mid-session

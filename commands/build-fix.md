@@ -28,10 +28,10 @@ If multiple ecosystems detected, ask which one to fix.
 
 | Ecosystem | Agent | Build Command |
 |-----------|-------|---------------|
-| TypeScript/JavaScript | **ts-build-resolver** | `npx tsc --noEmit` or `npm run build` |
-| JVM (Maven) | **jvm-build-resolver** | `./mvnw clean install` |
-| JVM (Gradle) | **jvm-build-resolver** | `./gradlew build` |
-| Python | **python-build-resolver** | `pyright` or `ruff check .` or `pytest --collect-only` |
+| TypeScript/JavaScript | **magic-claude:ts-build-resolver** | `npx tsc --noEmit` or `npm run build` |
+| JVM (Maven) | **magic-claude:jvm-build-resolver** | `./mvnw clean install` |
+| JVM (Gradle) | **magic-claude:jvm-build-resolver** | `./gradlew build` |
+| Python | **magic-claude:python-build-resolver** | `pyright` or `ruff check .` or `pytest --collect-only` |
 
 ## Step 3: Incremental Fix Loop
 

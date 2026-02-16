@@ -15,7 +15,7 @@ This skill **REPLACES** EnterPlanMode for all feature implementation tasks.
 - **WRONG**: Planning without follow-through to TDD, verification, and review
 
 - **CORRECT**: Invoke this skill for any non-trivial feature implementation
-- **CORRECT**: Only use EnterPlanMode for pure research/exploration or explicit `/plan`
+- **CORRECT**: Only use EnterPlanMode for pure research/exploration or explicit `magic-claude:plan`
 
 ## When Claude MUST Invoke This Skill
 
@@ -31,10 +31,10 @@ This skill **REPLACES** EnterPlanMode for all feature implementation tasks.
 - Single-file edits ("update this function", "rename this variable")
 - Documentation tasks ("update the README", "add JSDoc")
 - Configuration changes ("update tsconfig", "add dependency")
-- Refactoring (has its own workflow via `/refactor-clean`)
-- Explicit single-command requests ("run /tdd", "run /code-review")
+- Refactoring (has its own workflow via `magic-claude:refactor-clean`)
+- Explicit single-command requests ("run `magic-claude:tdd`", "run `magic-claude:code-review`")
 - Pure research or exploration (use EnterPlanMode or Explore agent)
-- When user explicitly types `/plan` (respect the explicit command)
+- When user explicitly types `magic-claude:plan` (respect the explicit command)
 
 ## Anti-Rationalization
 
@@ -78,13 +78,13 @@ This skill runs in the **main context** (no `context: fork`) because it needs mu
 
 **Skip when:** The request is feature work within an existing, well-understood architecture (e.g., "add a delete button", "add form validation", "implement search filtering").
 
-1. Invoke the **architect** agent (opus) via Task tool
+1. Invoke the **magic-claude:architect** agent (opus) via Task tool
 2. The architect produces: architecture proposal, trade-off analysis, and ADRs for key decisions
 3. Pass the architect's output as context to Phase 1
 
 ### Phase 1: PLAN
 
-1. Invoke the **planner** agent (opus) via Task tool to analyze the request
+1. Invoke the **magic-claude:planner** agent (opus) via Task tool to analyze the request
    - If Phase 0 ran: include the architect's output as input context for the planner
    - The planner translates architecture decisions into actionable implementation steps
 2. Present the implementation plan to the user
@@ -97,7 +97,7 @@ This skill runs in the **main context** (no `context: fork`) because it needs mu
 
 When the user includes `--with-evals <name>` or explicitly requests eval-driven development:
 
-1. Run `/eval define <name>` to create capability and regression eval criteria based on the approved plan
+1. Run `magic-claude:eval define <name>` to create capability and regression eval criteria based on the approved plan
 2. Present eval definitions to user for confirmation
 3. Store in `.claude/evals/<name>.md`
 
@@ -106,45 +106,45 @@ When the user includes `--with-evals <name>` or explicitly requests eval-driven 
 ### Phase 2: TDD
 
 1. Detect ecosystem from project markers:
-   - `package.json` / `tsconfig.json` -> TypeScript/JavaScript -> **ts-tdd-guide**
-   - `pom.xml` / `build.gradle*` -> JVM -> **jvm-tdd-guide**
-   - `pyproject.toml` / `setup.py` -> Python -> **python-tdd-guide**
+   - `package.json` / `tsconfig.json` -> TypeScript/JavaScript -> **magic-claude:ts-tdd-guide**
+   - `pom.xml` / `build.gradle*` -> JVM -> **magic-claude:jvm-tdd-guide**
+   - `pyproject.toml` / `setup.py` -> Python -> **magic-claude:python-tdd-guide**
 2. Create a task via TaskCreate to track progress
 3. Invoke the appropriate TDD agent via Task tool
-4. The agent follows RED-GREEN-REFACTOR cycle per the `/tdd` command workflow
+4. The agent follows RED-GREEN-REFACTOR cycle per the `magic-claude:tdd` command workflow
 5. Verify 80%+ coverage before proceeding
 
 ### Phase 3: VERIFY
 
-1. Run verification following the `/verify full` workflow:
+1. Run verification following the `magic-claude:verify full` workflow:
    - Build check (STOP if fails)
    - Type check
    - Lint check
    - Test suite with coverage
    - Debug statement audit
 2. If build or type check fails:
-   - Auto-invoke the appropriate build-resolver agent (**ts-build-resolver**, **jvm-build-resolver**, or **python-build-resolver**)
+   - Auto-invoke the appropriate build-resolver agent (**magic-claude:ts-build-resolver**, **magic-claude:jvm-build-resolver**, or **magic-claude:python-build-resolver**)
    - Re-run verification after fixes
 3. If tests fail: report failures and suggest fixes before proceeding
 
 ### Phase 4: REVIEW
 
-1. Invoke **code-reviewer** agent (opus) via Task tool for comprehensive review
+1. Invoke **magic-claude:code-reviewer** agent (opus) via Task tool for comprehensive review
 2. For security-sensitive changes, also invoke the ecosystem-specific security reviewer:
-   - **ts-security-reviewer** for TypeScript/JavaScript
-   - **jvm-security-reviewer** for JVM
-   - **python-security-reviewer** for Python
+   - **magic-claude:ts-security-reviewer** for TypeScript/JavaScript
+   - **magic-claude:jvm-security-reviewer** for JVM
+   - **magic-claude:python-security-reviewer** for Python
 3. For language-specific idiomatic review, invoke:
-   - **java-reviewer** for `.java` files
-   - **kotlin-reviewer** for `.kt` files
-   - **python-reviewer** for `.py` files
+   - **magic-claude:java-reviewer** for `.java` files
+   - **magic-claude:kotlin-reviewer** for `.kt` files
+   - **magic-claude:python-reviewer** for `.py` files
 4. Mark task as completed via TaskUpdate
 
 ### Phase 4.5: EVAL CHECK (opt-in)
 
 When evals were defined in Phase 1.5:
 
-1. Run `/eval check <name>` to verify implementation meets criteria
+1. Run `magic-claude:eval check <name>` to verify implementation meets criteria
 2. Record pass@3 (capability) and pass^3 (regression) metrics
 3. Include results in Phase 5 report
 
@@ -178,7 +178,7 @@ Next Steps:
 
 **Verdict criteria:**
 - **SHIP** - All phases green, review approved
-- **NEEDS WORK** - Minor issues found, list specific `/command` remediation
+- **NEEDS WORK** - Minor issues found, list specific `magic-claude:<command>` remediation
 - **BLOCKED** - Critical issues (security vulnerabilities, build failures after remediation, review BLOCK)
 
 ## Relationship to Other Proactive Skills
@@ -187,23 +187,23 @@ This skill is the **top-level orchestrator** for complex feature work. The indiv
 
 | Skill | When it fires independently |
 |-------|---------------------------|
-| `proactive-planning` | Architectural discussions, requirement analysis (no TDD/review needed) |
-| `proactive-tdd` | Adding tests to existing code, bug fix with reproduction test |
-| `proactive-review` | Pre-commit review, reviewing someone else's code |
+| `magic-claude:proactive-planning` | Architectural discussions, requirement analysis (no TDD/review needed) |
+| `magic-claude:proactive-tdd` | Adding tests to existing code, bug fix with reproduction test |
+| `magic-claude:proactive-review` | Pre-commit review, reviewing someone else's code |
 
-When `proactive-orchestration` fires, it subsumes all three phases -- the individual skills should not also fire.
+When `magic-claude:proactive-orchestration` fires, it subsumes all three phases -- the individual skills should not also fire.
 
 ## Related
 
-- `/orchestrate` command - Explicit user-invoked orchestration with workflow type variants
-- `/tdd` command - Standalone TDD workflow
-- `/code-review` command - Standalone code review
-- `/verify` command - Standalone verification
-- `/build-fix` command - Build error resolution
-- `architect` agent - System design decisions (Phase 0, conditional)
-- `planner` agent - Implementation planning (Phase 1)
-- `code-reviewer` agent - Quality and security review
-- `*-tdd-guide` agents - Ecosystem-specific TDD specialists
-- `*-build-resolver` agents - Ecosystem-specific build error resolution
-- `*-security-reviewer` agents - Ecosystem-specific security analysis
-- `/eval` command - Eval-driven development (opt-in via `--with-evals`)
+- `magic-claude:orchestrate` command - Explicit user-invoked orchestration with workflow type variants
+- `magic-claude:tdd` command - Standalone TDD workflow
+- `magic-claude:code-review` command - Standalone code review
+- `magic-claude:verify` command - Standalone verification
+- `magic-claude:build-fix` command - Build error resolution
+- `magic-claude:architect` agent - System design decisions (Phase 0, conditional)
+- `magic-claude:planner` agent - Implementation planning (Phase 1)
+- `magic-claude:code-reviewer` agent - Quality and security review
+- `magic-claude:*-tdd-guide` agents - Ecosystem-specific TDD specialists
+- `magic-claude:*-build-resolver` agents - Ecosystem-specific build error resolution
+- `magic-claude:*-security-reviewer` agents - Ecosystem-specific security analysis
+- `magic-claude:eval` command - Eval-driven development (opt-in via `--with-evals`)

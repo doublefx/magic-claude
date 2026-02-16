@@ -101,12 +101,12 @@ When issues are found, include actionable next steps:
 
 | Issue | Suggested Action |
 |-------|-----------------|
-| Build FAIL | "Run `/build-fix` to resolve build errors" |
-| Types FAIL | "Run `/build-fix` to resolve type errors" |
-| Tests FAIL | "Run `/tdd` to fix failing tests" |
-| Coverage LOW | "Run `/test-coverage` to fill coverage gaps" |
+| Build FAIL | "Run `magic-claude:build-fix` to resolve build errors" |
+| Types FAIL | "Run `magic-claude:build-fix` to resolve type errors" |
+| Tests FAIL | "Run `magic-claude:tdd` to fix failing tests" |
+| Coverage LOW | "Run `magic-claude:test-coverage` to fill coverage gaps" |
 | Debug FOUND | "Remove debug statements before committing" |
-| Security FOUND | "Run `/code-review` for detailed security analysis" |
+| Security FOUND | "Run `magic-claude:code-review` for detailed security analysis" |
 
 ## Arguments
 

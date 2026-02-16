@@ -19,7 +19,7 @@ TaskCreate for each step:
 5. "Verify development tools"
 6. "Install dependencies" (ask user first)
 7. "Install plugin rules" (copies rules to ~/.claude/rules/)
-8. "Run Serena setup" (if installed - INVOKE /serena-setup skill)
+8. "Run Serena setup" (if installed - INVOKE magic-claude:serena-setup skill)
 9. "Verify setup complete" (.serena/project.yml exists)
 
 Mark each task in_progress before starting, completed when done.
@@ -38,13 +38,13 @@ Automated, interactive setup that handles everything:
 6. **Dependency Installation** - Installs workspace and package dependencies
 7. **Rules Installation** - Copies plugin rules to `~/.claude/rules/`
 8. **Configuration** - Sets up .claude/ configs
-9. **Serena Integration** - **INVOKE /serena-setup skill** (activate, onboard, memories, CLAUDE.md migration)
+9. **Serena Integration** - **INVOKE magic-claude:serena-setup skill** (activate, onboard, memories, CLAUDE.md migration)
 
 ## Step 9: Serena Integration (CRITICAL)
 
 When Serena MCP is detected (check `mcp-cli info plugin_serena_serena/get_current_config`):
 
-**YOU MUST invoke the `/serena-setup` skill using the Skill tool.**
+**YOU MUST invoke the `magic-claude:serena-setup` skill using the Skill tool.**
 
 This skill contains the complete workflow for:
 - Activating project in Serena
@@ -181,19 +181,19 @@ workspace-root/
 
 ## Which Command Should I Use?
 
-### Choose `/setup` when:
+### Choose `magic-claude:setup` when:
 - First-time project setup
 - You want everything configured automatically
 - New team member onboarding
 - "Just make it work" scenarios
 
-### Choose `/setup-pm` when:
+### Choose `magic-claude:setup-pm` when:
 - Switching package managers (npm -> pnpm)
 - Checking current package manager detection
 - Fixing package manager config only
 - **WITHOUT** touching workspace structure or dependencies
 
-### Choose `/setup-ecosystem` when:
+### Choose `magic-claude:setup-ecosystem` when:
 - Initializing workspace root for monorepo
 - Checking which development tools are installed
 - Installing dependencies after adding packages
@@ -202,25 +202,25 @@ workspace-root/
 ## Command Hierarchy
 
 ```
-/setup (Convenience - Does Everything)
-├── /setup-pm (Granular - Package Manager Only)
+magic-claude:setup (Convenience - Does Everything)
+├── magic-claude:setup-pm (Granular - Package Manager Only)
 │   ├── Detect current package manager
 │   ├── Set global/project preference
 │   └── Show detection priority
-├── /setup-ecosystem (Granular - Workspace & Tools)
+├── magic-claude:setup-ecosystem (Granular - Workspace & Tools)
 │   ├── Detect workspace structure
 │   ├── Initialize workspace root
 │   ├── Check development tools
 │   └── Install dependencies
-└── /setup-rules (Granular - Rules Only)
+└── magic-claude:setup-rules (Granular - Rules Only)
     ├── Check rule installation status
     ├── Install/update managed rules
     └── Uninstall managed rules
 ```
 
 **Think of it like Git:**
-- `/setup` = `git pull` (convenience)
-- `/setup-pm` + `/setup-ecosystem` = `git fetch` + `git merge` (granular control)
+- `magic-claude:setup` = `git pull` (convenience)
+- `magic-claude:setup-pm` + `magic-claude:setup-ecosystem` = `git fetch` + `git merge` (granular control)
 
 ## Troubleshooting
 
@@ -229,8 +229,8 @@ workspace-root/
 - Or install pnpm: `npm install -g pnpm`
 
 **"Workspace already has package.json"**
-- Run `/setup-pm --detect` to see current config
-- Run `/setup-ecosystem --detect` to check tools
+- Run `magic-claude:setup-pm --detect` to see current config
+- Run `magic-claude:setup-ecosystem --detect` to check tools
 
 **"Installation failed"**
 - Check network connection
@@ -243,7 +243,7 @@ workspace-root/
 
 ## See Also
 
-- `/setup-pm` - Configure package manager only (granular control)
-- `/setup-ecosystem` - Workspace and tools only (granular control)
-- `/setup-rules` - Install plugin rules to `~/.claude/rules/`
-- All three commands are orchestrated by `/setup` for convenience
+- `magic-claude:setup-pm` - Configure package manager only (granular control)
+- `magic-claude:setup-ecosystem` - Workspace and tools only (granular control)
+- `magic-claude:setup-rules` - Install plugin rules to `~/.claude/rules/`
+- All three commands are orchestrated by `magic-claude:setup` for convenience

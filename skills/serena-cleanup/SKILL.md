@@ -134,7 +134,7 @@ To restore memories:
   cp -r .serena-backup-2026-01-29/* .serena/memories/
 
 To re-setup Serena:
-  /serena-setup
+  magic-claude:serena-setup
 ```
 
 ## Rollback
@@ -146,7 +146,7 @@ To re-setup Serena:
 cp -r .serena-backup-YYYY-MM-DD/* .serena/memories/
 
 # Re-run setup
-/serena-setup
+magic-claude:serena-setup
 ```
 
 ## Partial Cleanup Options
@@ -161,7 +161,7 @@ cp -r .serena-backup-YYYY-MM-DD/* .serena/memories/
 
 1. Backup all memories
 2. Remove memories
-3. Re-run `/serena-setup` for fresh start
+3. Re-run `magic-claude:serena-setup` for fresh start
 
 ## Confirmation Messages
 

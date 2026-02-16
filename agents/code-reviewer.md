@@ -28,10 +28,10 @@ Identify ecosystems from changed file extensions:
 | Extension | Ecosystem | Language Reviewer |
 |-----------|-----------|-------------------|
 | `.ts`, `.tsx`, `.js`, `.jsx` | TypeScript/JavaScript | (inline) |
-| `.java` | JVM | **java-reviewer** |
-| `.kt`, `.kts` | JVM | **kotlin-reviewer** |
-| `.groovy` | JVM | **groovy-reviewer** |
-| `.py` | Python | **python-reviewer** |
+| `.java` | JVM | **magic-claude:java-reviewer** |
+| `.kt`, `.kts` | JVM | **magic-claude:kotlin-reviewer** |
+| `.groovy` | JVM | **magic-claude:groovy-reviewer** |
+| `.py` | Python | **magic-claude:python-reviewer** |
 
 ## Universal Review Checklist
 
@@ -121,10 +121,10 @@ Fix: Move to environment variable
 
 For language-specific idiomatic review, delegate to:
 
-- `.java` files -> **java-reviewer** (Google Style, null safety, concurrency)
-- `.kt` files -> **kotlin-reviewer** (idioms, null safety, coroutines, Java interop)
-- `.groovy` files -> **groovy-reviewer** (DSL patterns, Spock tests, Gradle scripts)
-- `.py` files -> **python-reviewer** (PEP 8, type hints, security, performance)
+- `.java` files -> **magic-claude:java-reviewer** (Google Style, null safety, concurrency)
+- `.kt` files -> **magic-claude:kotlin-reviewer** (idioms, null safety, coroutines, Java interop)
+- `.groovy` files -> **magic-claude:groovy-reviewer** (DSL patterns, Spock tests, Gradle scripts)
+- `.py` files -> **magic-claude:python-reviewer** (PEP 8, type hints, security, performance)
 
 ## Independent Verification (CRITICAL)
 

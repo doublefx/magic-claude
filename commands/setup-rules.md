@@ -45,6 +45,6 @@ Install plugin rules to `~/.claude/rules/` so they load into every Claude Code c
 
 ## See Also
 
-- `/setup` - Complete automated setup (includes rules installation)
-- `/setup-pm` - Package manager configuration
-- `/setup-ecosystem` - Workspace and tools setup
+- `magic-claude:setup` - Complete automated setup (includes rules installation)
+- `magic-claude:setup-pm` - Package manager configuration
+- `magic-claude:setup-ecosystem` - Workspace and tools setup

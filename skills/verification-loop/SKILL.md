@@ -18,7 +18,7 @@ Invoke this skill:
 
 ## Workflow
 
-Follow the same verification process as `/verify full`:
+Follow the same verification process as `magic-claude:verify full`:
 
 1. **Detect ecosystem** from project markers (package.json, pom.xml, pyproject.toml, etc.)
 2. **Build check** - Compile/build, STOP if fails
@@ -28,7 +28,7 @@ Follow the same verification process as `/verify full`:
 6. **Debug statement audit** - Detect console.log, System.out.println, print()
 7. **Git status** - Show uncommitted changes
 
-See the `/verify` command for the full ecosystem detection table, command matrix, output format, and remediation suggestions.
+See the `magic-claude:verify` command for the full ecosystem detection table, command matrix, output format, and remediation suggestions.
 
 ## Continuous Mode
 
@@ -38,7 +38,7 @@ For long sessions, run verification every 15 minutes or after major changes:
 - After finishing a component
 - Before moving to next task
 
-Run: `/verify`
+Run: `magic-claude:verify`
 
 ## Integration with Hooks
 

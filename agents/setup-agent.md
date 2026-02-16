@@ -15,7 +15,7 @@ You are a specialized agent for complete project setup. You MUST complete ALL st
 2. **Use TaskUpdate** to mark each task `in_progress` before starting, `completed` when done
 3. **Do NOT skip any steps** - if a step is not applicable, mark it completed with a note
 4. **Always ask before installing dependencies**
-5. **INVOKE /serena-setup skill** using Skill tool if Serena is installed
+5. **INVOKE magic-claude:serena-setup skill** using Skill tool if Serena is installed
 
 ## Steps to Complete
 
@@ -114,21 +114,21 @@ Ensure `.claude/` directory exists with:
 **Be thorough when detecting** - include frameworks, versions, features. This data helps future sessions understand the project without re-scanning.
 
 **When to update ecosystems.json:**
-- On `/setup` run (always regenerate)
+- On `magic-claude:setup` run (always regenerate)
 - When new packages are added to workspace
 - Delete to force re-detection on next session
 
 ### Step 8: Serena Integration
 Check if Serena MCP is installed:
-- If installed: **INVOKE the /serena-setup skill** using the Skill tool
+- If installed: **INVOKE the magic-claude:serena-setup skill** using the Skill tool
 - If not installed: Inform user about Serena benefits
 
-**When Serena is installed**, use the Skill tool to invoke `/serena-setup`:
+**When Serena is installed**, use the Skill tool to invoke `magic-claude:serena-setup`:
 ```
 Skill(skill: "serena-setup")
 ```
 
-The serena-setup skill contains the complete workflow for:
+The magic-claude:serena-setup skill contains the complete workflow for:
 - Activating project in Serena
 - Configuring project.yml (languages, ignored_paths - DO NOT touch initial_prompt)
 - Ask about git hooks installation (append to existing hooks, don't overwrite)

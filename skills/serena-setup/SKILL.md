@@ -6,12 +6,12 @@ allowed-tools: Read, Write, Edit, Bash, Bash(mcp-cli *), Grep, Glob, AskUserQues
 
 # Serena Integration Setup Workflow
 
-This skill provides the complete workflow for Serena MCP integration. Invoke via `/serena-setup` or when called from `/setup`.
+This skill provides the complete workflow for Serena MCP integration. Invoke via `magic-claude:serena-setup` or when called from `magic-claude:setup`.
 
 ## When to Activate
 
 - First time setting up Serena in a project
-- After `/setup` command (handles Serena portion)
+- After `magic-claude:setup` command (handles Serena portion)
 - Re-configuring Serena integration
 
 ## Prerequisites
@@ -72,7 +72,7 @@ Serena MCP plugin not found.
 To install:
   /plugin install serena
 
-After installing, run /serena-setup again.
+After installing, run magic-claude:serena-setup again.
 ```
 
 ### Step 3: Auto-Detect Languages
@@ -208,8 +208,8 @@ JetBrains: ${AVAILABLE/NOT_AVAILABLE}
 Git Hooks: ${INSTALLED/SKIPPED}
 
 Next Steps:
-1. Check status anytime with /serena-status
-2. The git-sync agent runs automatically after git operations
+1. Check status anytime with magic-claude:serena-status
+2. The magic-claude:git-sync agent runs automatically after git operations
 ```
 
 ## Idempotency

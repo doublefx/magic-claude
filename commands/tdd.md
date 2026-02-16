@@ -28,10 +28,10 @@ If multiple ecosystems detected, ask which one to target.
 
 | Ecosystem | Agent | Test Command | Coverage Tool |
 |-----------|-------|--------------|---------------|
-| TypeScript/JavaScript | **ts-tdd-guide** | `npm test` or `npx vitest` | Jest/Vitest `--coverage` |
-| JVM (Gradle) | **jvm-tdd-guide** | `./gradlew test` | JaCoCo `./gradlew jacocoTestReport` |
-| JVM (Maven) | **jvm-tdd-guide** | `./mvnw test` | JaCoCo `./mvnw jacoco:report` |
-| Python | **python-tdd-guide** | `pytest` | pytest-cov `pytest --cov` |
+| TypeScript/JavaScript | **magic-claude:ts-tdd-guide** | `npm test` or `npx vitest` | Jest/Vitest `--coverage` |
+| JVM (Gradle) | **magic-claude:jvm-tdd-guide** | `./gradlew test` | JaCoCo `./gradlew jacocoTestReport` |
+| JVM (Maven) | **magic-claude:jvm-tdd-guide** | `./mvnw test` | JaCoCo `./mvnw jacoco:report` |
+| Python | **magic-claude:python-tdd-guide** | `pytest` | pytest-cov `pytest --cov` |
 
 ## Step 3: TDD Cycle
 
@@ -82,16 +82,16 @@ REPEAT:   Next feature/scenario
 
 ## Integration with Other Commands
 
-- Use `/plan` first to understand what to build
-- Use `/tdd` to implement with tests
-- Use `/build-fix` if build errors occur
-- Use `/code-review` to review implementation
-- Use `/test-coverage` to verify coverage
+- Use `magic-claude:plan` first to understand what to build
+- Use `magic-claude:tdd` to implement with tests
+- Use `magic-claude:build-fix` if build errors occur
+- Use `magic-claude:code-review` to review implementation
+- Use `magic-claude:test-coverage` to verify coverage
 
 ## Related Agents
 
 | Ecosystem | Agent | Skill |
 |-----------|-------|-------|
-| TypeScript/JavaScript | `ts-tdd-guide` | `tdd-workflow` |
-| JVM (Java/Kotlin/Groovy) | `jvm-tdd-guide` | `jvm-tdd-workflow` |
-| Python | `python-tdd-guide` | `python-tdd-workflow` |
+| TypeScript/JavaScript | `magic-claude:ts-tdd-guide` | `magic-claude:tdd-workflow` |
+| JVM (Java/Kotlin/Groovy) | `magic-claude:jvm-tdd-guide` | `magic-claude:jvm-tdd-workflow` |
+| Python | `magic-claude:python-tdd-guide` | `magic-claude:python-tdd-workflow` |

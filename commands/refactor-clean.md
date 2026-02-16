@@ -28,9 +28,9 @@ If multiple ecosystems detected, ask which one to clean.
 
 | Ecosystem | Agent | Analysis Tools |
 |-----------|-------|----------------|
-| TypeScript/JavaScript | **ts-refactor-cleaner** | knip, depcheck, ts-prune |
-| JVM (Java/Kotlin/Groovy) | **jvm-refactor-cleaner** | jdeps, mvn dependency:analyze, SpotBugs |
-| Python | **python-refactor-cleaner** | vulture, ruff F401/F841, autoflake |
+| TypeScript/JavaScript | **magic-claude:ts-refactor-cleaner** | knip, depcheck, ts-prune |
+| JVM (Java/Kotlin/Groovy) | **magic-claude:jvm-refactor-cleaner** | jdeps, mvn dependency:analyze, SpotBugs |
+| Python | **magic-claude:python-refactor-cleaner** | vulture, ruff F401/F841, autoflake |
 
 ## Step 3: Analysis & Cleanup Workflow
 

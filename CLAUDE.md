@@ -31,7 +31,7 @@ node scripts/setup-package-manager.cjs --project bun
 
 ## Plugin Commands (Slash Commands)
 
-When installed as a plugin, use these slash commands:
+When installed as a plugin, use these slash commands (fully-qualified as `magic-claude:<name>`):
 
 ```bash
 # Setup & Configuration
@@ -180,33 +180,33 @@ Specialized agents in `agents/` directory:
 
 | Agent | Model | Purpose |
 |-------|-------|---------|
-| planner | opus | Feature implementation planning |
-| architect | opus | System design decisions |
-| ts-tdd-guide | sonnet | TypeScript/JavaScript TDD enforcement |
-| jvm-tdd-guide | sonnet | JVM (Java/Kotlin/Groovy) TDD enforcement |
-| python-tdd-guide | sonnet | Python TDD enforcement |
-| code-reviewer | opus | Ecosystem-aware quality and security review |
-| ts-security-reviewer | opus | TypeScript/JavaScript vulnerability analysis |
-| jvm-security-reviewer | opus | JVM security analysis (SpotBugs, OWASP) |
-| python-security-reviewer | opus | Python security analysis (bandit, semgrep) |
-| ts-build-resolver | sonnet | Fix TypeScript/JS build errors |
-| jvm-build-resolver | sonnet | Fix Java/Kotlin/Groovy build errors |
-| python-build-resolver | sonnet | Fix Python build/type/lint errors |
-| ts-e2e-runner | sonnet | TypeScript/JavaScript Playwright E2E testing |
-| jvm-e2e-runner | sonnet | JVM Selenium/REST Assured E2E testing |
-| python-e2e-runner | sonnet | Python pytest-playwright E2E testing |
-| ts-refactor-cleaner | haiku | TypeScript/JavaScript dead code cleanup |
-| jvm-refactor-cleaner | haiku | JVM dead code cleanup (jdeps, SpotBugs) |
-| python-refactor-cleaner | haiku | Python dead code cleanup (vulture, ruff) |
-| doc-updater | haiku | Documentation sync |
-| setup-agent | sonnet | Project setup and configuration |
-| gradle-expert | sonnet | Gradle build optimization |
-| maven-expert | sonnet | Maven dependency management |
-| ci-cd-architect | opus | CI/CD pipeline design |
-| python-reviewer | opus | Python code quality and security |
-| java-reviewer | opus | Java code quality and security |
-| groovy-reviewer | opus | Groovy/Spock/Gradle scripts |
-| kotlin-reviewer | opus | Kotlin idioms and null safety |
+| magic-claude:planner | opus | Feature implementation planning |
+| magic-claude:architect | opus | System design decisions |
+| magic-claude:ts-tdd-guide | sonnet | TypeScript/JavaScript TDD enforcement |
+| magic-claude:jvm-tdd-guide | sonnet | JVM (Java/Kotlin/Groovy) TDD enforcement |
+| magic-claude:python-tdd-guide | sonnet | Python TDD enforcement |
+| magic-claude:code-reviewer | opus | Ecosystem-aware quality and security review |
+| magic-claude:ts-security-reviewer | opus | TypeScript/JavaScript vulnerability analysis |
+| magic-claude:jvm-security-reviewer | opus | JVM security analysis (SpotBugs, OWASP) |
+| magic-claude:python-security-reviewer | opus | Python security analysis (bandit, semgrep) |
+| magic-claude:ts-build-resolver | sonnet | Fix TypeScript/JS build errors |
+| magic-claude:jvm-build-resolver | sonnet | Fix Java/Kotlin/Groovy build errors |
+| magic-claude:python-build-resolver | sonnet | Fix Python build/type/lint errors |
+| magic-claude:ts-e2e-runner | sonnet | TypeScript/JavaScript Playwright E2E testing |
+| magic-claude:jvm-e2e-runner | sonnet | JVM Selenium/REST Assured E2E testing |
+| magic-claude:python-e2e-runner | sonnet | Python pytest-playwright E2E testing |
+| magic-claude:ts-refactor-cleaner | haiku | TypeScript/JavaScript dead code cleanup |
+| magic-claude:jvm-refactor-cleaner | haiku | JVM dead code cleanup (jdeps, SpotBugs) |
+| magic-claude:python-refactor-cleaner | haiku | Python dead code cleanup (vulture, ruff) |
+| magic-claude:doc-updater | haiku | Documentation sync |
+| magic-claude:setup-agent | sonnet | Project setup and configuration |
+| magic-claude:gradle-expert | sonnet | Gradle build optimization |
+| magic-claude:maven-expert | sonnet | Maven dependency management |
+| magic-claude:ci-cd-architect | opus | CI/CD pipeline design |
+| magic-claude:python-reviewer | opus | Python code quality and security |
+| magic-claude:java-reviewer | opus | Java code quality and security |
+| magic-claude:groovy-reviewer | opus | Groovy/Spock/Gradle scripts |
+| magic-claude:kotlin-reviewer | opus | Kotlin idioms and null safety |
 
 **Use agents proactively** - no user prompt needed for complex features, code reviews, or architectural decisions.
 
@@ -220,32 +220,32 @@ Specialized agents in `agents/` directory:
 Skills define reusable workflows and domain knowledge in `skills/` directory:
 
 **Proactive Skills** (Claude invokes automatically):
-- **proactive-orchestration/** - Full pipeline orchestrator for complex features (PLAN -> TDD -> VERIFY -> REVIEW). Top-level skill that subsumes individual proactive skills for multi-file feature work.
-- **proactive-planning/** - Planning for complex tasks before coding (standalone planning only; orchestration handles planning for full pipelines)
-- **proactive-tdd/** - Ecosystem-aware TDD enforcement (standalone TDD only; orchestration handles TDD for full pipelines)
-- **proactive-review/** - Ecosystem-aware code quality checks at task completion/pre-commit (standalone review only; orchestration handles review for full pipelines)
+- **magic-claude:proactive-orchestration** - Full pipeline orchestrator for complex features. Top-level skill that subsumes individual proactive skills for multi-file feature work.
+- **magic-claude:proactive-planning** - Standalone planning for architectural discussions where NO code will be written.
+- **magic-claude:proactive-tdd** - Ecosystem-aware TDD enforcement for isolated TDD needs.
+- **magic-claude:proactive-review** - Code quality checks at task completion/pre-commit.
 
-**Domain Knowledge Skills** (Context reference):
-- **coding-standards/** - TypeScript/JavaScript best practices (with `context: fork`)
-- **jvm-coding-standards/** - Java/Kotlin best practices (with `context: fork`)
-- **python-coding-standards/** - Python best practices (with `context: fork`)
-- **backend-patterns/** - TypeScript/Node.js API patterns (with `context: fork`)
-- **jvm-backend-patterns/** - Spring Boot/JPA patterns (with `context: fork`)
-- **python-backend-patterns/** - FastAPI/Django/SQLAlchemy patterns (with `context: fork`)
-- **frontend-patterns/** - React, Next.js patterns (with `context: fork`)
-- **security-review/** - TypeScript/JavaScript security checklist (with `context: fork`)
-- **jvm-security-review/** - JVM security checklist (with `context: fork`)
-- **python-security-review/** - Python security checklist (with `context: fork`)
-- **tdd-workflow/** - TypeScript/JavaScript TDD methodology (with `context: fork`)
-- **jvm-tdd-workflow/** - JVM TDD methodology (with `context: fork`)
-- **python-tdd-workflow/** - Python TDD methodology (with `context: fork`)
+**Domain Knowledge Skills** (Context reference, all with `context: fork`):
+- **magic-claude:coding-standards** - TypeScript/JavaScript best practices
+- **magic-claude:jvm-coding-standards** - Java/Kotlin best practices
+- **magic-claude:python-coding-standards** - Python best practices
+- **magic-claude:backend-patterns** - TypeScript/Node.js API patterns
+- **magic-claude:jvm-backend-patterns** - Spring Boot/JPA patterns
+- **magic-claude:python-backend-patterns** - FastAPI/Django/SQLAlchemy patterns
+- **magic-claude:frontend-patterns** - React, Next.js patterns
+- **magic-claude:security-review** - TypeScript/JavaScript security checklist
+- **magic-claude:jvm-security-review** - JVM security checklist
+- **magic-claude:python-security-review** - Python security checklist
+- **magic-claude:tdd-workflow** - TypeScript/JavaScript TDD methodology
+- **magic-claude:jvm-tdd-workflow** - JVM TDD methodology
+- **magic-claude:python-tdd-workflow** - Python TDD methodology
 
 **Workflow Skills**:
-- **continuous-learning/** - Auto-extract patterns from sessions
-- **strategic-compact/** - Manual compaction suggestions
-- **eval-harness/** - Verification loop evaluation
-- **verification-loop/** - Continuous verification
-- **extend/** - Generate new plugin components following existing patterns
+- **magic-claude:continuous-learning** - Auto-extract patterns from sessions
+- **magic-claude:strategic-compact** - Manual compaction suggestions
+- **magic-claude:eval-harness** - Verification loop evaluation
+- **magic-claude:verification-loop** - Continuous verification
+- **magic-claude:extend** - Generate new plugin components following existing patterns
 
 Skills with `context: fork` run in isolated subagent context to preserve main conversation.
 
@@ -256,10 +256,10 @@ Skills are directories with `SKILL.md` or single `.md` files.
 If Serena MCP plugin is installed, the plugin provides Serena management skills:
 
 **Skills** (5 total):
-- **serena-setup/** - Complete setup workflow
-- **serena-status/** - Configuration diagnostics
-- **serena-cleanup/** - Safe cleanup and removal
-- **git-sync** (agent) - Analyze git changes and report impact (runs in background via Task tool)
+- **magic-claude:serena-setup** - Complete setup workflow
+- **magic-claude:serena-status** - Configuration diagnostics
+- **magic-claude:serena-cleanup** - Safe cleanup and removal
+- **magic-claude:git-sync** (agent) - Analyze git changes and report impact (runs in background via Task tool)
 
 **Configuration**: Serena hooks check `SERENA_INSTALLED` and `SERENA_ENABLED` - graceful degradation if not installed.
 
@@ -455,9 +455,9 @@ try {
 - **E2E tests:** Critical user flows (Playwright)
 
 Use the appropriate TDD agent proactively for new features:
-- TypeScript/JavaScript: **ts-tdd-guide**
-- JVM (Java/Kotlin): **jvm-tdd-guide**
-- Python: **python-tdd-guide**
+- TypeScript/JavaScript: **magic-claude:ts-tdd-guide**
+- JVM (Java/Kotlin): **magic-claude:jvm-tdd-guide**
+- Python: **magic-claude:python-tdd-guide**
 
 ## Git Workflow
 

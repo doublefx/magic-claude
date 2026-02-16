@@ -24,19 +24,19 @@ When creating PRs:
 ## Feature Implementation Workflow
 
 1. **Plan First**
-   - Use **planner** agent to create implementation plan
+   - Use **magic-claude:planner** agent to create implementation plan
    - Identify dependencies and risks
    - Break down into phases
 
 2. **TDD Approach**
-   - Use appropriate **tdd-guide** agent (ts/jvm/python)
+   - Use appropriate **magic-claude:tdd-guide** agent (ts/jvm/python)
    - Write tests first (RED)
    - Implement to pass tests (GREEN)
    - Refactor (IMPROVE)
    - Verify 80%+ coverage
 
 3. **Code Review**
-   - Use **code-reviewer** agent immediately after writing code
+   - Use **magic-claude:code-reviewer** agent immediately after writing code
    - Address CRITICAL and HIGH issues
    - Fix MEDIUM issues when possible
 

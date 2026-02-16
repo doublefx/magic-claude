@@ -127,18 +127,18 @@ cat .git/serena-sync-reminder.log
 
 **Project not activated**:
 ```
-Run: /serena-setup
+Run: magic-claude:serena-setup
 Or: Use activate_project("project_name") directly
 ```
 
 **Git hooks missing**:
 ```
-Run: /serena-setup (will offer to install)
+Run: magic-claude:serena-setup (will offer to install)
 ```
 
 **Pending syncs**:
 ```
-The git-sync agent will run automatically to analyze impact
+The magic-claude:git-sync agent will run automatically to analyze impact
 ```
 
 **JetBrains not available**:

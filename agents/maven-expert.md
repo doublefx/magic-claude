@@ -422,7 +422,7 @@ Invoke this agent when:
 
 ## Related Skills & Tools
 
-- **Skill**: `/maven-patterns` - Maven POM patterns and examples
+- **Skill**: `magic-claude:maven-patterns` - Maven POM patterns and examples
 - **Hook**: `maven-advisor.js` - Automatic advice for Maven commands
 - **Tool**: `./mvnw dependency:tree` - Analyze dependencies
 - **Tool**: `./mvnw versions:display-dependency-updates` - Check updates

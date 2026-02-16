@@ -9,7 +9,7 @@ command: node "${CLAUDE_PLUGIN_ROOT}/scripts/setup-ecosystem.cjs"
 
 Automatically detect your project's ecosystem and help install any missing development tools.
 
-> **💡 First time here?** Use `/setup` for complete project setup. This command is for **granular control** over workspace initialization and tool checking only.
+> **💡 First time here?** Use `magic-claude:setup` for complete project setup. This command is for **granular control** over workspace initialization and tool checking only.
 
 ## Usage
 
@@ -206,6 +206,6 @@ JVM packages (2):
 
 ## See Also
 
-- `/setup` - Complete automated setup (package manager + workspace + tools)
-- `/setup-pm` - Package manager configuration only
+- `magic-claude:setup` - Complete automated setup (package manager + workspace + tools)
+- `magic-claude:setup-pm` - Package manager configuration only
 - This command focuses **only** on workspace initialization and tool checking

@@ -86,7 +86,7 @@ For each changed file, apply ecosystem-appropriate checks:
 
 ### Primary Review
 
-Invoke the **code-reviewer** agent (opus) to perform comprehensive quality and security analysis across all changed files.
+Invoke the **magic-claude:code-reviewer** agent (opus) to perform comprehensive quality and security analysis across all changed files.
 
 ### Language-Specific Idiomatic Review
 
@@ -94,11 +94,11 @@ Delegate to specialized reviewers for ecosystem-specific patterns:
 
 | File Type | Reviewer Agent |
 |-----------|---------------|
-| `.java` | **java-reviewer** |
-| `.kt`, `.kts` | **kotlin-reviewer** |
-| `.groovy` | **groovy-reviewer** |
-| `.py` | **python-reviewer** |
-| `.ts`, `.tsx`, `.js`, `.jsx` | (covered by code-reviewer) |
+| `.java` | **magic-claude:java-reviewer** |
+| `.kt`, `.kts` | **magic-claude:kotlin-reviewer** |
+| `.groovy` | **magic-claude:groovy-reviewer** |
+| `.py` | **magic-claude:python-reviewer** |
+| `.ts`, `.tsx`, `.js`, `.jsx` | (covered by magic-claude:code-reviewer) |
 
 ### Security Review
 
@@ -106,9 +106,9 @@ For security-sensitive changes (auth, input handling, API endpoints, payment), d
 
 | Ecosystem | Security Agent |
 |-----------|---------------|
-| TypeScript/JavaScript | **ts-security-reviewer** |
-| JVM (Java/Kotlin/Groovy) | **jvm-security-reviewer** |
-| Python | **python-security-reviewer** |
+| TypeScript/JavaScript | **magic-claude:ts-security-reviewer** |
+| JVM (Java/Kotlin/Groovy) | **magic-claude:jvm-security-reviewer** |
+| Python | **magic-claude:python-security-reviewer** |
 
 ## Step 4: Generate Report
 
@@ -148,10 +148,10 @@ If BLOCK verdict, include actionable next steps:
 
 | Issue Type | Suggested Action |
 |-----------|-----------------|
-| Build errors | "Run `/build-fix` to resolve build errors" |
-| Missing tests | "Run `/tdd` to add test coverage" |
-| Coverage gaps | "Run `/test-coverage` to fill coverage gaps" |
-| Security issues | List specific fixes, then "re-run `/code-review`" |
+| Build errors | "Run `magic-claude:build-fix` to resolve build errors" |
+| Missing tests | "Run `magic-claude:tdd` to add test coverage" |
+| Coverage gaps | "Run `magic-claude:test-coverage` to fill coverage gaps" |
+| Security issues | List specific fixes, then "re-run `magic-claude:code-review`" |
 | Debug statements | "Remove debug statements before committing" |
 
-If WARN verdict, list specific improvements and suggest re-running `/code-review` after fixes.
+If WARN verdict, list specific improvements and suggest re-running `magic-claude:code-review` after fixes.

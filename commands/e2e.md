@@ -13,9 +13,9 @@ Check for ecosystem markers in the project root:
 
 | Marker File | Ecosystem | Agent |
 |-------------|-----------|-------|
-| `package.json`, `tsconfig.json`, `next.config.*` | TypeScript/JavaScript | **ts-e2e-runner** |
-| `pom.xml`, `build.gradle`, `build.gradle.kts`, `*.java`, `*.kt` | JVM (Java/Kotlin/Groovy) | **jvm-e2e-runner** |
-| `pyproject.toml`, `setup.py`, `requirements.txt`, `*.py` | Python | **python-e2e-runner** |
+| `package.json`, `tsconfig.json`, `next.config.*` | TypeScript/JavaScript | **magic-claude:ts-e2e-runner** |
+| `pom.xml`, `build.gradle`, `build.gradle.kts`, `*.java`, `*.kt` | JVM (Java/Kotlin/Groovy) | **magic-claude:jvm-e2e-runner** |
+| `pyproject.toml`, `setup.py`, `requirements.txt`, `*.py` | Python | **magic-claude:python-e2e-runner** |
 
 If multiple ecosystems detected, ask user which to target.
 
@@ -23,9 +23,9 @@ If multiple ecosystems detected, ask user which to target.
 
 | Ecosystem | Agent | Framework |
 |-----------|-------|-----------|
-| TypeScript/JavaScript | **ts-e2e-runner** | Playwright |
-| JVM | **jvm-e2e-runner** | Selenium WebDriver, REST Assured |
-| Python | **python-e2e-runner** | pytest-playwright, httpx |
+| TypeScript/JavaScript | **magic-claude:ts-e2e-runner** | Playwright |
+| JVM | **magic-claude:jvm-e2e-runner** | Selenium WebDriver, REST Assured |
+| Python | **magic-claude:python-e2e-runner** | pytest-playwright, httpx |
 
 ## Step 3: E2E Workflow
 
