@@ -43,9 +43,10 @@ digraph skill_flow {
 For feature requests that involve writing code:
 
 1. **NEVER** use EnterPlanMode -- invoke `magic-claude:proactive-orchestration` instead
-2. The orchestrator coordinates: PLAN -> TDD -> VERIFY -> REVIEW in sequence
-3. EnterPlanMode is ONLY for pure research/exploration or explicit `magic-claude:plan` commands
-4. Simple bug fixes, single-file edits, documentation, and refactoring do NOT need orchestration
+2. The orchestrator coordinates: PLAN -> TDD (per-task with spec review) -> VERIFY -> REVIEW -> DELIVER
+3. Each plan task gets an adversarial spec review before moving to the next -- fail fast, fix early
+4. EnterPlanMode is ONLY for pure research/exploration or explicit `magic-claude:plan` commands
+5. Simple bug fixes, single-file edits, documentation, and refactoring do NOT need orchestration
 
 ## Red Flags
 
