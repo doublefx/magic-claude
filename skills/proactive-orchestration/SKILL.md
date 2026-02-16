@@ -108,17 +108,63 @@ When the user includes `--with-evals <name>` or explicitly requests eval-driven 
 
 **Skip this phase** unless the user explicitly requests evals.
 
-### Phase 2: TDD
+### Phase 2: TDD (Per-Task Loop)
 
-1. Detect ecosystem from project markers:
-   - `package.json` / `tsconfig.json` -> TypeScript/JavaScript -> **magic-claude:ts-tdd-guide**
-   - `pom.xml` / `build.gradle*` -> JVM -> **magic-claude:jvm-tdd-guide**
-   - `pyproject.toml` / `setup.py` -> Python -> **magic-claude:python-tdd-guide**
-2. Create a task via TaskCreate to track progress
-3. Invoke the appropriate TDD agent via Task tool
-4. The agent follows RED-GREEN-REFACTOR cycle per the `magic-claude:tdd` command workflow
-5. **Mid-point review checkpoint**: If the plan has more than 5 implementation steps, invoke a lightweight code-reviewer check after step ~3 to catch drift early. Fix issues before continuing.
-6. Verify 80%+ coverage before proceeding
+#### 2.0 Baseline Verification
+
+Before starting any implementation:
+1. Run the project's test suite to establish a clean baseline
+2. Record passing/failing counts
+3. If pre-existing failures exist: report to user and ask whether to proceed or fix first
+
+This prevents confusion between pre-existing and newly introduced failures.
+
+#### 2.1 Ecosystem Detection
+
+Detect ecosystem from project markers:
+- `package.json` / `tsconfig.json` -> TypeScript/JavaScript -> **magic-claude:ts-tdd-guide**
+- `pom.xml` / `build.gradle*` -> JVM -> **magic-claude:jvm-tdd-guide**
+- `pyproject.toml` / `setup.py` -> Python -> **magic-claude:python-tdd-guide**
+
+#### 2.2 Per-Task Implementation Loop
+
+For **each task** in the approved plan, execute this cycle:
+
+```
+┌─────────────────────────────────────────────────────┐
+│  For each plan task:                                │
+│                                                     │
+│  1. IMPLEMENT — TDD agent (RED → GREEN → REFACTOR)  │
+│       ↓                                             │
+│  2. SPEC REVIEW — Adversarial verification          │
+│       ↓                                             │
+│  3a. PASS → commit task, move to next task          │
+│  3b. ISSUES → send back to TDD agent → re-review   │
+│       (max 2 fix cycles, then escalate to user)     │
+│                                                     │
+└─────────────────────────────────────────────────────┘
+```
+
+**Step 1: Implement**
+1. Create a TaskCreate entry for this specific plan task
+2. Invoke the appropriate TDD agent via Task tool
+3. The agent follows RED-GREEN-REFACTOR cycle per the `magic-claude:tdd` workflow
+4. Agent reports: files modified, tests written, coverage
+
+**Step 2: Spec Review (fail fast)**
+1. Invoke a `general-purpose` agent via Task tool using the **spec-reviewer-prompt.md** template
+2. Pass: the plan task specification AND the TDD agent's report
+3. The spec reviewer reads the actual code independently — does NOT trust the report
+
+**Step 3: Resolve**
+- **PASS** — Commit the task's changes, mark TaskUpdate as completed, proceed to next task
+- **ISSUES FOUND** — Send the issues list back to the TDD agent for remediation. Re-run spec review after fixes. Max 2 fix cycles per task; if still failing, escalate to user with the specific issues.
+
+**Mid-point review checkpoint**: If the plan has more than 5 tasks, invoke a lightweight **magic-claude:code-reviewer** check after task ~3 to catch cross-task drift early. Fix issues before continuing.
+
+#### 2.3 Coverage Gate
+
+After all tasks complete, verify 80%+ overall coverage before proceeding to Phase 3.
 
 ### Phase 3: VERIFY
 
@@ -159,6 +205,17 @@ When evals were defined in Phase 1.5:
 
 **Skip this phase** unless Phase 1.5 was executed.
 
+### Phase 4.7: DELIVER (conditional)
+
+If the approved plan includes a **Delivery Strategy** (from the planner's step 3):
+
+- **current-branch** — No action needed (work is already on the branch)
+- **feature-branch-merge** — Merge the feature branch into the base branch locally, verify tests pass on merged result
+- **feature-branch-pr** — Push the feature branch with `-u`, create a PR via `gh pr create` with the orchestration report as the PR body
+- **user-managed** — Skip; user handles branching
+
+**Skip this phase** if no delivery strategy was recorded or the user said they'd handle it.
+
 ### Phase 5: REPORT
 
 Produce a final orchestration report:
@@ -167,15 +224,18 @@ Produce a final orchestration report:
 ORCHESTRATION REPORT
 ====================
 
-Pipeline: [ARCHITECT] -> PLAN -> [EVAL DEFINE] -> TDD -> VERIFY -> REVIEW -> [EVAL CHECK]
+Pipeline: [ARCHITECT] -> PLAN -> [EVAL DEFINE] -> TDD (per-task) -> VERIFY -> REVIEW -> [EVAL CHECK] -> [DELIVER]
 Ecosystem: [TypeScript/JVM/Python]
 
 ARCHITECT:[SKIPPED / architecture proposal + ADRs produced]
 PLAN:     [APPROVED by user]
-TDD:      [X tests written, Y% coverage]
+BASELINE: [X tests passing, Y failing / clean]
+TDD:      [N tasks completed, X tests written, Y% coverage]
+SPEC:     [N/N tasks passed spec review (Z fix cycles)]
 VERIFY:   [Build OK, Types OK, Lint OK, Tests X/Y passed]
 REVIEW:   [APPROVE/WARN/BLOCK]
 EVALS:    [X/Y capability, X/Y regression] (if --with-evals)
+DELIVER:  [current-branch / merged / PR #N / user-managed / SKIPPED]
 
 Verdict:  SHIP / NEEDS WORK / BLOCKED
 
@@ -216,3 +276,4 @@ When `magic-claude:proactive-orchestration` fires, it subsumes all three phases 
 - `magic-claude:*-build-resolver` agents - Ecosystem-specific build error resolution
 - `magic-claude:*-security-reviewer` agents - Ecosystem-specific security analysis
 - `magic-claude:eval` command - Eval-driven development (opt-in via `--with-evals`)
+- `spec-reviewer-prompt.md` - Adversarial spec compliance review template (Phase 2, per-task)

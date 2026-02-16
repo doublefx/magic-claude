@@ -50,18 +50,31 @@ Before committing to an approach, propose alternatives:
 
 Skip this step when there's clearly only one reasonable approach.
 
-### 3. Requirements Analysis
+### 3. Branch & Delivery Strategy
+
+Ask the user how they want to handle branching and delivery for this feature:
+
+- **(a) Current branch** — work directly on the current branch (simplest, for solo work)
+- **(b) Feature branch + merge locally** — create a branch, implement, merge back
+- **(c) Feature branch + PR** — create a branch, implement, push and open a pull request
+- **(d) Skip** — user will handle branching themselves
+
+Record the choice in the plan under "Delivery Strategy" so the orchestrator knows what to do after Phase 4 (REVIEW).
+
+Skip this step if the user has already stated their preference or if the project has a documented branching convention in CLAUDE.md.
+
+### 4. Requirements Analysis
 - Understand the feature request completely (refined via step 1 if needed)
 - Identify success criteria
 - List assumptions and constraints
 
-### 4. Architecture Review
+### 5. Architecture Review
 - Analyze existing codebase structure
 - Identify affected components
 - Review similar implementations
 - Consider reusable patterns
 
-### 5. Step Breakdown
+### 6. Step Breakdown
 Create detailed steps with:
 - Clear, specific actions
 - File paths and locations
@@ -69,7 +82,7 @@ Create detailed steps with:
 - Estimated complexity
 - Potential risks
 
-### 6. Implementation Order
+### 7. Implementation Order
 - Prioritize by dependencies
 - Group related changes
 - Minimize context switching
@@ -86,6 +99,9 @@ Create detailed steps with:
 ## Requirements
 - [Requirement 1]
 - [Requirement 2]
+
+## Delivery Strategy
+[current-branch / feature-branch-merge / feature-branch-pr / user-managed]
 
 ## Architecture Changes
 - [Change 1: file path and description]

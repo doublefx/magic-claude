@@ -225,7 +225,7 @@ Skills define reusable workflows and domain knowledge in `skills/` directory:
 - **magic-claude:using-magic-claude** - Disposition override (quality over speed), skill governance flowchart, EnterPlanMode intercept, anti-rationalization table, learned skills reminder. Re-injected automatically to survive context loss.
 
 **Proactive Skills** (Claude invokes automatically):
-- **magic-claude:proactive-orchestration** - Full pipeline orchestrator for complex features. Top-level skill that subsumes individual proactive skills for multi-file feature work.
+- **magic-claude:proactive-orchestration** - Full pipeline orchestrator for complex features (PLAN → TDD per-task with spec review → VERIFY → REVIEW → DELIVER). Includes adversarial spec-reviewer-prompt.md for per-task verification and baseline test verification.
 - **magic-claude:proactive-planning** - Standalone planning for architectural discussions where NO code will be written.
 - **magic-claude:proactive-tdd** - Ecosystem-aware TDD enforcement for isolated TDD needs.
 - **magic-claude:proactive-review** - Code quality checks at task completion/pre-commit.
