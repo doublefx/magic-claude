@@ -1,6 +1,6 @@
 {
   "name": "magic-claude",
-  "version": "2.8.2",
+  "version": "2.9.0",
   "description": "Enterprise Stack Extension - Claude Code plugin for Python, Java, Kotlin, Gradle, Maven, and CI/CD pipelines",
   "type": "module",
   "scripts": {

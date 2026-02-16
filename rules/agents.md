@@ -14,8 +14,8 @@ Located in `~/.claude/agents/`:
 
 | Agent | Purpose | When to Use |
 |-------|---------|-------------|
-| planner | Implementation planning | Via orchestration skill or `/plan` |
-| architect | System design | Architectural decisions |
+| planner | Implementation planning | Via orchestration Phase 1 or `/plan` |
+| architect | System design & ADRs | Via orchestration Phase 0 (auto for system design) or standalone |
 | ts-tdd-guide | TypeScript/JS TDD | New TS/JS features, bug fixes |
 | jvm-tdd-guide | JVM TDD | New Java/Kotlin features, bug fixes |
 | python-tdd-guide | Python TDD | New Python features, bug fixes |
@@ -41,7 +41,7 @@ No user prompt needed:
 1. Complex feature requests - Invoke **proactive-orchestration** skill (NOT EnterPlanMode)
 2. Code just written/modified - Use **code-reviewer** agent
 3. Bug fix or new feature - Use appropriate **tdd-guide** agent (ts/jvm/python)
-4. Architectural decision - Use **architect** agent
+4. Architectural decision - Use **architect** agent (auto-invoked by orchestration Phase 0 for system design, or standalone for pure architecture discussions)
 5. After git pull/merge/rebase - Use **git-sync** agent in background
 
 ## Parallel Task Execution

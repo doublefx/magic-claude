@@ -45,9 +45,27 @@ This skill runs in the **main context** (no `context: fork`) because it needs mu
 
 ## Orchestration Phases
 
+### Phase 0: ARCHITECT (conditional)
+
+**Gate:** Only invoke when the request involves **system design decisions**:
+- New services, modules, or major components
+- New data models or database schema changes
+- API contract design (new endpoints, new protocols)
+- Technology or pattern selection (e.g., "should we use WebSockets or SSE?")
+- Cross-cutting concerns (authentication, caching, event-driven architecture)
+- Scalability or deployment architecture changes
+
+**Skip when:** The request is feature work within an existing, well-understood architecture (e.g., "add a delete button", "add form validation", "implement search filtering").
+
+1. Invoke the **architect** agent (opus) via Task tool
+2. The architect produces: architecture proposal, trade-off analysis, and ADRs for key decisions
+3. Pass the architect's output as context to Phase 1
+
 ### Phase 1: PLAN
 
 1. Invoke the **planner** agent (opus) via Task tool to analyze the request
+   - If Phase 0 ran: include the architect's output as input context for the planner
+   - The planner translates architecture decisions into actionable implementation steps
 2. Present the implementation plan to the user
 3. **WAIT for user confirmation** before proceeding
    - If user confirms: proceed to Phase 2
@@ -119,9 +137,10 @@ Produce a final orchestration report:
 ORCHESTRATION REPORT
 ====================
 
-Pipeline: PLAN -> [EVAL DEFINE] -> TDD -> VERIFY -> REVIEW -> [EVAL CHECK]
+Pipeline: [ARCHITECT] -> PLAN -> [EVAL DEFINE] -> TDD -> VERIFY -> REVIEW -> [EVAL CHECK]
 Ecosystem: [TypeScript/JVM/Python]
 
+ARCHITECT:[SKIPPED / architecture proposal + ADRs produced]
 PLAN:     [APPROVED by user]
 TDD:      [X tests written, Y% coverage]
 VERIFY:   [Build OK, Types OK, Lint OK, Tests X/Y passed]
@@ -160,7 +179,8 @@ When `proactive-orchestration` fires, it subsumes all three phases -- the indivi
 - `/code-review` command - Standalone code review
 - `/verify` command - Standalone verification
 - `/build-fix` command - Build error resolution
-- `planner` agent - Implementation planning
+- `architect` agent - System design decisions (Phase 0, conditional)
+- `planner` agent - Implementation planning (Phase 1)
 - `code-reviewer` agent - Quality and security review
 - `*-tdd-guide` agents - Ecosystem-specific TDD specialists
 - `*-build-resolver` agents - Ecosystem-specific build error resolution
