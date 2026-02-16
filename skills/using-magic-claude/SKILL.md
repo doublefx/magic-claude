@@ -65,6 +65,51 @@ These thoughts mean STOP -- you're rationalizing skipping a skill or workflow st
 | "Let me explore first, then check skills" | Skills tell you HOW to explore. Check first. |
 | "This doesn't count as a feature" | If it changes behavior, it's a feature. |
 
+## Verification Before Completion
+
+**No completion claims without fresh verification evidence in this message.**
+
+Claiming work is complete without running the verification command is dishonesty, not efficiency.
+
+### The Gate
+
+Before ANY status claim, completion statement, or expression of satisfaction:
+
+1. **IDENTIFY** — What command proves this claim? (test suite, build, linter, type check)
+2. **RUN** — Execute it. Fresh. Complete. In this message.
+3. **READ** — Full output. Check exit code. Count failures.
+4. **CLAIM** — State the result WITH evidence. If it fails, say so.
+
+Skip any step = the claim is unverified.
+
+### Banned Language (Without Evidence)
+
+These words are **forbidden** unless you ran the command and saw the output:
+
+- "should work", "should pass", "should be fine"
+- "probably works", "likely passes"
+- "looks correct", "seems right"
+- "I'm confident this works"
+- "Done!", "Perfect!", "All good!"
+
+### What Each Claim Requires
+
+| Claim | Must Run | NOT Sufficient |
+|-------|----------|----------------|
+| "Tests pass" | Test command output showing 0 failures | Previous run, "should pass", code looks right |
+| "Build succeeds" | Build command with exit 0 | Linter passing, tests passing |
+| "Lint clean" | Linter output with 0 errors | Build passing, partial check |
+| "Bug fixed" | Test reproducing the original symptom passes | Code changed, assumed fixed |
+| "Types check" | Type checker output with 0 errors | Linter passing, code compiles |
+
+### Applies EVERYWHERE
+
+This is not just for the orchestration pipeline. It applies to:
+- Simple bug fixes
+- One-off changes
+- Agent delegation results (verify independently, don't trust reports)
+- Any message where you're about to say something is done
+
 ## Learned Skills
 
 Learned skills capture project-specific patterns, error resolutions, and workarounds from past sessions. They are available at:
