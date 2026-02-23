@@ -2,7 +2,7 @@
 description: Configure your preferred package manager (npm/pnpm/yarn/bun)
 argument-hint: "[--detect|--global|--project] [manager]"
 disable-model-invocation: true
-command: node "${CLAUDE_PLUGIN_ROOT}/scripts/setup-package-manager.cjs"
+command: node "${CLAUDE_PLUGIN_ROOT}/scripts/setup-package-manager.cjs" $ARGUMENTS
 ---
 
 # Package Manager Setup

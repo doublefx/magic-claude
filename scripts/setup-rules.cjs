@@ -333,8 +333,14 @@ module.exports = {
 if (require.main === module) {
   const args = process.argv.slice(2);
 
-  if (args.length === 0 || args.includes('--help') || args.includes('-h')) {
+  if (args.includes('--help') || args.includes('-h')) {
     showHelp();
+    process.exit(0);
+  }
+
+  // Default to --install when no args provided
+  if (args.length === 0) {
+    runInstall(false);
     process.exit(0);
   }
 

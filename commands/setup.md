@@ -1,6 +1,6 @@
 ---
 description: Complete automated setup (workspace, package manager, tools, deps)
-command: node "${CLAUDE_PLUGIN_ROOT}/scripts/setup-complete.cjs"
+command: node "${CLAUDE_PLUGIN_ROOT}/scripts/setup-complete.cjs" $ARGUMENTS
 disable-model-invocation: false
 ---
 

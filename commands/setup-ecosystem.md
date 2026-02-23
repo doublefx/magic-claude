@@ -2,7 +2,7 @@
 description: Detect and install missing development tools for your ecosystem
 argument-hint: "[--detect|--check] [ecosystem]"
 disable-model-invocation: true
-command: node "${CLAUDE_PLUGIN_ROOT}/scripts/setup-ecosystem.cjs"
+command: node "${CLAUDE_PLUGIN_ROOT}/scripts/setup-ecosystem.cjs" $ARGUMENTS
 ---
 
 # Ecosystem Setup
