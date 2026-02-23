@@ -23,7 +23,8 @@ const testFiles = [
   'lib/serena.test.cjs',
   'lib/setup-rules.test.cjs',
   'hooks/hooks.test.cjs',
-  'hooks/serena-hooks.test.cjs'
+  'hooks/serena-hooks.test.cjs',
+  'skills/systematic-debugging.test.cjs'
 ];
 
 console.log('╔══════════════════════════════════════════════════════════╗');

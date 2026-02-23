@@ -35,28 +35,28 @@ function getSessionsDir() {
 }
 
 /**
- * Get the user-level learned skills directory (for universal patterns)
+ * Get the user-level skills directory (for universal patterns)
  */
 function getUserLearnedSkillsDir() {
-  return path.join(getClaudeDir(), 'skills', 'learned');
+  return path.join(getClaudeDir(), 'skills');
 }
 
 /**
- * Get the project-level learned skills directory (for project-specific patterns)
+ * Get the project-level skills directory (for project-specific patterns)
  * Returns null if not in a project with .claude/ directory
  */
 function getProjectLearnedSkillsDir() {
   const projectClaudeDir = path.join(process.cwd(), '.claude');
 
   if (fs.existsSync(projectClaudeDir)) {
-    return path.join(projectClaudeDir, 'skills', 'learned');
+    return path.join(projectClaudeDir, 'skills');
   }
 
   return null;
 }
 
 /**
- * Get the learned skills directory
+ * Get the skills directory
  * Prefers project-level if available, falls back to user-level
  * @deprecated Use getUserLearnedSkillsDir() or getProjectLearnedSkillsDir() for explicit control
  */

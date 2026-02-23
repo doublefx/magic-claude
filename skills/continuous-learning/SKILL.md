@@ -21,8 +21,8 @@ This skill runs as a **Stop hook** at the end of each session:
 1. **Session Evaluation**: Checks if session has enough messages (default: 10+)
 2. **Pattern Detection**: Identifies extractable patterns from the session
 3. **Skill Extraction**: Saves useful patterns to appropriate location:
-   - Project-level: `.claude/skills/learned/` (project-specific patterns)
-   - User-level: `~/.claude/skills/learned/` (general reusable patterns)
+   - Project-level: `.claude/skills/<name>/SKILL.md` (project-specific patterns)
+   - User-level: `~/.claude/skills/<name>/SKILL.md` (general reusable patterns)
 
 ## Configuration
 
@@ -33,8 +33,8 @@ Edit `config.json` to customize:
   "min_session_length": 10,
   "extraction_threshold": "medium",
   "auto_approve": false,
-  "project_skills_path": ".claude/skills/learned/",
-  "user_skills_path": "~/.claude/skills/learned/",
+  "project_skills_path": ".claude/skills/",
+  "user_skills_path": "~/.claude/skills/",
   "default_scope": "project",
   "patterns_to_detect": [
     "error_resolution",

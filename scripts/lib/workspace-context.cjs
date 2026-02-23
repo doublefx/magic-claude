@@ -235,7 +235,7 @@ class WorkspaceContext {
   }
 
   /**
-   * Get learned skills directory
+   * Get skills directory for learned/extracted skills
    * @param {string} scope - 'workspace' (default) or 'user'
    * @returns {string} - Directory path
    */
@@ -246,7 +246,7 @@ class WorkspaceContext {
 
     // Workspace scope: prefer workspace root, fall back to project, then user
     if (this._workspace) {
-      return path.join(this._workspace.root, '.claude', 'skills', 'learned');
+      return path.join(this._workspace.root, '.claude', 'skills');
     }
 
     // Not in workspace: use project if exists, otherwise user

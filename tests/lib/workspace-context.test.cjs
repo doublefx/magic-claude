@@ -50,7 +50,7 @@ try {
     getPackageManager() { return { name: 'npm', ecosystem: 'nodejs' }; }
     getPackageManagerForFile() { return { name: 'npm', ecosystem: 'nodejs' }; }
     getEcosystem() { return 'nodejs'; }
-    getLearnedSkillsDir() { return path.join(os.homedir(), '.claude', 'skills', 'learned'); }
+    getLearnedSkillsDir() { return path.join(os.homedir(), '.claude', 'skills'); }
   };
 
   getWorkspaceContext = () => new WorkspaceContext();
@@ -218,7 +218,7 @@ function runTests() {
 
     assert.ok(skillsDir);
     assert.strictEqual(typeof skillsDir, 'string');
-    assert.ok(skillsDir.includes('learned'), `Skills dir should contain "learned": ${skillsDir}`);
+    assert.ok(skillsDir.includes('skills'), `Skills dir should contain "skills": ${skillsDir}`);
   }) ? 'passed' : 'failed']++;
 
   results[test('should support scope parameter for learned skills', () => {

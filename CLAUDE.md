@@ -245,6 +245,9 @@ Skills define reusable workflows and domain knowledge in `skills/` directory:
 - **magic-claude:jvm-tdd-workflow** - JVM TDD methodology
 - **magic-claude:python-tdd-workflow** - Python TDD methodology
 
+**Debugging Skills** (Context reference, `context: fork`):
+- **magic-claude:systematic-debugging** - 4-phase root-cause investigation for bugs that escape the build/test pipeline (Root Cause Investigation, Pattern Analysis, Hypothesis Testing, Implementation). Includes test pollution bisection tooling (`find-polluter.cjs`).
+
 **Review Skills**:
 - **magic-claude:receiving-code-review** - Governs how to handle review feedback: verify before implementing, push back when wrong, YAGNI check on suggestions, no performative agreement
 

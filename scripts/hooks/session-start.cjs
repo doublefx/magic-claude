@@ -88,7 +88,8 @@ function readMetaSkill() {
 }
 
 /**
- * Enumerate learned skills from a directory, returning only frontmatter metadata.
+ * Enumerate skills from a directory, scanning <name>/SKILL.md subdirectories.
+ * This matches the standard Claude Code skill discovery pattern.
  * Returns array of { name, description, file } objects.
  */
 function enumerateLearnedSkills(dir) {
@@ -96,19 +97,22 @@ function enumerateLearnedSkills(dir) {
 
   const skills = [];
   try {
-    const files = fs.readdirSync(dir).filter(f => f.endsWith('.md'));
-    for (const file of files) {
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue;
+      const skillFile = path.join(dir, entry.name, 'SKILL.md');
+      if (!fs.existsSync(skillFile)) continue;
       try {
-        const content = fs.readFileSync(path.join(dir, file), 'utf-8');
+        const content = fs.readFileSync(skillFile, 'utf-8');
         const { attributes } = parseFrontmatter(content);
         skills.push({
-          name: attributes.name || file.replace(/\.md$/, ''),
+          name: attributes.name || entry.name,
           description: attributes.description || '',
-          file
+          file: path.join(entry.name, 'SKILL.md')
         });
       } catch {
         // Skip unreadable files
-        skills.push({ name: file.replace(/\.md$/, ''), description: '', file });
+        skills.push({ name: entry.name, description: '', file: path.join(entry.name, 'SKILL.md') });
       }
     }
   } catch {
@@ -246,7 +250,7 @@ async function main() {
   }
 
   // Check for learned skills (log only - detailed enumeration is in additionalContext output)
-  const learnedSkills = findFiles(learnedDir, '*.md');
+  const learnedSkills = enumerateLearnedSkills(learnedDir);
 
   if (learnedSkills.length > 0) {
     log(`[SessionStart] ${learnedSkills.length} learned skill(s) available`);

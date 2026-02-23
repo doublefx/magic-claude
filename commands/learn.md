@@ -36,14 +36,25 @@ If you specify a pattern description, focus the extraction on that specific area
 
 | Scope | Path | Use When |
 |-------|------|----------|
-| **Project-level** | `{PROJECT_ROOT}/.claude/skills/learned/` | Pattern is specific to THIS project (codebase conventions, project-specific fixes, domain knowledge) |
-| **User-level** | `~/.claude/skills/learned/` | Pattern is reusable across ALL projects (general debugging techniques, framework patterns, tool usage) |
+| **Project-level** | `{PROJECT_ROOT}/.claude/skills/<name>/SKILL.md` | Pattern is specific to THIS project (codebase conventions, project-specific fixes, domain knowledge) |
+| **User-level** | `~/.claude/skills/<name>/SKILL.md` | Pattern is reusable across ALL projects (general debugging techniques, framework patterns, tool usage) |
 
 **Default: Project-level** - Most learned patterns are project-specific.
 
+**Skill directory structure:** Each skill is a directory containing `SKILL.md`:
+```
+.claude/skills/
+  my-pattern/
+    SKILL.md    <-- the skill file
+  another-fix/
+    SKILL.md
+```
+
+This matches the standard Claude Code skill discovery pattern, ensuring learned skills are registered in the Skill tool and invocable.
+
 **NEVER create skills in:**
 - The plugin's `skills/` directory (that's for plugin-provided skills only)
-- `{PROJECT_ROOT}/skills/` (wrong path - must be in `.claude/skills/learned/`)
+- `{PROJECT_ROOT}/skills/` (wrong path - must be in `.claude/skills/`)
 
 ## What to Extract
 
@@ -122,9 +133,9 @@ user-invocable: false
 5. Draft the skill file with proper frontmatter
 6. Ask user to confirm before saving
 7. Save to appropriate location:
-   - Project: `{PROJECT_ROOT}/.claude/skills/learned/[pattern-name].md`
-   - User: `~/.claude/skills/learned/[pattern-name].md`
-8. Create the `learned/` directory if it doesn't exist: `mkdir -p .claude/skills/learned/`
+   - Project: `{PROJECT_ROOT}/.claude/skills/[pattern-name]/SKILL.md`
+   - User: `~/.claude/skills/[pattern-name]/SKILL.md`
+8. Create the skill directory if it doesn't exist: `mkdir -p .claude/skills/[pattern-name]/`
 
 ## Example Decision Tree
 
