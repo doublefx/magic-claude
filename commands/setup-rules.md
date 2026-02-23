@@ -1,7 +1,6 @@
 ---
 description: Install or update plugin rules to ~/.claude/rules/
 argument-hint: "[--check|--install|--force|--uninstall]"
-disable-model-invocation: true
 command: node "${CLAUDE_PLUGIN_ROOT}/scripts/setup-rules.cjs" $ARGUMENTS
 ---
 
