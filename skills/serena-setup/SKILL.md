@@ -1,7 +1,7 @@
 ---
 description: Use when setting up Serena MCP for a new project or reconfiguring an existing Serena installation.
 context: fork
-allowed-tools: Read, Write, Edit, Bash, Bash(mcp-cli *), Grep, Glob, AskUserQuestion, TaskCreate, TaskUpdate, TaskList
+allowed-tools: Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion, TaskCreate, TaskUpdate, TaskList
 ---
 
 # Serena Integration Setup Workflow
@@ -21,15 +21,9 @@ This skill provides the complete workflow for Serena MCP integration. Invoke via
 
 ## MCP Tools Available
 
-You have access to Serena MCP tools via `mcp-cli`:
-- `plugin_serena_serena/activate_project` - Activate project
-- `plugin_serena_serena/get_current_config` - Get Serena config
-
-**Always check schema before calling:**
-```bash
-mcp-cli info plugin_serena_serena/<tool_name>
-mcp-cli call plugin_serena_serena/<tool_name> '<json>'
-```
+You have access to Serena MCP tools directly:
+- `mcp__plugin_serena_serena__activate_project` - Activate project
+- `mcp__plugin_serena_serena__get_current_config` - Get Serena config
 
 ## Complete Workflow
 
@@ -62,7 +56,7 @@ Setting up Serena integration for this project.
 
 ```
 Check: SERENA_INSTALLED environment variable
-Or use: mcp-cli info plugin_serena_serena/get_current_config
+Or call: mcp__plugin_serena_serena__get_current_config
 ```
 
 **If not installed**:

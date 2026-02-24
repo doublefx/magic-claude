@@ -28,5 +28,3 @@ Always start cheap and go deeper only when needed:
 - Projects with no prior session history
 
 **Fallback:** If claude-mem returns no results or errors, fall back to codebase exploration. Do not retry more than once per failure type in a session.
-
-**mcp-cli rule:** Always run `mcp-cli info` before `mcp-cli call` (mandatory prerequisite).

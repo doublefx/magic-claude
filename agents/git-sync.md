@@ -1,7 +1,7 @@
 ---
 name: git-sync
 description: Analyze external git changes and report their impact. Invoke automatically in background after git pull, merge, rebase, or branch switch. Produces an actionable change impact report with severity classification.
-tools: Read, Grep, Glob, Bash(git *), Bash(cat *), Bash(mcp-cli *)
+tools: Read, Grep, Glob, Bash(git *), Bash(cat *)
 model: haiku
 skills: claude-mem-context, serena-code-navigation
 ---

@@ -3,7 +3,7 @@ name: extend
 description: Use when creating new plugin components (agents, skills, hooks, commands, rules) for the magic-claude plugin or adding ecosystem support.
 argument-hint: [ecosystem-or-flags]
 context: fork
-allowed-tools: Read, Write, Edit, Bash, Bash(mcp-cli *), Grep, Glob, AskUserQuestion, WebSearch, WebFetch
+allowed-tools: Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion, WebSearch, WebFetch
 ---
 
 # Plugin Extension Generator

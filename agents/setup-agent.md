@@ -1,7 +1,7 @@
 ---
 name: setup-agent
 description: Dedicated agent for complete project setup. Handles workspace detection, package manager configuration, ecosystem detection, tool verification, dependency installation, and Serena integration.
-tools: Read, Write, Edit, Bash, Bash(mcp-cli *), Grep, Glob, AskUserQuestion, TaskCreate, TaskUpdate, TaskList, Skill
+tools: Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion, TaskCreate, TaskUpdate, TaskList, Skill
 model: sonnet
 ---
 

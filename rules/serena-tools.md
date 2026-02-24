@@ -13,5 +13,3 @@ When `SERENA_INSTALLED=true`, prefer Serena MCP tools for code navigation over n
 **Keep using native tools for:** non-code files, complex glob patterns, known file+line reads.
 
 **Fallback:** If Serena tools fail, immediately use native tools. Do not block on Serena errors.
-
-**mcp-cli rule:** Always run `mcp-cli info` before `mcp-cli call` (mandatory prerequisite).

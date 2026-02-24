@@ -42,7 +42,7 @@ Automated, interactive setup that handles everything:
 
 ## Step 9: Serena Integration (CRITICAL)
 
-When Serena MCP is detected (check `mcp-cli info plugin_serena_serena/get_current_config`):
+When Serena MCP is detected (call `mcp__plugin_serena_serena__get_current_config`):
 
 **YOU MUST invoke the `magic-claude:serena-setup` skill using the Skill tool.**
 

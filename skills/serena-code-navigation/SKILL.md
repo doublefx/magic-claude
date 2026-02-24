@@ -71,18 +71,6 @@ Need to understand code?
         +-- Non-code files --> use native Grep
 ```
 
-## mcp-cli Usage
-
-Agents access Serena tools via `mcp-cli`. The mandatory prerequisite applies:
-
-```bash
-# ALWAYS check schema first
-mcp-cli info plugin_serena_serena/jet_brains_find_symbol
-
-# THEN make the call
-mcp-cli call plugin_serena_serena/jet_brains_find_symbol '{"name_path": "ClassName/methodName", "include_body": true}'
-```
-
 ## Fallback
 
 If any Serena tool call fails (timeout, not connected, server error), immediately fall back to native tools (Grep, Glob, Read). Do not retry Serena tools more than once per failure type in a session.

@@ -33,21 +33,15 @@ When claude-mem is available, use it for historical and cross-session context:
 claude-mem uses a progressive retrieval pattern to minimize token usage:
 
 ### Layer 1: Search (cheap — ~50-100 tokens per result)
-```bash
-mcp-cli call plugin_claude-mem_mcp-search/search '{"query": "authentication architecture decision"}'
-```
+Call `mcp__plugin_claude-mem_mcp-search__search` with `{"query": "authentication architecture decision"}`.
 Returns an index with observation IDs, titles, types, and timestamps. Scan this to identify relevant results.
 
 ### Layer 2: Timeline (moderate — context around results)
-```bash
-mcp-cli call plugin_claude-mem_mcp-search/timeline '{"anchor": "observation-id"}'
-```
+Call `mcp__plugin_claude-mem_mcp-search__timeline` with `{"anchor": "observation-id"}`.
 Shows observations around a specific result chronologically. Useful for understanding the sequence of events.
 
 ### Layer 3: Full Details (expensive — full observation content)
-```bash
-mcp-cli call plugin_claude-mem_mcp-search/get_observations '{"observation_ids": ["id1", "id2"]}'
-```
+Call `mcp__plugin_claude-mem_mcp-search__get_observations` with `{"ids": ["id1", "id2"]}`.
 Fetches complete observation content. Only use for the specific IDs you've filtered down to.
 
 **Always start at Layer 1.** Only go deeper when the index isn't sufficient.
@@ -71,18 +65,6 @@ Need context for current task?
   |
   +-- Working on fresh code with no history?
         +-- YES --> Skip claude-mem, use Serena + Explore
-```
-
-## mcp-cli Usage
-
-Agents access claude-mem tools via `mcp-cli`. The mandatory prerequisite applies:
-
-```bash
-# ALWAYS check schema first
-mcp-cli info plugin_claude-mem_mcp-search/search
-
-# THEN make the call
-mcp-cli call plugin_claude-mem_mcp-search/search '{"query": "your search query"}'
 ```
 
 ## Fallback
