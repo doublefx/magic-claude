@@ -231,7 +231,11 @@ Process review feedback using the **`magic-claude:receiving-code-review`** skill
 5. **Convergence check:**
    - No MEDIUM+ issues remain → **exit loop**
    - MEDIUM+ issues still present → **loop back to step 1**
-   - After 3 cycles with remaining issues → **escalate to user** with the specific unresolved issues
+   - After 3 cycles with remaining issues → **checkpoint with user**:
+     - Present the specific unresolved MEDIUM+ issues with context
+     - Ask: "Another review+harden round (up to 3 more cycles)?" or "Accept remaining issues and proceed?"
+     - If user approves another round → reset cycle counter, loop back to step 1
+     - If user accepts remaining issues → exit loop and proceed
 
 **After loop exits:**
 
