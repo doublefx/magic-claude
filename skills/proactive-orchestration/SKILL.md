@@ -179,23 +179,76 @@ After all tasks complete, verify 80%+ overall coverage before proceeding to Phas
    - Re-run verification after fixes
 3. If tests fail: report failures and suggest fixes before proceeding
 
-### Phase 4: REVIEW
+### Phase 4: REVIEW + HARDEN (iterative)
+
+This phase runs an iterative loop until no MEDIUM+ issues remain.
+
+```
+┌──────────────────────────────────────────────────────┐
+│  REVIEW + HARDEN LOOP                                │
+│                                                      │
+│  1. Code review (code-reviewer agent)                │
+│       ↓                                              │
+│  2. Fix CRITICAL + HIGH issues                       │
+│       ↓                                              │
+│  3. Fix MEDIUM issues                                │
+│       ↓                                              │
+│  4. Re-verify (types → lint → tests)                 │
+│       ↓                                              │
+│  5. Re-review                                        │
+│       ↓                                              │
+│  6a. MEDIUM+ remain → loop to step 2 (max 3 cycles) │
+│  6b. Clean → exit loop                               │
+│       ↓                                              │
+│  7. LOW issues — fix if low-risk, skip if not        │
+└──────────────────────────────────────────────────────┘
+```
+
+#### 4.1 Initial Review
 
 1. Invoke **magic-claude:code-reviewer** agent (opus) via Task tool for comprehensive review
    - **Pass plan context**: Include the approved plan from Phase 1 (or read from `.claude/plans/` file) so the reviewer can check plan alignment
    - **Pass git range**: Provide `BASE_SHA..HEAD_SHA` for the changes being reviewed (BASE_SHA recorded at Phase 1 approval)
-2. Process review feedback using the **`magic-claude:receiving-code-review`** skill — verify before implementing, push back when wrong, YAGNI check suggestions
-3. For security-sensitive changes, also invoke the ecosystem-specific security reviewer:
+2. For security-sensitive changes, also invoke the ecosystem-specific security reviewer:
    - **magic-claude:ts-security-reviewer** for TypeScript/JavaScript
    - **magic-claude:jvm-security-reviewer** for JVM
    - **magic-claude:python-security-reviewer** for Python
-4. For language-specific idiomatic review, invoke:
+3. For language-specific idiomatic review, invoke:
    - **magic-claude:java-reviewer** for `.java` files
    - **magic-claude:kotlin-reviewer** for `.kt` files
    - **magic-claude:python-reviewer** for `.py` files
-5. Mark task as completed via TaskUpdate
 
-### Phase 4.5: EVAL CHECK (opt-in)
+#### 4.2 Harden Loop
+
+Process review feedback using the **`magic-claude:receiving-code-review`** skill — verify before implementing, push back when wrong, YAGNI check suggestions.
+
+**For each cycle (max 3):**
+
+1. **Fix CRITICAL and HIGH issues** — These are mandatory. No exceptions.
+2. **Fix MEDIUM issues** — Fix all that are genuine improvements. Push back on false positives.
+3. **Re-verify** — Run types → lint → tests. All must pass before continuing.
+4. **Re-review** — Invoke code-reviewer again on the changes made during fixes.
+5. **Convergence check:**
+   - No MEDIUM+ issues remain → **exit loop**
+   - MEDIUM+ issues still present → **loop back to step 1**
+   - After 3 cycles with remaining issues → **escalate to user** with the specific unresolved issues
+
+**After loop exits:**
+
+6. **LOW issues** — Review remaining LOW severity findings. Fix those that are low-risk and clearly beneficial (naming, minor style). Skip those that would require significant refactoring or are subjective.
+7. **Final re-verify** — Run types → lint → tests one last time to confirm the hardened codebase is clean.
+
+### Phase 4.5: SIMPLIFY
+
+After hardening, run code simplification on the changed files to improve clarity and maintainability.
+
+1. **Identify changed files** — Use `git diff --name-only BASE_SHA..HEAD` to get the list of files modified during this orchestration
+2. **Invoke code-simplifier** — Run `code-simplifier:code-simplifier` agent via Task tool, passing the list of changed files and instructing it to simplify for clarity, consistency, and maintainability while preserving all functionality
+3. **Verify simplification** — Run types → lint → tests. Simplification **must not** break anything.
+   - If verification passes → proceed to next phase
+   - If verification fails → revert the simplification changes (`git checkout -- <files>`) and report what broke. Do NOT attempt to fix the simplifier's output — the pre-simplification code was already hardened and clean.
+
+### Phase 4.6: EVAL CHECK (opt-in)
 
 When evals were defined in Phase 1.5:
 
@@ -224,7 +277,7 @@ Produce a final orchestration report:
 ORCHESTRATION REPORT
 ====================
 
-Pipeline: [ARCHITECT] -> PLAN -> [EVAL DEFINE] -> TDD (per-task) -> VERIFY -> REVIEW -> [EVAL CHECK] -> [DELIVER]
+Pipeline: [ARCHITECT] -> PLAN -> [EVAL DEFINE] -> TDD (per-task) -> VERIFY -> REVIEW+HARDEN -> SIMPLIFY -> [EVAL CHECK] -> [DELIVER]
 Ecosystem: [TypeScript/JVM/Python]
 
 ARCHITECT:[SKIPPED / architecture proposal + ADRs produced]
@@ -233,7 +286,9 @@ BASELINE: [X tests passing, Y failing / clean]
 TDD:      [N tasks completed, X tests written, Y% coverage]
 SPEC:     [N/N tasks passed spec review (Z fix cycles)]
 VERIFY:   [Build OK, Types OK, Lint OK, Tests X/Y passed]
-REVIEW:   [APPROVE/WARN/BLOCK]
+HARDEN:   [N cycles, X issues fixed (C critical, H high, M medium, L low)]
+SIMPLIFY: [Applied / Reverted / N files simplified]
+REVIEW:   [APPROVE/WARN/BLOCK — no MEDIUM+ issues remaining]
 EVALS:    [X/Y capability, X/Y regression] (if --with-evals)
 DELIVER:  [current-branch / merged / PR #N / user-managed / SKIPPED]
 
@@ -276,4 +331,5 @@ When `magic-claude:proactive-orchestration` fires, it subsumes all three phases 
 - `magic-claude:*-build-resolver` agents - Ecosystem-specific build error resolution
 - `magic-claude:*-security-reviewer` agents - Ecosystem-specific security analysis
 - `magic-claude:eval` command - Eval-driven development (opt-in via `--with-evals`)
+- `code-simplifier:code-simplifier` agent - Code clarity and maintainability simplification (Phase 4.5)
 - `spec-reviewer-prompt.md` - Adversarial spec compliance review template (Phase 2, per-task)
