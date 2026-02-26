@@ -124,19 +124,20 @@ Step 3: code-reviewer on all changes
 
 ## Foreground vs Background
 
-Agents can run in **foreground** (blocking — you wait for the result) or **background** (`run_in_background: true` — you continue working and get notified on completion).
+**Prefer background by default.** Running agents in the background (`run_in_background: true`) lets the user keep interacting with Claude Code instead of waiting. Only use foreground when you genuinely cannot proceed without the agent's output.
 
-### Run in foreground (default) when:
+### Run in background (preferred) when:
 
-- You need the agent's output before your next step (plan -> implement, review -> fix)
-- The user is waiting for the result (code review findings, build fix)
-- The agent's output determines your next action
+- You can continue with other work while the agent runs
+- The agent's output will be reviewed/acted on when it completes, not immediately
+- The user didn't specifically ask to wait for the result
+- Multiple agents can run concurrently
 
-### Run in background when:
+### Run in foreground only when:
 
-- The work is genuinely independent and you have other things to do meanwhile
-- The agent's output is informational, not blocking (git-sync, doc-updater)
-- You're running a long task (E2E tests) and can continue with unrelated work
+- You need the agent's output before your very next step (plan -> implement, review findings -> fix)
+- The agent's output determines a decision the user is actively waiting on
+- You're in a pipeline phase where the next step depends on this agent's result
 
 ### Constraints for background agents:
 
@@ -145,24 +146,27 @@ Agents can run in **foreground** (blocking — you wait for the result) or **bac
 - **MCP tools are available** — background agents inherit all tools including MCP servers.
 - **Check output later** — use TaskOutput to read results when notified.
 
-### Background-suitable agents:
+### Foreground required (output blocks next step):
 
-| Agent | Why background works |
-|-------|---------------------|
+| Agent | Why |
+|-------|-----|
+| planner | Output feeds the entire implementation pipeline |
+| architect | Decisions feed the planner |
+| tdd-guide | Output feeds spec review; may need clarification |
+| build-resolver | Fixes must be verified immediately to unblock the build |
+
+### Background preferred (all others):
+
+| Agent | Notes |
+|-------|-------|
+| code-reviewer | Review while user continues; act on findings when ready |
+| security-reviewer | Audit while user continues; act on findings when ready |
+| language reviewers | Same — review is async by nature |
+| e2e-runners | Long-running tests; check results later |
+| refactor-cleaners | Analysis can run while you work on other things |
 | git-sync | Informational report, no user interaction needed |
 | doc-updater | Mechanical sync, no decisions required |
-| refactor-cleaners | Analysis phase can run while you work on other things |
-| e2e-runners | Long-running tests, results checked after completion |
-
-### Never run in background:
-
-| Agent | Why foreground required |
-|-------|----------------------|
-| planner | Output feeds the entire pipeline |
-| tdd-guide | May need clarification, output feeds spec review |
-| code-reviewer | Findings drive fix decisions |
-| build-resolver | Fixes must be verified immediately |
-| security-reviewer | Critical findings may block further work |
+| gradle/maven-expert | Analysis and recommendations, act on them when ready |
 
 ## Output Composition
 
