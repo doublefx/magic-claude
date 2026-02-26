@@ -140,9 +140,10 @@ Agents can run in **foreground** (blocking — you wait for the result) or **bac
 
 ### Constraints for background agents:
 
-- **No MCP tools** — background agents cannot access MCP servers (Serena, claude-mem, etc.)
-- **No user interaction** — AskUserQuestion calls will fail; the agent must work autonomously
-- **Check output later** — use TaskOutput to read results when notified
+- **No user interaction** — AskUserQuestion calls fail silently; the agent continues without the answer. Permissions are pre-approved upfront before launch.
+- **No subagent nesting** — background agents cannot spawn further sub-agents (true for all subagents, not just background).
+- **MCP tools are available** — background agents inherit all tools including MCP servers.
+- **Check output later** — use TaskOutput to read results when notified.
 
 ### Background-suitable agents:
 

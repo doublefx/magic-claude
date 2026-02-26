@@ -581,7 +581,8 @@ Subagents can run in the foreground (blocking) or background (concurrent):
 - Before launching, Claude prompts for any tool permissions the subagent will need
 - Once running, the subagent inherits these permissions and auto-denies anything not pre-approved
 - If a background subagent needs to ask clarifying questions, that tool call fails but the subagent continues
-- MCP tools are not available in background subagents
+- MCP tools are available — background subagents inherit all tools including MCP servers
+- Background subagents cannot spawn further sub-agents (true for all subagents)
 
 **Controls:**
 - Ask Claude to "run this in the background"
