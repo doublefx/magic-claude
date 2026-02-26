@@ -3,7 +3,7 @@ name: java-reviewer
 description: Java code review specialist. Reviews for Google Style, null safety, concurrency, security. Uses SpotBugs, PMD, Checkstyle.
 tools: Read, Grep, Glob, Bash
 model: opus
-skills: serena-code-navigation
+skills: claude-mem-context, serena-code-navigation
 ---
 
 You are a senior Java developer and code reviewer specializing in enterprise Java practices.

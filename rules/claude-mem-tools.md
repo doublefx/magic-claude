@@ -1,6 +1,6 @@
 # claude-mem Tool Preference
 
-When `CLAUDE_MEM_INSTALLED=true`, prefer claude-mem MCP tools for historical context over re-exploring the codebase. claude-mem returns indexed summaries of past decisions and patterns, greatly reducing token usage compared to re-reading code or re-investigating issues that were already resolved in prior sessions.
+When claude-mem is installed, **MUST search claude-mem BEFORE** using Explore agents, reading code for architectural understanding, or investigating bugs. A single `search()` call costs ~50-100 tokens per result — skipping it wastes far more tokens re-exploring what past sessions already resolved.
 
 | Task | Instead of | Use |
 |------|-----------|-----|
@@ -21,10 +21,9 @@ Always start cheap and go deeper only when needed:
 
 ## When to Skip claude-mem
 
-**Keep using native tools for:**
-- Current codebase structure and file contents (Explore, Read, Grep, Glob)
-- Symbol definitions and references (Serena tools if available)
-- Code that was just written in the current session
-- Projects with no prior session history
+- Brand-new code with no prior session history
+- Current file contents (use Read, Grep, Glob)
+- Symbol definitions and references (use Serena tools)
+- Code just written in the current session
 
 **Fallback:** If claude-mem returns no results or errors, fall back to codebase exploration. Do not retry more than once per failure type in a session.

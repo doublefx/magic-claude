@@ -3,7 +3,7 @@ name: python-build-resolver
 description: Python build error resolution specialist for pip, uv, pyright, mypy, ruff, and pytest projects. Use PROACTIVELY when Python builds, type checks, or linting fail. Fixes errors only with minimal diffs, no architectural edits.
 tools: Read, Write, Edit, Bash, Grep, Glob
 model: sonnet
-skills: python-patterns, python-backend-patterns, serena-code-navigation
+skills: python-patterns, python-backend-patterns, claude-mem-context, serena-code-navigation
 permissionMode: acceptEdits
 hooks:
   Stop:

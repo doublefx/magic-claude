@@ -3,7 +3,7 @@ name: ts-build-resolver
 description: TypeScript/JavaScript build error resolution specialist for React, Next.js, and Node.js projects. Use PROACTIVELY when npm/pnpm builds or tsc type checks fail. Fixes build/type errors only with minimal diffs, no architectural edits.
 tools: Read, Write, Edit, Bash, Grep, Glob
 model: sonnet
-skills: frontend-patterns, backend-patterns, coding-standards, serena-code-navigation
+skills: frontend-patterns, backend-patterns, coding-standards, claude-mem-context, serena-code-navigation
 permissionMode: acceptEdits
 hooks:
   Stop:

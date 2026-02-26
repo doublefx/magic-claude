@@ -20,6 +20,8 @@ digraph skill_flow {
     "User message received" [shape=doublecircle];
     "Feature/architecture?" [shape=diamond];
     "Invoke magic-claude:proactive-orchestration" [shape=box];
+    "Exploration/research/debugging?" [shape=diamond];
+    "Search claude-mem first" [shape=box];
     "Might any skill apply?" [shape=diamond];
     "Invoke Skill tool" [shape=box];
     "Announce: 'Using [skill] for [purpose]'" [shape=box];
@@ -28,7 +30,10 @@ digraph skill_flow {
 
     "User message received" -> "Feature/architecture?";
     "Feature/architecture?" -> "Invoke magic-claude:proactive-orchestration" [label="yes"];
-    "Feature/architecture?" -> "Might any skill apply?" [label="no"];
+    "Feature/architecture?" -> "Exploration/research/debugging?" [label="no"];
+    "Exploration/research/debugging?" -> "Search claude-mem first" [label="yes"];
+    "Exploration/research/debugging?" -> "Might any skill apply?" [label="no"];
+    "Search claude-mem first" -> "Might any skill apply?";
     "Invoke magic-claude:proactive-orchestration" -> "Follow skill exactly";
     "Might any skill apply?" -> "Invoke Skill tool" [label="yes"];
     "Might any skill apply?" -> "Respond" [label="definitely not"];
@@ -37,6 +42,21 @@ digraph skill_flow {
     "Follow skill exactly" -> "Respond";
 }
 ```
+
+## claude-mem Before Exploration (MANDATORY)
+
+When claude-mem is installed, **MUST search claude-mem BEFORE** using Explore agents, reading code for architectural understanding, or investigating bugs. Past sessions likely contain decisions, patterns, and resolutions that eliminate redundant exploration.
+
+**Triggers** — any of these intents require a claude-mem search first:
+- "How does X work?" / "Why was X built this way?"
+- Debugging or investigating unexpected behavior
+- Planning changes to existing systems
+- Reviewing code you haven't seen before
+- Any task where the Explore agent would be spawned
+
+**What to search for:** the component, feature, error, or concept name. One `search()` call (~50-100 tokens per result) is cheap — skipping it wastes far more tokens re-exploring.
+
+**Skip claude-mem when:** writing brand-new code with no history, working on a fresh project, or claude-mem is not installed.
 
 ## Feature Implementation (MANDATORY)
 
