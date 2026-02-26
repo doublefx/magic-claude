@@ -122,6 +122,47 @@ Step 2b: tdd-guide for task 2
 Step 3: code-reviewer on all changes
 ```
 
+## Foreground vs Background
+
+Agents can run in **foreground** (blocking — you wait for the result) or **background** (`run_in_background: true` — you continue working and get notified on completion).
+
+### Run in foreground (default) when:
+
+- You need the agent's output before your next step (plan -> implement, review -> fix)
+- The user is waiting for the result (code review findings, build fix)
+- The agent's output determines your next action
+
+### Run in background when:
+
+- The work is genuinely independent and you have other things to do meanwhile
+- The agent's output is informational, not blocking (git-sync, doc-updater)
+- You're running a long task (E2E tests) and can continue with unrelated work
+
+### Constraints for background agents:
+
+- **No MCP tools** — background agents cannot access MCP servers (Serena, claude-mem, etc.)
+- **No user interaction** — AskUserQuestion calls will fail; the agent must work autonomously
+- **Check output later** — use TaskOutput to read results when notified
+
+### Background-suitable agents:
+
+| Agent | Why background works |
+|-------|---------------------|
+| git-sync | Informational report, no user interaction needed |
+| doc-updater | Mechanical sync, no decisions required |
+| refactor-cleaners | Analysis phase can run while you work on other things |
+| e2e-runners | Long-running tests, results checked after completion |
+
+### Never run in background:
+
+| Agent | Why foreground required |
+|-------|----------------------|
+| planner | Output feeds the entire pipeline |
+| tdd-guide | May need clarification, output feeds spec review |
+| code-reviewer | Findings drive fix decisions |
+| build-resolver | Fixes must be verified immediately |
+| security-reviewer | Critical findings may block further work |
+
 ## Output Composition
 
 When one agent's output feeds another:
