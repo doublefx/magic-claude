@@ -39,7 +39,7 @@ They overlap but serve different purposes:
 | Examples | `proactive-orchestration`, `tdd-workflow` | `/code-review`, `/tdd`, `/build-fix` |
 
 **Key skills to know:**
-- `proactive-orchestration` — Claude automatically orchestrates the full pipeline (PLAN -> TDD -> VERIFY -> REVIEW) for complex feature requests
+- `proactive-orchestration` — Claude automatically orchestrates the full pipeline (PLAN -> [UI DESIGN] -> TDD -> VERIFY -> REVIEW) for complex feature requests
 - `proactive-planning` — Claude plans before complex changes (standalone planning, outside full pipeline)
 - `proactive-tdd` — Claude enforces test-driven development when implementing features (standalone TDD)
 - `proactive-review` — Claude automatically reviews code at task completion (standalone review)

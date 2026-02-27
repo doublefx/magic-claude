@@ -210,7 +210,7 @@ User: /orchestrate feature [description]
 
 **Variants:** `bugfix`, `refactor`, `security`, `custom`
 **Agents:** Multiple in sequence with structured handoff documents.
-**Feature workflow** now shares phases with `proactive-orchestration` (PLAN, TDD, VERIFY, REVIEW, REPORT).
+**Feature workflow** now shares phases with `proactive-orchestration` (PLAN, [UI DESIGN], TDD, VERIFY, REVIEW, REPORT).
 **Bugfix workflow** uses `Explore` (built-in codebase investigation) instead of a custom explorer agent.
 **Remediation:** Includes remediation suggestions in final report (maps issues to commands).
 
@@ -252,7 +252,7 @@ These trigger automatically when Claude detects the right signals. A hierarchy g
 
 **Triggers on:** Complex feature requests (multiple components/files), architectural changes (new endpoints, services, modules), "add/implement/build/create" + non-trivial scope.
 **Does NOT trigger on:** Simple bug fixes, single-file edits, documentation, configuration, refactoring.
-**Phases:** PLAN (planner agent) -> TDD (ecosystem TDD agent) -> VERIFY (build/types/lint/tests) -> REVIEW (code-reviewer + security reviewers) -> REPORT (SHIP/NEEDS WORK/BLOCKED).
+**Phases:** PLAN (planner agent) -> [UI DESIGN] (conditional, for frontend features) -> TDD (ecosystem TDD agent) -> VERIFY (build/types/lint/tests) -> REVIEW (code-reviewer + security reviewers) -> REPORT (SHIP/NEEDS WORK/BLOCKED).
 **Runs in main context** (no `context: fork`) to allow user confirmation gates between phases.
 
 When `proactive-orchestration` fires, it subsumes the three individual proactive skills below.
@@ -328,7 +328,7 @@ User: "Add a health check endpoint to the API"
 
 | Gap | Resolution |
 |-----|-----------|
-| **Plan -> TDD handoff** | `proactive-orchestration` coordinates Plan -> TDD -> Verify -> Review as sequential phases |
+| **Plan -> TDD handoff** | `proactive-orchestration` coordinates Plan -> [UI Design] -> TDD -> Verify -> Review as sequential phases |
 | **TDD -> Verify** | `proactive-orchestration` Phase 3 runs verification after TDD completes |
 | **TDD -> Review** | `proactive-orchestration` Phase 4 runs code review; task lifecycle managed via TaskCreate/TaskUpdate |
 | **Review -> Fix** | `/code-review` now includes remediation suggestions mapping issues to specific commands |
@@ -411,7 +411,7 @@ This means the fix is architectural, not additive. Instead of adding more proact
 
 All items from the original proposed redesign have been implemented:
 
-1. **Unified Proactive Orchestration** -- `proactive-orchestration` skill coordinates PLAN -> TDD -> VERIFY -> REVIEW -> REPORT
+1. **Unified Proactive Orchestration** -- `proactive-orchestration` skill coordinates PLAN -> [UI DESIGN] -> TDD -> VERIFY -> REVIEW -> REPORT
 2. **Unified Implementations** -- `proactive-tdd`, `proactive-review`, `verification-loop` delegate to their command counterparts
 3. **Pattern Skills in Agent Context** -- Option A implemented: `*-backend-patterns` added to TDD agents and build-resolvers
 4. **Task Lifecycle Automation** -- `proactive-orchestration` manages TaskCreate/TaskUpdate across phases

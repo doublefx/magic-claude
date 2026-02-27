@@ -86,6 +86,10 @@ digraph orchestration {
     eval_gate [label="--with-evals?", shape=diamond];
     eval_define [label="Phase 1.5: EVAL DEFINE"];
 
+    // Phase 1.75 (advisory gate — FM-2)
+    ui_gate [label="UI work detected?\n(advisory, user can skip)", shape=diamond];
+    ui_design [label="Phase 1.75: UI DESIGN\n(magic-claude:ui-design)"];
+
     // Phase 2
     baseline [label="Phase 2.0: BASELINE\nRun existing tests"];
     tdd_loop [label="Phase 2.2: TDD\nRED → GREEN → REFACTOR\n(per-task loop)"];
@@ -136,8 +140,11 @@ digraph orchestration {
     user_confirm -> plan [label="modify"];
     user_confirm -> eval_gate [label="yes"];
     eval_gate -> eval_define [label="yes"];
-    eval_gate -> baseline [label="no"];
-    eval_define -> baseline;
+    eval_gate -> ui_gate [label="no"];
+    eval_define -> ui_gate;
+    ui_gate -> ui_design [label="proceed\n(default)"];
+    ui_gate -> baseline [label="skip /\nno UI"];
+    ui_design -> baseline;
     baseline -> tdd_loop;
     tdd_loop -> spec_review;
     spec_review -> spec_pass;
@@ -218,6 +225,28 @@ When the user includes `--with-evals <name>` or explicitly requests eval-driven 
 3. Store in `.claude/evals/<name>.md`
 
 **Skip this phase** unless the user explicitly requests evals.
+
+### Phase 1.75: UI DESIGN (conditional)
+
+**Gate:** Advisory with user opt-out. Claude evaluates:
+- Plan tasks touch `.tsx`, `.jsx`, `.vue`, `.svelte`, `.html`, or `.css` files
+- Plan mentions UI components, screens, layouts, or visual elements
+- Feature description includes "design", "mockup", "wireframe", "UI", "layout"
+
+If triggered, present a one-line advisory: "This feature involves UI work. Running UI Design phase. Say 'skip' to skip."
+Default action = proceed. User says "skip" → go directly to Phase 2.
+
+**Skip when:** The feature is purely backend, CLI, infrastructure, or DevOps.
+
+1. Invoke the **magic-claude:ui-design** skill to orchestrate design context gathering
+2. The skill runs `detect-tools.cjs` to discover available design MCP tools and presents them
+3. If no design tools are installed, present installation options (user decides whether to install or proceed without)
+4. Gather design context through layered fallback (MCP errors treated as "unavailable", fall to next layer):
+   - Design MCP → Component Library MCP → Screenshot analysis → `frontend-design:frontend-design` plugin skill (if installed) → Claude built-in design knowledge (final fallback)
+5. Respect architectural decisions from Phase 0/1. Do not override component library choices, framework, or design system selections already in the plan
+6. Produce a **UI Design Spec** with confidence indicator `[MCP/screenshot/inference-only]`
+7. **Persist spec** to `.claude/design-specs/YYYY-MM-DD-<feature-name>.md`
+8. Pass the spec as context to Phase 2 (TDD). No separate user approval for the spec — it flows directly into TDD
 
 ### Phase 2: TDD (Per-Task Loop)
 
@@ -394,11 +423,12 @@ Produce a final orchestration report:
 ORCHESTRATION REPORT
 ====================
 
-Pipeline: [ARCHITECT] -> PLAN -> [EVAL DEFINE] -> TDD (per-task) -> VERIFY -> REVIEW+HARDEN -> SIMPLIFY -> [EVAL CHECK] -> [DELIVER]
+Pipeline: [ARCHITECT] -> PLAN -> [EVAL DEFINE] -> [UI DESIGN] -> TDD (per-task) -> VERIFY -> REVIEW+HARDEN -> SIMPLIFY -> [EVAL CHECK] -> [DELIVER]
 Ecosystem: [TypeScript/JVM/Python]
 
 ARCHITECT:[SKIPPED / architecture proposal + ADRs produced]
 PLAN:     [APPROVED by user]
+UI DESIGN:[SKIPPED / design spec produced via <tool> + frontend-design]
 BASELINE: [X tests passing, Y failing / clean]
 TDD:      [N tasks completed, X tests written, Y% coverage]
 SPEC:     [N/N tasks passed spec review (Z fix cycles)]
@@ -450,3 +480,5 @@ When `magic-claude:proactive-orchestration` fires, it subsumes all three phases 
 - `magic-claude:eval` command - Eval-driven development (opt-in via `--with-evals`)
 - `code-simplifier:code-simplifier` agent - Code clarity and maintainability simplification (Phase 4.5)
 - `spec-reviewer-prompt.md` - Adversarial spec compliance review template (Phase 2, per-task)
+- `magic-claude:ui-design` skill - UI design context gathering (Phase 1.75, conditional)
+- `frontend-design:frontend-design` plugin skill - Design thinking framework (invoked by ui-design)

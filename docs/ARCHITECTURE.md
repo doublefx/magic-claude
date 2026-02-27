@@ -41,7 +41,7 @@ magic-claude/
 |   |-- ci-cd-architect.md      # CI/CD pipeline generation
 |   |-- git-sync.md             # Git changes impact analysis (background)
 |
-|-- skills/           # Workflow definitions and domain knowledge (35 total)
+|-- skills/           # Workflow definitions and domain knowledge (36 total)
 |   |-- coding-standards/           # TypeScript/JS best practices
 |   |-- jvm-coding-standards/       # Java/Kotlin best practices
 |   |-- python-coding-standards/    # Python best practices
@@ -55,7 +55,8 @@ magic-claude/
 |   |-- security-review/            # TypeScript/JS security checklist
 |   |-- jvm-security-review/        # JVM security checklist
 |   |-- python-security-review/     # Python security checklist
-|   |-- proactive-orchestration/    # Full pipeline orchestrator (PLAN->TDD->VERIFY->REVIEW)
+|   |-- ui-design/                   # UI design context gathering (Phase 1.75, conditional)
+|   |-- proactive-orchestration/    # Full pipeline orchestrator (PLAN->UI DESIGN->TDD->VERIFY->REVIEW)
 |   |-- proactive-planning/         # Standalone planning for complex tasks
 |   |-- proactive-tdd/              # Standalone TDD enforcement
 |   |-- proactive-review/           # Standalone code quality review

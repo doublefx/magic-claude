@@ -808,7 +808,7 @@ Gradle Optimization Report
 **Path**: `skills/proactive-orchestration/SKILL.md`
 **Description**: Top-level pipeline orchestrator for complex feature work
 
-**Phases**: PLAN -> TDD -> VERIFY -> REVIEW -> REPORT
+**Phases**: PLAN -> [UI DESIGN] -> TDD -> VERIFY -> REVIEW -> REPORT
 
 **When It Fires**:
 - Complex feature requests (multiple components/files)
@@ -820,6 +820,24 @@ Gradle Optimization Report
 **Agents Used**: planner, [ecosystem]-tdd-guide, [ecosystem]-build-resolver (if needed), code-reviewer, [ecosystem]-security-reviewer, language reviewers
 
 **Relationship to other proactive skills**: Subsumes `proactive-planning`, `proactive-tdd`, and `proactive-review` for complex feature work. Individual skills fire only for standalone single-phase work.
+
+---
+
+#### ui-design
+**Path**: `skills/ui-design/SKILL.md`
+**Description**: Conditional UI design context gathering (Phase 1.75 of proactive-orchestration)
+
+**Gate**: Advisory with user opt-out — triggered when plan tasks touch frontend files (`.tsx`, `.jsx`, `.vue`, `.svelte`, `.html`, `.css`) or mention UI components/layouts.
+
+**Layered Fallback**:
+1. Design MCP (Figma, Pencil, Penpot) — highest fidelity
+2. Component Library MCP (shadcn/ui, Storybook, Magic UI)
+3. Screenshot Analysis (Claude native multimodal)
+4. `frontend-design:frontend-design` plugin skill (baseline)
+
+**Output**: UI Design Spec persisted to `.claude/design-specs/`, feeds into TDD phase.
+
+**Utilities**: `detect-tools.cjs` scans MCP config and plugin status at 3 levels (global, project, local).
 
 ---
 
