@@ -269,39 +269,46 @@ function collectWorkspace() {
 }
 
 /**
+ * Read enabledPlugins from ~/.claude/settings.json
+ * @returns {Record<string, boolean>}
+ */
+function getEnabledPlugins() {
+  try {
+    const settingsPath = path.join(getHomeDir(), '.claude', 'settings.json');
+    if (!fs.existsSync(settingsPath)) return {};
+
+    const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
+    return settings.enabledPlugins || {};
+  } catch {
+    return {};
+  }
+}
+
+/**
+ * Check if a plugin is enabled by matching a substring in enabledPlugins keys
+ * @param {string} nameFragment - substring to match (e.g. 'claude-mem', 'frontend-design')
+ * @returns {boolean}
+ */
+function isPluginEnabled(nameFragment) {
+  const plugins = getEnabledPlugins();
+  return Object.keys(plugins).some(
+    key => key.includes(nameFragment) && plugins[key] === true
+  );
+}
+
+/**
  * Check if claude-mem MCP plugin is installed
- * Reimplemented from session-start.cjs (not exported from a shared module)
  */
 function isClaudeMemInstalled() {
   if (process.env.CLAUDE_MEM_INSTALLED === 'true') return true;
-
-  try {
-    const settingsPath = path.join(getHomeDir(), '.claude', 'settings.json');
-    if (!fs.existsSync(settingsPath)) return false;
-
-    const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
-    const enabledPlugins = settings.enabledPlugins || {};
-    return Object.keys(enabledPlugins).some(
-      key => key.startsWith('claude-mem') && enabledPlugins[key] === true
-    );
-  } catch {
-    return false;
-  }
+  return isPluginEnabled('claude-mem');
 }
 
 /**
  * Check if frontend-design plugin is installed
  */
 function isFrontendDesignInstalled() {
-  try {
-    const pluginsPath = path.join(getHomeDir(), '.claude', 'plugins', 'installed_plugins.json');
-    if (!fs.existsSync(pluginsPath)) return false;
-
-    const data = JSON.parse(fs.readFileSync(pluginsPath, 'utf-8'));
-    return Object.keys(data).some(key => key.includes('frontend-design'));
-  } catch {
-    return false;
-  }
+  return isPluginEnabled('frontend-design');
 }
 
 /**
@@ -318,37 +325,46 @@ function collectIntegrations() {
 }
 
 /**
- * Collect MCP servers from settings hierarchy
- * @returns {{ global: { count: number, names: string[] }, project: { count: number, names: string[] }, disabled: string[] }}
+ * Collect MCP servers from settings hierarchy and enabled plugins
+ * @returns {{ manual: { count: number, names: string[] }, plugins: { count: number, names: string[] }, disabled: string[] }}
  */
 function collectMcpServers() {
   const result = {
-    global: { count: 0, names: [] },
-    project: { count: 0, names: [] },
+    manual: { count: 0, names: [] },
+    plugins: { count: 0, names: [] },
     disabled: [],
   };
 
-  // Global settings
+  // Manual MCP servers from global settings
   const globalPath = path.join(getHomeDir(), '.claude', 'settings.json');
   const globalSettings = safeParseJson(readFile(globalPath));
   if (globalSettings && globalSettings.mcpServers) {
-    result.global.names = Object.keys(globalSettings.mcpServers);
-    result.global.count = result.global.names.length;
+    result.manual.names = Object.keys(globalSettings.mcpServers);
+    result.manual.count = result.manual.names.length;
   }
   if (globalSettings && Array.isArray(globalSettings.disabledMcpServers)) {
     result.disabled.push(...globalSettings.disabledMcpServers);
   }
 
-  // Project settings
+  // Manual MCP servers from project settings
   const projectPath = path.join(process.cwd(), '.claude', 'project.json');
   const projectSettings = safeParseJson(readFile(projectPath));
   if (projectSettings && projectSettings.mcpServers) {
-    result.project.names = Object.keys(projectSettings.mcpServers);
-    result.project.count = result.project.names.length;
+    const projectNames = Object.keys(projectSettings.mcpServers);
+    result.manual.names.push(...projectNames);
+    result.manual.count += projectNames.length;
   }
   if (projectSettings && Array.isArray(projectSettings.disabledMcpServers)) {
     result.disabled.push(...projectSettings.disabledMcpServers);
   }
+
+  // Plugin-provided MCP servers (from enabledPlugins)
+  const plugins = getEnabledPlugins();
+  const enabledPluginNames = Object.keys(plugins)
+    .filter(key => plugins[key] === true)
+    .map(key => key.split('@')[0]);
+  result.plugins.names = enabledPluginNames;
+  result.plugins.count = enabledPluginNames.length;
 
   // Deduplicate disabled list
   result.disabled = [...new Set(result.disabled)];
@@ -390,6 +406,8 @@ module.exports = {
   // Exposed for testing
   isClaudeMemInstalled,
   isFrontendDesignInstalled,
+  isPluginEnabled,
+  getEnabledPlugins,
   safeReadDir,
   safeParseJson,
   SKILL_CATEGORIES,

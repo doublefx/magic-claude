@@ -199,10 +199,19 @@ function formatIntegrationsSection(data) {
  * Format MCP servers section
  */
 function formatMcpServersSection(data) {
-  const lines = [
-    `  Global:    ${data.global.count} configured`,
-    `  Project:   ${data.project.count} configured`,
-  ];
+  const lines = [];
+
+  if (data.plugins && data.plugins.count > 0) {
+    lines.push(`  Plugins:   ${data.plugins.count} enabled (${data.plugins.names.join(', ')})`);
+  }
+
+  if (data.manual && data.manual.count > 0) {
+    lines.push(`  Manual:    ${data.manual.count} configured (${data.manual.names.join(', ')})`);
+  }
+
+  if (lines.length === 0) {
+    lines.push('  None configured');
+  }
 
   if (data.disabled.length > 0) {
     lines.push(`  Disabled:  ${data.disabled.length} (${data.disabled.join(', ')})`);

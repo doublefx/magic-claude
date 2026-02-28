@@ -149,10 +149,10 @@ function runTests() {
 
   if (test('collectMcpServers returns count structure', () => {
     const data = collectors.collectMcpServers();
-    assert.strictEqual(typeof data.global.count, 'number');
-    assert.ok(Array.isArray(data.global.names), 'global.names should be array');
-    assert.strictEqual(typeof data.project.count, 'number');
-    assert.ok(Array.isArray(data.project.names), 'project.names should be array');
+    assert.strictEqual(typeof data.manual.count, 'number');
+    assert.ok(Array.isArray(data.manual.names), 'manual.names should be array');
+    assert.strictEqual(typeof data.plugins.count, 'number');
+    assert.ok(Array.isArray(data.plugins.names), 'plugins.names should be array');
     assert.ok(Array.isArray(data.disabled), 'disabled should be array');
   })) passed++; else failed++;
 
@@ -276,12 +276,12 @@ function runTests() {
 
   if (test('formatMcpServersSection shows counts', () => {
     const result = formatter.formatMcpServersSection({
-      global: { count: 3, names: ['a', 'b', 'c'] },
-      project: { count: 1, names: ['d'] },
+      plugins: { count: 3, names: ['serena', 'context7', 'atlassian'] },
+      manual: { count: 1, names: ['custom-server'] },
       disabled: ['b']
     });
-    assert.ok(result.includes('3 configured'), 'Should show global count');
-    assert.ok(result.includes('1 configured'), 'Should show project count');
+    assert.ok(result.includes('3 enabled'), 'Should show plugin count');
+    assert.ok(result.includes('1 configured'), 'Should show manual count');
     assert.ok(result.includes('Disabled:'), 'Should show disabled');
   })) passed++; else failed++;
 
@@ -297,7 +297,7 @@ function runTests() {
       packageManager: { name: 'npm', source: 'default' },
       workspace: { isWorkspace: false, type: null, packageCount: 0 },
       integrations: { serena: false, jetbrains: false, claudeMem: false, frontendDesign: false },
-      mcpServers: { global: { count: 0, names: [] }, project: { count: 0, names: [] }, disabled: [] },
+      mcpServers: { manual: { count: 0, names: [] }, plugins: { count: 0, names: [] }, disabled: [] },
     };
     const report = formatter.formatFullReport(allData);
     assert.ok(report.includes('magic-claude Status Report'), 'Should have report header');
