@@ -38,12 +38,14 @@ const VALID_EVENT_TYPES = [
   'TeammateIdle',
   'TaskCompleted',
   'PreCompact',
-  'Setup',
   'SessionStart',
-  'SessionEnd'
+  'SessionEnd',
+  'ConfigChange',
+  'WorktreeCreate',
+  'WorktreeRemove'
 ];
 
-const VALID_HANDLER_TYPES = ['command', 'prompt', 'agent'];
+const VALID_HANDLER_TYPES = ['command', 'prompt', 'agent', 'http'];
 
 // Events that should NOT have matchers (they fire unconditionally)
 const NO_MATCHER_EVENTS = ['Stop', 'TeammateIdle', 'TaskCompleted'];

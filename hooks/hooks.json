@@ -254,6 +254,19 @@
         ],
         "description": "Cross-platform desktop notification when Claude needs input"
       }
+    ],
+    "ConfigChange": [
+      {
+        "matcher": "user_settings|project_settings|local_settings|skills",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/config-change.cjs\"",
+            "statusMessage": "Auditing config change..."
+          }
+        ],
+        "description": "Security audit and setup detection for configuration changes (MCP servers, plugins, permissions)"
+      }
     ]
   }
 }
