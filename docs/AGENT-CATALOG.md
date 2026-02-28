@@ -2,7 +2,7 @@
 
 **Version**: 3.1.0
 **Last Updated**: 2026-02-14
-**Total Agents**: 27
+**Total Agents**: 29
 **Total Skills**: 36
 
 ---
@@ -28,6 +28,53 @@
 ## Agents
 
 ### General Purpose Agents
+
+#### discoverer
+**Command**: `/discoverer`
+**Model**: Opus
+**Description**: Codebase discovery and research before planning
+
+**When to Use**:
+- Before planning any feature (Phase 0.5 in orchestration)
+- Need to understand affected files and symbols
+- Want to find existing patterns and reusable code
+- Need to map dependencies and integration points
+
+**What It Does**:
+- Searches claude-mem for prior decisions about the feature area
+- Uses Serena to explore affected symbols and relationships
+- Identifies existing patterns and reusable code
+- Maps dependencies, integration points, and risks
+- Produces a Discovery Brief with verified facts and confidence levels
+
+**Output**: Discovery Brief with sections: Prior Context, Affected Files & Symbols, Existing Patterns, Dependencies, Risks & Constraints, Unresolved Questions
+
+**Anti-Hallucination**: All findings are tool-verified or marked as `UNVERIFIED`. The agent halts on ambiguity rather than guessing.
+
+---
+
+#### plan-critic
+**Command**: `/plan-critic`
+**Model**: Opus
+**Description**: Adversarial plan review and stress-testing
+
+**When to Use**:
+- After planner produces a draft (Phase 1.1 in orchestration)
+- Need to validate plan feasibility against actual codebase
+- Want to catch missing edge cases and hidden risks before implementation
+
+**What It Does**:
+- Constructs a review attack plan (feasibility, completeness, risk, backward compatibility, ordering, negative constraints)
+- Cross-references plan against Discovery Brief (if available)
+- Produces severity-classified findings (CRITICAL/HIGH/MEDIUM/LOW) with confidence levels
+- Checks for "Do NOT" boundaries in the plan
+- Requires minimum 3 findings (adversarial mandate)
+
+**Output**: Plan Review with Overall Assessment, Attack Plan Results, Findings Summary table, Detailed Findings with severity and confidence, Positive Observations, Recommendation (PROCEED WITH FIXES / REVISE PLAN / FUNDAMENTALLY REWORK)
+
+**Human Filtering**: Findings include confidence levels because the adversarial mandate produces false positives. The user decides what's real.
+
+---
 
 #### planner
 **Command**: `/planner`
@@ -808,7 +855,7 @@ Gradle Optimization Report
 **Path**: `skills/proactive-orchestration/SKILL.md`
 **Description**: Top-level pipeline orchestrator for complex feature work
 
-**Phases**: PLAN -> [UI DESIGN] -> TDD -> VERIFY -> REVIEW -> REPORT
+**Phases**: DISCOVER -> PLAN -> PLAN CRITIC -> [UI DESIGN] -> TDD -> VERIFY -> REVIEW -> REPORT
 
 **When It Fires**:
 - Complex feature requests (multiple components/files)
@@ -817,7 +864,7 @@ Gradle Optimization Report
 
 **Does NOT fire on**: Simple bug fixes, single-file edits, documentation, configuration, refactoring
 
-**Agents Used**: planner, [ecosystem]-tdd-guide, [ecosystem]-build-resolver (if needed), code-reviewer, [ecosystem]-security-reviewer, language reviewers
+**Agents Used**: discoverer, planner, plan-critic, [ecosystem]-tdd-guide, [ecosystem]-build-resolver (if needed), code-reviewer, [ecosystem]-security-reviewer, language reviewers
 
 **Relationship to other proactive skills**: Subsumes `proactive-planning`, `proactive-tdd`, and `proactive-review` for complex feature work. Individual skills fire only for standalone single-phase work.
 

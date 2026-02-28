@@ -12,8 +12,10 @@ magic-claude/
 |   |-- plugin.json         # Plugin metadata and component paths
 |   |-- marketplace.json    # Marketplace catalog for /plugin marketplace add
 |
-|-- agents/           # Specialized subagents for delegation (28 agents)
+|-- agents/           # Specialized subagents for delegation (30 agents)
+|   |-- discoverer.md           # Codebase discovery before planning
 |   |-- planner.md              # Feature implementation planning
+|   |-- plan-critic.md          # Adversarial plan review
 |   |-- architect.md            # System design decisions
 |   |-- ts-tdd-guide.md         # TypeScript/JavaScript TDD
 |   |-- jvm-tdd-guide.md        # JVM (Java/Kotlin/Groovy) TDD

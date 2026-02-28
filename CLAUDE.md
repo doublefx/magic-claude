@@ -182,7 +182,9 @@ Specialized agents in `agents/` directory:
 
 | Agent | Model | Purpose |
 |-------|-------|---------|
+| magic-claude:discoverer | opus | Codebase discovery before planning |
 | magic-claude:planner | opus | Feature implementation planning |
+| magic-claude:plan-critic | opus | Adversarial plan stress-testing |
 | magic-claude:architect | opus | System design decisions |
 | magic-claude:ts-tdd-guide | sonnet | TypeScript/JavaScript TDD enforcement |
 | magic-claude:jvm-tdd-guide | sonnet | JVM (Java/Kotlin/Groovy) TDD enforcement |
@@ -225,7 +227,7 @@ Skills define reusable workflows and domain knowledge in `skills/` directory:
 - **magic-claude:using-magic-claude** - Disposition override (quality over speed), skill governance flowchart, EnterPlanMode intercept, anti-rationalization table, learned skills reminder. Re-injected automatically to survive context loss.
 
 **Proactive Skills** (Claude invokes automatically):
-- **magic-claude:proactive-orchestration** - Full pipeline orchestrator for complex features (PLAN → [UI DESIGN] → TDD per-task with spec review → VERIFY → REVIEW → DELIVER). Includes adversarial spec-reviewer-prompt.md for per-task verification and baseline test verification.
+- **magic-claude:proactive-orchestration** - Full pipeline orchestrator for complex features (DISCOVER → PLAN → PLAN CRITIC → [UI DESIGN] → TDD per-task with spec review → VERIFY → REVIEW → DELIVER). Includes pre-plan discovery (discoverer agent), adversarial plan review (plan-critic agent), and per-task spec verification (spec-reviewer-prompt.md).
 - **magic-claude:ui-design** - Conditional UI design context gathering (Phase 1.75). Detects design MCP tools, gathers design context through layered fallback, produces a UI Design Spec that feeds into TDD.
 - **magic-claude:proactive-planning** - Standalone planning for architectural discussions where NO code will be written.
 - **magic-claude:proactive-tdd** - Ecosystem-aware TDD enforcement for isolated TDD needs.

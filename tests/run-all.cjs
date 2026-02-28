@@ -25,7 +25,8 @@ const testFiles = [
   'hooks/hooks.test.cjs',
   'hooks/serena-hooks.test.cjs',
   'skills/systematic-debugging.test.cjs',
-  'skills/ui-design.test.cjs'
+  'skills/ui-design.test.cjs',
+  'agents/agents.test.cjs'
 ];
 
 console.log('╔══════════════════════════════════════════════════════════╗');

@@ -78,8 +78,14 @@ digraph orchestration {
     arch_gate [label="System design\ndecision needed?", shape=diamond];
     architect [label="Phase 0: ARCHITECT\n(magic-claude:architect)"];
 
+    // Phase 0.5
+    discover [label="Phase 0.5: DISCOVER\n(magic-claude:discoverer)"];
+
     // Phase 1
     plan [label="Phase 1: PLAN\n(magic-claude:planner)"];
+
+    // Phase 1.1
+    plan_critic [label="Phase 1.1: PLAN CRITIC\n(adversarial review)"];
     user_confirm [label="User confirms plan?", shape=diamond];
 
     // Phase 1.5
@@ -134,9 +140,11 @@ digraph orchestration {
     // Edges
     start -> arch_gate;
     arch_gate -> architect [label="yes"];
-    arch_gate -> plan [label="no"];
-    architect -> plan;
-    plan -> user_confirm;
+    arch_gate -> discover [label="no"];
+    architect -> discover;
+    discover -> plan;
+    plan -> plan_critic;
+    plan_critic -> user_confirm;
     user_confirm -> plan [label="modify"];
     user_confirm -> eval_gate [label="yes"];
     eval_gate -> eval_define [label="yes"];
@@ -198,23 +206,65 @@ digraph orchestration {
 
 1. Invoke the **magic-claude:architect** agent (opus) via Task tool
 2. The architect produces: architecture proposal, trade-off analysis, and ADRs for key decisions
-3. Pass the architect's output as context to Phase 1
+3. Pass the architect's output as context to Phase 0.5
+
+### Phase 0.5: DISCOVER (always runs)
+
+Grounds the planning phase in verified codebase facts. Prevents hallucinated file paths, non-existent APIs, and missed existing patterns.
+
+1. Invoke the **magic-claude:discoverer** agent (opus) via Task tool
+   - If Phase 0 ran: include the architect's output so the discoverer knows what areas to focus on
+   - The discoverer searches claude-mem for prior decisions about this feature area
+   - Uses Serena to explore affected symbols, find similar implementations, map dependencies
+2. The discoverer produces a **Discovery Brief** with verified facts:
+   - Prior context (past decisions, bug patterns from claude-mem)
+   - Affected files and symbols (verified via Serena)
+   - Existing patterns and reusable code
+   - Dependencies and integration points
+   - Risks and constraints (with confidence levels)
+3. Pass the Discovery Brief as input context to Phase 1 (PLAN)
+
+**Lightweight by default:** For simple features, discovery takes ~30s (quick claude-mem search + targeted Serena lookup). For complex features touching many files, discovery scales up naturally as more symbols need exploration.
 
 ### Phase 1: PLAN
 
 1. Invoke the **magic-claude:planner** agent (opus) via Task tool to analyze the request
    - If Phase 0 ran: include the architect's output as input context for the planner
+   - If Phase 0.5 ran: include the Discovery Brief as input context — the planner uses verified facts to ground file paths, symbol references, and pattern decisions
    - The planner translates architecture decisions into actionable implementation steps
    - **If requirements are vague:** the planner will refine them through one-question-at-a-time dialogue before planning
    - **If multiple approaches exist:** the planner will propose 2-3 options with trade-offs and a recommendation
-2. Present the implementation plan to the user
-3. **WAIT for user confirmation** before proceeding
-   - If user confirms: proceed to Phase 2
-   - If user says "just do it" or similar: skip plan review, proceed to Phase 2
+2. Pass the draft plan to Phase 1.1 (PLAN CRITIC) for adversarial review
+3. Present the plan AND critic findings to the user
+4. **WAIT for user confirmation** before proceeding
+   - If user confirms: proceed to Phase 1.5/2
+   - If user says "just do it" or similar: skip plan review, proceed to Phase 1.5/2
+   - If user requests revision based on critic findings: loop back to step 1 with feedback (max 1 revision cycle)
    - If user modifies the plan: incorporate feedback, re-present if needed
-4. **Persist the approved plan** to `.claude/plans/YYYY-MM-DD-<feature-name>.md`
+5. **Persist the approved plan** to `.claude/plans/YYYY-MM-DD-<feature-name>.md`
    - This ensures the plan survives session loss, compaction, or exit
    - Record the git SHA at plan approval time for later review context
+
+### Phase 1.1: PLAN CRITIC (adversarial)
+
+Stress-tests the draft plan before user approval. Uses BMAD's adversarial mandate: "Must find issues. Zero findings triggers re-analysis."
+
+1. After the planner produces a draft plan, invoke a `general-purpose` agent via Task tool using the **plan-critic-prompt.md** template
+2. Pass: the draft plan AND the Discovery Brief (if available)
+3. The critic reviews for:
+   - **Feasibility** — Do referenced files/APIs/dependencies actually exist? (Cross-reference against Discovery Brief)
+   - **Completeness** — Missing edge cases, error paths, integration points?
+   - **Risk** — What assumptions could be wrong? What are the backward compatibility implications?
+   - **Ordering** — Hidden dependencies between steps? Incorrect sequencing?
+   - **Negative constraints** — Does the plan say what NOT to do?
+4. The critic produces severity-classified findings (CRITICAL/HIGH/MEDIUM/LOW) with confidence levels
+5. Findings are presented to the user alongside the plan (in Phase 1, step 3):
+   - CRITICAL findings: highlight prominently — may require plan revision
+   - HIGH/MEDIUM findings: present for user judgment
+   - LOW findings: footnote
+6. If user requests plan revision based on critic findings: loop back to Phase 1 with the critic's feedback as additional input. Max 1 revision cycle before proceeding.
+
+**Human filtering required:** The critic is instructed to find problems, so it will find problems — including false positives. The user decides what's real.
 
 ### Phase 1.5: EVAL DEFINE (opt-in)
 
@@ -423,11 +473,13 @@ Produce a final orchestration report:
 ORCHESTRATION REPORT
 ====================
 
-Pipeline: [ARCHITECT] -> PLAN -> [EVAL DEFINE] -> [UI DESIGN] -> TDD (per-task) -> VERIFY -> REVIEW+HARDEN -> SIMPLIFY -> [EVAL CHECK] -> [DELIVER]
+Pipeline: [ARCHITECT] -> DISCOVER -> PLAN -> PLAN CRITIC -> [EVAL DEFINE] -> [UI DESIGN] -> TDD (per-task) -> VERIFY -> REVIEW+HARDEN -> SIMPLIFY -> [EVAL CHECK] -> [DELIVER]
 Ecosystem: [TypeScript/JVM/Python]
 
 ARCHITECT:[SKIPPED / architecture proposal + ADRs produced]
+DISCOVER: [Discovery Brief produced — N files mapped, M patterns found, K risks identified]
 PLAN:     [APPROVED by user]
+CRITIC:   [N findings (C critical, H high, M medium, L low) — user accepted/revised]
 UI DESIGN:[SKIPPED / design spec produced via <tool> + frontend-design]
 BASELINE: [X tests passing, Y failing / clean]
 TDD:      [N tasks completed, X tests written, Y% coverage]
@@ -472,7 +524,10 @@ When `magic-claude:proactive-orchestration` fires, it subsumes all three phases 
 - `magic-claude:verify` command - Standalone verification
 - `magic-claude:build-fix` command - Build error resolution
 - `magic-claude:architect` agent - System design decisions (Phase 0, conditional)
+- `magic-claude:discoverer` agent - Codebase discovery and research (Phase 0.5)
 - `magic-claude:planner` agent - Implementation planning (Phase 1)
+- `magic-claude:plan-critic` agent - Adversarial plan review (Phase 1.1, via plan-critic-prompt.md)
+- `plan-critic-prompt.md` - Adversarial plan review template (Phase 1.1)
 - `magic-claude:code-reviewer` agent - Quality and security review
 - `magic-claude:*-tdd-guide` agents - Ecosystem-specific TDD specialists
 - `magic-claude:*-build-resolver` agents - Ecosystem-specific build error resolution
