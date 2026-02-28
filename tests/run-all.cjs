@@ -26,6 +26,7 @@ const testFiles = [
   'hooks/serena-hooks.test.cjs',
   'skills/systematic-debugging.test.cjs',
   'skills/ui-design.test.cjs',
+  'lib/status.test.cjs',
   'agents/agents.test.cjs'
 ];
 
