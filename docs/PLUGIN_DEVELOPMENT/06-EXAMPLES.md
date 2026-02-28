@@ -729,6 +729,79 @@ enforcing security best practices, and ensuring secure coding standards.
 
 ---
 
+## Example 8: HTTP Webhook Hook
+
+### Hook Configuration
+
+**File:** `hooks/hooks.json` (excerpt)
+
+```json
+{
+  "hooks": {
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "http",
+            "url": "https://hooks.slack.com/services/$SLACK_WEBHOOK_PATH",
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "allowedEnvVars": ["SLACK_WEBHOOK_PATH"]
+          }
+        ],
+        "description": "Notify Slack when Claude session ends"
+      }
+    ]
+  }
+}
+```
+
+### Key Learnings
+
+1. **HTTP Hook Type:** POSTs hook input JSON to the URL endpoint
+2. **Env Var Interpolation:** `$SLACK_WEBHOOK_PATH` is resolved from environment
+3. **allowedEnvVars:** Required whitelist for any env var interpolation in headers/URL
+4. **Non-Blocking:** HTTP errors are treated as non-blocking (won't crash Claude)
+5. **Use Cases:** Slack notifications, audit logging, CI/CD triggers, external dashboards
+
+---
+
+## Example 9: Background Agent with Isolation
+
+### Agent File
+
+**File:** `agents/safe-refactor.md`
+
+```markdown
+---
+name: safe-refactor
+description: Safely refactor code in an isolated worktree. Use proactively for risky refactoring.
+tools: Read, Write, Edit, Bash, Grep, Glob
+model: sonnet
+background: true
+isolation: worktree
+---
+
+You refactor code in an isolated git worktree. Your changes don't affect the main branch.
+
+## Workflow
+
+1. Analyze the codebase for refactoring opportunities
+2. Make changes in the isolated worktree
+3. Run tests to verify no regressions
+4. Report results — the worktree branch can be merged if changes are approved
+```
+
+### Key Learnings
+
+1. **`background: true`:** Agent runs without blocking the main conversation
+2. **`isolation: worktree`:** Agent gets its own git worktree copy — changes are isolated
+3. **Safe experimentation:** If the refactoring fails, the main branch is unaffected
+4. **Worktree auto-cleanup:** If no changes are made, the worktree is cleaned up automatically
+
+---
+
 ## Integration Patterns
 
 ### Pattern 1: Command → Agent → User Confirmation → Implementation
@@ -802,5 +875,7 @@ To understand how to create similar components:
 
 ---
 
-**Last Updated:** 2026-02-14
-**Version:** 3.1.0
+**Last Updated:** 2026-02-28
+**Version:** 3.2.0
+**Claude Code Version:** 2.1.63
+**Reference:** [Official Anthropic Docs](https://code.claude.com/docs/en/plugins) | [Platform llms.txt](https://platform.claude.com/llms.txt)

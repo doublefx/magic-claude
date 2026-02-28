@@ -64,6 +64,8 @@ Agents can be stored in different locations depending on scope. When multiple ag
 | `memory` | string | No | - | `user`, `project`, `local` | Persistent memory scope for the agent. `user` stores in `~/.claude/agent-memory/`, `project` stores in `.claude/agent-memory/` (committed), `local` stores in `.claude/agent-memory-local/` (gitignored) |
 | `skills` | string | No | - | Comma-separated skill names | Skills preloaded into agent context (full content injected, not just available for invocation) |
 | `hooks` | object | No | - | YAML hook definitions | Lifecycle hooks scoped to this subagent |
+| `background` | boolean | No | `false` | `true`, `false` | When `true`, agent always runs as a background task. Useful for long-running or monitoring agents that shouldn't block the main conversation |
+| `isolation` | string | No | - | `worktree` | Run agent in a temporary git worktree, giving it an isolated copy of the repository. The worktree is auto-cleaned if no changes are made; if changes exist, the worktree path and branch are returned |
 
 ### Minimal Agent Example
 
@@ -130,6 +132,34 @@ skills: security-review, backend-patterns, coding-standards
 You are a security architect ensuring all systems are designed securely from the start.
 
 [Detailed instructions...]
+```
+
+### Agent with Background and Isolation
+
+```markdown
+---
+name: git-sync
+description: Analyze git changes and report impact. Use proactively in background after git pull, merge, rebase, or branch switch.
+tools: Read, Grep, Glob, Bash
+model: haiku
+background: true
+---
+
+You analyze git changes and produce a change impact report.
+[Instructions...]
+```
+
+```markdown
+---
+name: experimental-refactor
+description: Safely refactor code in an isolated worktree to avoid affecting the main branch
+tools: Read, Write, Edit, Bash, Grep, Glob
+model: sonnet
+isolation: worktree
+---
+
+You refactor code in an isolated worktree. Changes are kept on a separate branch.
+[Instructions...]
 ```
 
 ## Agent Fields Explained in Detail
@@ -718,6 +748,16 @@ The `--agents` flag accepts JSON with these fields:
 | `permissionMode` | No | Permission mode string (e.g., `"acceptEdits"`, `"plan"`) |
 | `hooks` | No | Hook definitions object scoped to this agent |
 
+### Listing Available Agents
+
+Use the `claude agents` CLI command to see all configured agents:
+
+```bash
+claude agents
+```
+
+This lists all agents from all sources (project, user, plugin, CLI) with their descriptions and models.
+
 ## Model Selection Guide
 
 | Scenario | Recommended Model | Reasoning |
@@ -917,9 +957,11 @@ Set via `--teammate-mode` flag or `teammateMode` in settings.json.
 
 ---
 
-**Last Updated:** 2026-02-14
-**Version:** 3.1.0
-**Status:** Complete Specification (includes Agent Teams, updated CLI schema)
+**Last Updated:** 2026-02-28
+**Version:** 3.2.0
+**Claude Code Version:** 2.1.63
+**Status:** Complete Specification (includes Agent Teams, background/isolation fields, updated CLI schema)
+**Reference:** [Official Anthropic Docs](https://code.claude.com/docs/en/sub-agents) | [Platform llms.txt](https://platform.claude.com/llms.txt)
 
 **Strategy:**
 - **Opus:** Planning, architecture, security review (1-2 agents)
@@ -1600,5 +1642,7 @@ Check:
 
 ---
 
-**Last Updated:** 2026-02-14
-**Version:** 3.1.0
+**Last Updated:** 2026-02-28
+**Version:** 3.2.0
+**Claude Code Version:** 2.1.63
+**Reference:** [Official Anthropic Docs](https://code.claude.com/docs/en/sub-agents) | [Platform llms.txt](https://platform.claude.com/llms.txt)

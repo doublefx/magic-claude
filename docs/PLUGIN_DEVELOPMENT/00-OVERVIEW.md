@@ -110,9 +110,10 @@ The manifest is optional. If omitted, Claude Code auto-discovers components in d
 
 ### Agents
 - **Frontmatter Fields:** `name`, `description`, `tools`, `model`
-- **Optional Fields:** `skills` (preload into context), `hooks` (trigger hooks)
+- **Optional Fields:** `skills` (preload into context), `hooks` (trigger hooks), `background` (always run in background), `isolation` (`worktree` for git isolation), `memory` (persistent scope), `mcpServers`, `maxTurns`, `permissionMode`, `disallowedTools`
 - **Models:** `opus`, `sonnet`, `haiku`
 - **Tools:** Subset of built-in tools (Read, Bash, Edit, etc.)
+- **CLI:** `claude agents` lists all configured agents; `claude --agents '{...}'` for session-only agents
 
 ### Skills
 - **Frontmatter Fields:** `name`, `description`
@@ -121,11 +122,11 @@ The manifest is optional. If omitted, Claude Code auto-discovers components in d
 - **Activation:** Explicit reference or `context: fork`
 
 ### Hooks
-- **Trigger Events (14):** PreToolUse, PostToolUse, PostToolUseFailure, PermissionRequest, Notification, SubagentStart, SubagentStop, UserPromptSubmit, SessionStart, SessionEnd, PreCompact, Stop, TeammateIdle, TaskCompleted
-- **Handler Types:** `command` (shell), `prompt` (single LLM call), `agent` (multi-turn subagent)
+- **Trigger Events (17):** PreToolUse, PostToolUse, PostToolUseFailure, PermissionRequest, Notification, SubagentStart, SubagentStop, UserPromptSubmit, SessionStart, SessionEnd, PreCompact, Stop, TeammateIdle, TaskCompleted, ConfigChange, WorktreeCreate, WorktreeRemove
+- **Handler Types:** `command` (shell), `prompt` (single LLM call), `agent` (multi-turn subagent), `http` (webhook POST)
 - **Key Fields:** `matcher` (string/regex pattern), `hooks` (handler array), `description`
-- **Execution:** Node.js scripts with stdin/stdout JSON
-- **Blocking:** PreToolUse and PermissionRequest can block (exit 1); TeammateIdle and TaskCompleted can block with feedback (exit 2)
+- **Execution:** Node.js scripts with stdin/stdout JSON, or HTTP webhooks
+- **Blocking:** PreToolUse and PermissionRequest can block (exit 1); TeammateIdle, TaskCompleted, ConfigChange can block with feedback (exit 2); WorktreeCreate can block (non-zero exit)
 
 ### Plugin.json (Optional)
 - **Location:** `.claude-plugin/plugin.json`
@@ -202,13 +203,19 @@ When a skill is activated with `context: fork`, the skill content is injected in
 - Use Opus for complex decisions (architecture, security)
 - Use Haiku for frequent, simple operations
 
-### Permission Modes (Future/Advanced)
+### Permission Modes
 
-While not currently documented in this version, permission modes control agent capabilities:
-- **read** - Can read files
-- **write** - Can create/modify files
-- **execute** - Can run commands
-- **network** - Can access external services
+Permission modes control how agents handle tool approval:
+
+| Mode | Behavior |
+|------|----------|
+| `default` | No auto-approvals. User prompted for each tool use unless hooks/rules allow |
+| `acceptEdits` | Auto-approves file/filesystem write operations for faster iteration |
+| `dontAsk` | Auto-approves all tools — use only in trusted, controlled environments |
+| `bypassPermissions` | Auto-approves all tools including subagents. **Caution:** inherited by all subagents and cannot be overridden |
+| `plan` | Prevents tool execution entirely — for planning/review-only workflows |
+
+Set via `permissionMode` in agent frontmatter or `--permission-mode` CLI flag.
 
 ### Hook Input/Output JSON
 
@@ -227,8 +234,9 @@ While not currently documented in this version, permission modes control agent c
 **Hook Script Stdin:** Same as above (passed as JSON)
 
 **Hook Script Output:** Exit code determines behavior
-- `exit(0)` = Continue execution
-- `exit(1)` = Block execution (PreToolUse only)
+- `exit(0)` = Success (stdout parsed as JSON)
+- `exit(1)` = Non-blocking error (hook failure, operation continues)
+- `exit(2)` = Blocking error (stderr fed back to Claude; blocks operation for PreToolUse, PermissionRequest, etc.)
 
 **PostToolUse Input Includes:**
 ```json
@@ -343,7 +351,9 @@ npm run setup
 
 ---
 
-**Last Updated:** 2026-02-15
-**Version:** 4.0.0
+**Last Updated:** 2026-02-28
+**Version:** 4.1.0
+**Claude Code Version:** 2.1.63
 **Status:** Aligned with official Claude Code plugin specification
+**Reference:** [Official Anthropic Docs](https://code.claude.com/docs/en/plugins) | [Platform llms.txt](https://platform.claude.com/llms.txt)
 **License:** MIT

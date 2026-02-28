@@ -553,6 +553,54 @@ try {
 console.log(JSON.stringify(data)); // Return original data
 ```
 
+### 6. HTTP Hook Best Practices
+
+Use HTTP hooks for external integrations. Keep security in mind:
+
+```json
+// Good - Whitelist only needed env vars
+{
+  "type": "http",
+  "url": "https://hooks.example.com/claude",
+  "headers": {
+    "Authorization": "Bearer $API_TOKEN"
+  },
+  "allowedEnvVars": ["API_TOKEN"]
+}
+
+// Bad - No env var whitelisting (interpolation won't work)
+{
+  "type": "http",
+  "url": "https://hooks.example.com/claude",
+  "headers": {
+    "Authorization": "Bearer $API_TOKEN"
+  }
+  // Missing allowedEnvVars — $API_TOKEN won't be interpolated
+}
+```
+
+**Key guidelines:**
+- Always specify `allowedEnvVars` for any header env var interpolation
+- HTTP errors are non-blocking (equivalent to exit code 1)
+- Response body is parsed as JSON for hook output
+- Use for external webhooks, audit logging, CI/CD notifications
+
+### 7. Background Agent Patterns
+
+Use `background: true` for agents that shouldn't block the main conversation:
+
+```yaml
+---
+name: monitor
+description: Background monitoring agent. Use proactively.
+background: true
+model: haiku
+---
+```
+
+**When to use `background`:** Long-running analysis, monitoring, audit tasks.
+**When NOT to use:** Tasks where Claude needs the result before continuing.
+
 ## Code Quality Standards
 
 ### 1. Immutability
@@ -981,5 +1029,7 @@ Start simple, provide deeper information for advanced users.
 
 ---
 
-**Last Updated:** 2026-02-14
-**Version:** 3.1.0
+**Last Updated:** 2026-02-28
+**Version:** 3.2.0
+**Claude Code Version:** 2.1.63
+**Reference:** [Official Anthropic Docs](https://code.claude.com/docs/en/plugins) | [Platform llms.txt](https://platform.claude.com/llms.txt)

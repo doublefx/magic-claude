@@ -261,20 +261,24 @@ skills/
     "PreCompact": [ { /* hook rules */ } ],
     "Stop": [ { /* hook rules */ } ],
     "TeammateIdle": [ { /* hook rules */ } ],
-    "TaskCompleted": [ { /* hook rules */ } ]
+    "TaskCompleted": [ { /* hook rules */ } ],
+    "ConfigChange": [ { /* hook rules */ } ],
+    "WorktreeCreate": [ { /* hook rules */ } ],
+    "WorktreeRemove": [ { /* hook rules */ } ]
   }
 }
 ```
 
 **Each hook rule contains:**
 - `matcher`: String/regex pattern (some events don't support matchers)
-- `hooks`: Array of handlers (`type`: `command`, `prompt`, or `agent`)
+- `hooks`: Array of handlers (`type`: `command`, `prompt`, `agent`, or `http`)
 - `description`: Explanation
 
-**Hook types:**
+**Hook handler types:**
 - `command`: Execute shell commands or scripts
 - `prompt`: Evaluate a prompt with an LLM (uses `$ARGUMENTS` placeholder for context)
 - `agent`: Run an agentic verifier with tools for complex verification tasks
+- `http`: POST hook input JSON to a URL endpoint (webhook integration)
 
 ### 6. MCP Servers
 
@@ -428,6 +432,12 @@ const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT;
 const scriptPath = path.join(pluginRoot, 'scripts', 'utility.js');
 ```
 
+### Other Plugin Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| `CLAUDE_CODE_PLUGIN_GIT_TIMEOUT_MS` | Override the default git operation timeout (in milliseconds) for plugin-related git operations. Useful for large plugins or slow networks |
+
 ### Path Behavior Rules
 
 **Important:** Custom paths supplement default directories - they don't replace them.
@@ -526,6 +536,7 @@ Run /setup-rules --install to copy to ~/.claude/rules/
 | **Hooks** | `hooks/hooks.json` | Hook configuration |
 | **MCP servers** | `.mcp.json` | MCP server definitions |
 | **LSP servers** | `.lsp.json` | Language server configurations |
+| **Settings** | `settings.json` | Plugin settings (only `agent` key supported — configures default agent behavior) |
 | **Rules** | `rules/` | Project guidelines (NOT auto-loaded; manual install required) |
 
 ### Disabling Components
@@ -799,6 +810,8 @@ my-plugin/
 
 ---
 
-**Last Updated:** 2026-02-15
-**Version:** 4.0.0
+**Last Updated:** 2026-02-28
+**Version:** 4.1.0
+**Claude Code Version:** 2.1.63
 **Status:** Aligned with official Claude Code plugin specification
+**Reference:** [Official Anthropic Docs](https://code.claude.com/docs/en/plugins) | [Platform llms.txt](https://platform.claude.com/llms.txt)

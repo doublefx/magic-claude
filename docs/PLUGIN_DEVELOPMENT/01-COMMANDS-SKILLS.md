@@ -669,7 +669,7 @@ Permission syntax: `Skill(name)` for exact match, `Skill(name *)` for prefix mat
 
 In a regular session, skill descriptions are loaded into context so Claude knows what's available, but full skill content only loads when invoked.
 
-**Character budget:** If you have many skills, descriptions may exceed the character budget (default 15,000 characters). Run `/context` to check for a warning about excluded skills.
+**Character budget:** If you have many skills, descriptions may exceed the character budget (~2% of context window, fallback ~16,000 characters). Run `/context` to check for a warning about excluded skills. Note: `/clear` resets cached skills, forcing rediscovery.
 
 To increase the limit, set the `SLASH_COMMAND_TOOL_CHAR_BUDGET` environment variable.
 
@@ -1285,6 +1285,8 @@ This methodology is adapted from [obra/superpowers' writing-skills](https://gith
 
 ---
 
-**Last Updated:** 2026-02-16
-**Version:** 3.2.0
+**Last Updated:** 2026-02-28
+**Version:** 3.3.0
+**Claude Code Version:** 2.1.63
 **Status:** Complete Specification (Updated with Skill Testing Methodology)
+**Reference:** [Official Anthropic Docs](https://code.claude.com/docs/en/skills) | [Platform llms.txt](https://platform.claude.com/llms.txt)

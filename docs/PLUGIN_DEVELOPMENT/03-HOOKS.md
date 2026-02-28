@@ -11,8 +11,8 @@
 Hooks are user-defined shell commands that execute at specific points in Claude Code's lifecycle. They provide deterministic control over behavior, ensuring certain actions always happen rather than relying on the LLM to choose to run them.
 
 **Key Characteristics:**
-- Event-driven with 14 hook types
-- Three handler types: `command` (shell), `prompt` (single LLM call), `agent` (multi-turn subagent)
+- Event-driven with 17 hook events
+- Four handler types: `command` (shell), `http` (POST endpoint), `prompt` (single LLM call), `agent` (multi-turn subagent)
 - Support regex pattern matching for tool names
 - PreToolUse and PermissionRequest can block/allow/deny operations
 - Stop, SubagentStop, TeammateIdle, and TaskCompleted can block actions
@@ -113,8 +113,10 @@ Hooks are user-defined shell commands that execute at specific points in Claude 
     "SubagentStop": [ /* array of hook rules */ ],
     "TeammateIdle": [ /* array of hook rules */ ],
     "TaskCompleted": [ /* array of hook rules */ ],
+    "ConfigChange": [ /* array of hook rules */ ],
+    "WorktreeCreate": [ /* array of hook rules */ ],
+    "WorktreeRemove": [ /* array of hook rules */ ],
     "PreCompact": [ /* array of hook rules */ ],
-    "Setup": [ /* array of hook rules */ ],
     "SessionStart": [ /* array of hook rules */ ],
     "SessionEnd": [ /* array of hook rules */ ]
   }
@@ -140,8 +142,10 @@ Each hook type contains an array of hook rule objects.
 | **Stop** | Claude finishes responding | YES (force continue) | JSON | Final validation |
 | **TeammateIdle** | Agent team teammate about to go idle | YES (exit code 2 only) | JSON | Quality gates for teammates |
 | **TaskCompleted** | Task being marked as completed | YES (exit code 2 only) | JSON | Enforce completion criteria |
+| **ConfigChange** | Configuration file changes | YES (except policy_settings) | JSON | Security auditing, change control |
+| **WorktreeCreate** | Worktree being created | YES (non-zero exit fails) | JSON | Custom VCS setup for worktrees |
+| **WorktreeRemove** | Worktree being removed | NO | JSON | Custom VCS teardown for worktrees |
 | **PreCompact** | Before context compaction | NO | JSON | Save state |
-| **Setup** | With --init/--maintenance | NO | JSON | One-time setup tasks |
 | **SessionEnd** | Session terminates | NO | JSON | Cleanup, persistence |
 | **Notification** | Claude sends notification | NO | JSON | Custom notifications |
 
@@ -177,7 +181,7 @@ Each hook type contains an array of hook rule objects.
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `type` | string | Yes | `"command"`, `"prompt"`, or `"agent"` |
+| `type` | string | Yes | `"command"`, `"http"`, `"prompt"`, or `"agent"` |
 | `timeout` | number | No | Seconds before canceling. Defaults: 600 for command, 30 for prompt, 60 for agent |
 | `statusMessage` | string | No | Custom spinner message displayed while the hook runs |
 | `once` | boolean | No | Skills only: run hook only once per session |
@@ -188,6 +192,14 @@ Each hook type contains an array of hook rule objects.
 |-------|------|----------|-------------|
 | `command` | string | Yes | The bash/shell command to execute |
 | `async` | boolean | No | If `true`, runs in background without blocking. Results delivered on next conversation turn. Only for command hooks |
+
+**HTTP Hook Fields (`type: "http"`):**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `url` | string | Yes | URL to POST hook input JSON to |
+| `headers` | object | No | Additional HTTP headers. Supports `$VAR_NAME` / `${VAR_NAME}` env var interpolation |
+| `allowedEnvVars` | array | No | Whitelist of env var names allowed for header interpolation. Required for any env var interpolation to work |
 
 **Prompt and Agent Hook Fields (`type: "prompt"` or `type: "agent"`):**
 
@@ -453,7 +465,8 @@ Decision control: return `additionalContext` via `hookSpecificOutput` to provide
   "cwd": "/project",
   "permission_mode": "default",
   "hook_event_name": "Stop",
-  "stop_hook_active": true  // true if already continuing from a stop hook
+  "stop_hook_active": true,  // true if already continuing from a stop hook
+  "last_assistant_message": "I've completed the refactoring..."  // Last message Claude sent
 }
 ```
 
@@ -498,7 +511,8 @@ SubagentStart hooks cannot block subagent creation, but can inject context:
   "hook_event_name": "SubagentStop",
   "stop_hook_active": false,
   "agent_id": "def456",
-  "agent_transcript_path": "/path/to/session/subagents/agent-def456.jsonl"
+  "agent_transcript_path": "/path/to/session/subagents/agent-def456.jsonl",
+  "last_assistant_message": "Analysis complete. Found 3 security issues..."  // Last message the subagent sent
 }
 ```
 
@@ -596,10 +610,11 @@ exit 0
 }
 ```
 
-### Setup Input Schema
+### ConfigChange Input Schema
 
-**Fired:** With --init, --init-only, or --maintenance flags
-**Matchers:** `init`, `maintenance`
+**Fired:** When configuration files or skills are modified
+**Can Block:** YES (except for `policy_settings`)
+**Matchers:** `user_settings`, `project_settings`, `local_settings`, `policy_settings`, `skills`
 
 ```json
 {
@@ -607,12 +622,68 @@ exit 0
   "transcript_path": "/path/to/session.jsonl",
   "cwd": "/project",
   "permission_mode": "default",
-  "hook_event_name": "Setup",
-  "trigger": "init"  // "init" or "maintenance"
+  "hook_event_name": "ConfigChange",
+  "config_source": "project_settings",  // Which config changed
+  "jsonpath": "$.mcpServers.new-server",  // JSONPath to the changed key
+  "old_value": null,  // Previous value (null if new)
+  "new_value": { "command": "npx", "args": ["some-mcp"] }  // New value (null if deleted)
 }
 ```
 
-Use Setup for one-time operations (dependencies, migrations). Use SessionStart for every-session tasks.
+| Field | Type | Description |
+|-------|------|-------------|
+| `config_source` | string | Which config was modified: `user_settings`, `project_settings`, `local_settings`, `policy_settings`, or `skills` |
+| `jsonpath` | string | JSONPath to the specific key that changed |
+| `old_value` | any | Previous value (`null` if newly added) |
+| `new_value` | any | New value (`null` if deleted) |
+
+**Important:** Hooks can block changes to all sources **except** `policy_settings` (enterprise policy always applies). Use this for security auditing — e.g., detecting unauthorized MCP server additions.
+
+### WorktreeCreate Input Schema
+
+**Fired:** When creating a git worktree (or custom VCS worktree)
+**Can Block:** YES (non-zero exit code blocks creation)
+**Matchers:** None (fires on every occurrence)
+**Hook type:** `type: "command"` only
+
+```json
+{
+  "session_id": "abc123",
+  "transcript_path": "/path/to/session.jsonl",
+  "cwd": "/project",
+  "permission_mode": "default",
+  "hook_event_name": "WorktreeCreate",
+  "name": "feature-auth"  // Worktree name
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | string | Name for the new worktree |
+
+**Critical:** The hook command must print the **absolute path** of the created worktree directory to stdout. This path is used by Claude Code to switch into the worktree.
+
+### WorktreeRemove Input Schema
+
+**Fired:** When removing/cleaning up a worktree
+**Cannot Block**
+**Matchers:** None (fires on every occurrence)
+**Hook type:** `type: "command"` only
+
+```json
+{
+  "session_id": "abc123",
+  "transcript_path": "/path/to/session.jsonl",
+  "cwd": "/project",
+  "permission_mode": "default",
+  "hook_event_name": "WorktreeRemove",
+  "worktree_path": "/tmp/worktrees/feature-auth"  // Absolute path to worktree being removed
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `worktree_path` | string | Absolute path to the worktree directory being removed |
 
 ### SessionStart Input Schema
 
@@ -675,11 +746,13 @@ Not all hook types support matchers. Hooks without matcher support fire on every
 | Notification | notification type | `permission_prompt`, `idle_prompt`, `auth_success`, `elicitation_dialog` |
 | SubagentStart, SubagentStop | agent type name | `Bash`, `Explore`, `Plan`, or custom agent names |
 | PreCompact | compaction trigger | `manual`, `auto` |
-| Setup | setup trigger | `init`, `maintenance` |
+| ConfigChange | config source | `user_settings`, `project_settings`, `local_settings`, `policy_settings`, `skills` |
 | **UserPromptSubmit** | **no matcher support** | always fires |
 | **Stop** | **no matcher support** | always fires |
 | **TeammateIdle** | **no matcher support** | always fires |
 | **TaskCompleted** | **no matcher support** | always fires |
+| **WorktreeCreate** | **no matcher support** | always fires |
+| **WorktreeRemove** | **no matcher support** | always fires |
 
 ### Matcher Syntax Reference
 
@@ -888,10 +961,13 @@ Provide feedback after tool execution:
   "reason": "Found console.log statements - please remove",
   "hookSpecificOutput": {
     "hookEventName": "PostToolUse",
-    "additionalContext": "File was formatted with prettier"
+    "additionalContext": "File was formatted with prettier",
+    "updatedMCPToolOutput": "{ \"status\": \"modified\" }"  // MCP tools only: replaces tool output shown to Claude
   }
 }
 ```
+
+**`updatedMCPToolOutput`** (MCP tools only): When set, replaces the original MCP tool output that Claude sees. This allows hooks to transform, filter, or augment MCP tool responses. Only applies to MCP tool calls (tools with `mcp__` prefix); ignored for built-in tools.
 
 ### UserPromptSubmit Decision Control
 
@@ -936,17 +1012,54 @@ Add context at session start:
 }
 ```
 
-### Setup Decision Control
+### ConfigChange Decision Control
 
-Add context during repository setup:
+Audit or block configuration changes:
 
 ```json
 {
+  "decision": "block",  // Can block all changes except policy_settings
+  "reason": "Unauthorized MCP server addition detected",
   "hookSpecificOutput": {
-    "hookEventName": "Setup",
-    "additionalContext": "Dependencies installed. Node v20.10.0 detected."
+    "hookEventName": "ConfigChange",
+    "additionalContext": "Config audit passed. New tool registered."
   }
 }
+```
+
+**Important:** ConfigChange hooks can block changes to `user_settings`, `project_settings`, `local_settings`, and `skills`. They **cannot** block `policy_settings` changes (enterprise policy always takes effect).
+
+### WorktreeCreate Decision Control
+
+WorktreeCreate hooks use `type: "command"` only. The hook must print the **absolute path** of the created worktree to stdout. If the hook exits with a non-zero code, worktree creation is blocked.
+
+```bash
+#!/bin/bash
+INPUT=$(cat)
+NAME=$(echo "$INPUT" | jq -r '.name')
+
+# Create worktree via custom VCS
+WORKTREE_PATH="/tmp/worktrees/$NAME"
+mkdir -p "$WORKTREE_PATH"
+# ... set up worktree ...
+
+# MUST print absolute path to stdout
+echo "$WORKTREE_PATH"
+exit 0
+```
+
+### WorktreeRemove Decision Control
+
+WorktreeRemove hooks use `type: "command"` only. They perform cleanup when a worktree is removed. Cannot block removal.
+
+```bash
+#!/bin/bash
+INPUT=$(cat)
+WORKTREE_PATH=$(echo "$INPUT" | jq -r '.worktree_path')
+
+# Clean up worktree
+rm -rf "$WORKTREE_PATH"
+exit 0
 ```
 
 ## Hook Execution Types
@@ -996,6 +1109,58 @@ Reference external Node.js script:
 {
   "type": "command",
   "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/smart-formatter.js\""
+}
+```
+
+### HTTP Webhook
+
+POST hook input as JSON to a URL endpoint:
+
+```json
+{
+  "type": "http",
+  "url": "https://hooks.example.com/claude/post-tool",
+  "headers": {
+    "Authorization": "Bearer $API_TOKEN",
+    "X-Project": "my-project"
+  },
+  "allowedEnvVars": ["API_TOKEN"]
+}
+```
+
+**Use for:**
+- External webhook integrations (Slack, PagerDuty, etc.)
+- Remote logging and audit trails
+- Cloud function triggers
+- CI/CD pipeline notifications
+
+**Key details:**
+- Sends HTTP POST with hook input JSON as request body
+- `headers` supports `$VAR_NAME` and `${VAR_NAME}` env var interpolation
+- `allowedEnvVars` is required for any env var interpolation to work in headers (security whitelist)
+- Response body is parsed as JSON for hook output (same format as command stdout)
+- HTTP errors are treated as non-blocking failures (exit code 1 equivalent)
+
+**Example: Slack notification on session end:**
+```json
+{
+  "hooks": {
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "http",
+            "url": "https://hooks.slack.com/services/$SLACK_WEBHOOK_PATH",
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "allowedEnvVars": ["SLACK_WEBHOOK_PATH"]
+          }
+        ],
+        "description": "Notify Slack when Claude session ends"
+      }
+    ]
+  }
 }
 ```
 
@@ -1242,7 +1407,7 @@ def perform_action(data):
 |----------|--------------|-------------|
 | `CLAUDE_PROJECT_DIR` | All hooks | Absolute path to project root |
 | `CLAUDE_PLUGIN_ROOT` | Plugin hooks | Absolute path to plugin directory |
-| `CLAUDE_ENV_FILE` | SessionStart, Setup | File path for persisting env vars |
+| `CLAUDE_ENV_FILE` | SessionStart | File path for persisting env vars |
 | `CLAUDE_CODE_REMOTE` | All hooks | Set to `"true"` in remote web environments, not set in local CLI |
 | `HOME` | All hooks | User home directory |
 | `PWD` | All hooks | Current working directory |
@@ -1422,7 +1587,7 @@ hooks:
 
 - [ ] File: `hooks/hooks.json` or settings file
 - [ ] Valid JSON structure
-- [ ] Hook type: One of 12 supported types
+- [ ] Hook type: One of 17 supported event types
 - [ ] Matcher: Valid regex pattern (for tool hooks)
 - [ ] Commands: Valid shell commands
 - [ ] Exit codes: Correct for hook type (0, 2, or other)
@@ -1449,6 +1614,8 @@ hooks:
 
 ---
 
-**Last Updated:** 2026-02-14
-**Version:** 3.1.0
-**Status:** Complete Specification - Based on Official Claude Code Docs (includes TeammateIdle, TaskCompleted, agent hooks, async hooks)
+**Last Updated:** 2026-02-28
+**Version:** 3.2.0
+**Claude Code Version:** 2.1.63
+**Status:** Complete Specification - Based on Official Claude Code Docs (includes ConfigChange, WorktreeCreate, WorktreeRemove, HTTP hooks, TeammateIdle, TaskCompleted, agent hooks, async hooks)
+**Reference:** [Official Anthropic Docs](https://code.claude.com/docs/en/hooks) | [Platform llms.txt](https://platform.claude.com/llms.txt)
