@@ -86,8 +86,8 @@ function isSerenaInstalled() {
   if (process.env.SERENA_INSTALLED === 'false') return false;
 
   try {
-    const homeDir = require('os').homedir();
-    const settingsPath = path.join(homeDir, '.claude', 'settings.json');
+    const { getClaudeDir } = require('./utils.cjs');
+    const settingsPath = path.join(getClaudeDir(), 'settings.json');
     if (!fs.existsSync(settingsPath)) return false;
 
     const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));

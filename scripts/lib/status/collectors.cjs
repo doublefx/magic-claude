@@ -9,7 +9,7 @@
 
 const path = require('path');
 const fs = require('fs');
-const { parseFrontmatter, readFile, getHomeDir, isWindows, isMacOS, isLinux } = require('../utils.cjs');
+const { parseFrontmatter, readFile, getHomeDir, getClaudeDir, isWindows, isMacOS, isLinux } = require('../utils.cjs');
 const { isSerenaInstalled, isJetBrainsAvailable } = require('../serena.cjs');
 
 /**
@@ -173,7 +173,7 @@ function collectRules(pluginRoot) {
   const pluginRulesDir = path.join(pluginRoot, 'rules');
   const pluginRules = safeReadDir(pluginRulesDir).filter(f => f.endsWith('.md'));
 
-  const userRulesDir = path.join(getHomeDir(), '.claude', 'rules');
+  const userRulesDir = path.join(getClaudeDir(), 'rules');
   const userRules = safeReadDir(userRulesDir).filter(f => f.endsWith('.md'));
 
   return {
@@ -274,7 +274,7 @@ function collectWorkspace() {
  */
 function getEnabledPlugins() {
   try {
-    const settingsPath = path.join(getHomeDir(), '.claude', 'settings.json');
+    const settingsPath = path.join(getClaudeDir(), 'settings.json');
     if (!fs.existsSync(settingsPath)) return {};
 
     const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
@@ -336,7 +336,7 @@ function collectMcpServers() {
   };
 
   // Manual MCP servers from global settings
-  const globalPath = path.join(getHomeDir(), '.claude', 'settings.json');
+  const globalPath = path.join(getClaudeDir(), 'settings.json');
   const globalSettings = safeParseJson(readFile(globalPath));
   if (globalSettings && globalSettings.mcpServers) {
     result.manual.names = Object.keys(globalSettings.mcpServers);

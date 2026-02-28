@@ -21,14 +21,16 @@ const fs = require('fs');
 const os = require('os');
 
 // Try to load utils from the plugin, fall back to inline implementations
-let log, output;
+let log, output, getClaudeDir;
 try {
   const utils = require(path.join(__dirname, '..', '..', 'scripts', 'lib', 'utils.cjs'));
   log = utils.log;
   output = utils.output;
+  getClaudeDir = utils.getClaudeDir;
 } catch {
   log = (msg) => process.stderr.write(`[detect-tools] ${msg}\n`);
   output = (msg) => process.stdout.write(`${msg}\n`);
+  getClaudeDir = () => process.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), '.claude');
 }
 
 // --- Constants ---
@@ -177,11 +179,11 @@ function isPlaywrightCliInstalled() {
  * Check if playwright-cli is available as a learned skill.
  */
 function isPlaywrightCliSkill() {
-  const homeDir = os.homedir();
+  const claudeDir = getClaudeDir();
   const cwd = process.cwd();
 
   const skillPaths = [
-    path.join(homeDir, '.claude', 'skills', 'playwright-cli', 'SKILL.md'),
+    path.join(claudeDir, 'skills', 'playwright-cli', 'SKILL.md'),
     path.join(cwd, '.claude', 'skills', 'playwright-cli', 'SKILL.md')
   ];
 
@@ -198,13 +200,12 @@ function isPlaywrightCliSkill() {
  */
 function isFrontendDesignInstalled() {
   try {
-    const homeDir = os.homedir();
-    const installedPluginsPath = path.join(homeDir, '.claude', 'plugins', 'installed_plugins.json');
-    const data = readJsonFile(installedPluginsPath);
-    if (!data || !data.plugins) return false;
+    const settingsPath = path.join(getClaudeDir(), 'settings.json');
+    const data = readJsonFile(settingsPath);
+    if (!data || !data.enabledPlugins) return false;
 
-    return Object.keys(data.plugins).some(
-      key => key.startsWith('frontend-design')
+    return Object.keys(data.enabledPlugins).some(
+      key => key.includes('frontend-design') && data.enabledPlugins[key] === true
     );
   } catch {
     return false;
@@ -219,12 +220,12 @@ function isFrontendDesignInstalled() {
  * Project level overrides user level overrides plugin level.
  */
 function discoverToolReferenceFiles() {
-  const homeDir = os.homedir();
+  const claudeDir = getClaudeDir();
   const cwd = process.cwd();
 
   const dirs = [
     { path: path.join(__dirname, 'tools'), level: 'plugin' },
-    { path: path.join(homeDir, '.claude', 'skills', 'ui-design', 'tools'), level: 'user' },
+    { path: path.join(claudeDir, 'skills', 'ui-design', 'tools'), level: 'user' },
     { path: path.join(cwd, '.claude', 'skills', 'ui-design', 'tools'), level: 'project' }
   ];
 
@@ -253,12 +254,12 @@ function discoverToolReferenceFiles() {
 // --- Main Detection ---
 
 function detectTools() {
-  const homeDir = os.homedir();
+  const claudeDir = getClaudeDir();
   const cwd = process.cwd();
 
   // 1. Gather MCP servers from all config levels
   const configPaths = [
-    path.join(homeDir, '.claude', 'settings.json'),
+    path.join(claudeDir, 'settings.json'),
     path.join(cwd, '.claude', 'project.json'),
     path.join(cwd, '.claude', 'settings.json')
   ];

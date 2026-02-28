@@ -53,13 +53,11 @@ function getEcosystemDirs() {
   // 1. Plugin-level (base — always present)
   dirs.push(__dirname);
 
-  // 2. User-level (~/.claude/ecosystems/)
-  const home = process.env.HOME || process.env.USERPROFILE || '';
-  if (home) {
-    const userDir = path.join(home, '.claude', 'ecosystems');
-    if (fs.existsSync(userDir)) {
-      dirs.push(userDir);
-    }
+  // 2. User-level ($CLAUDE_CONFIG_DIR/ecosystems/)
+  const { getClaudeDir } = require('../utils.cjs');
+  const userDir = path.join(getClaudeDir(), 'ecosystems');
+  if (fs.existsSync(userDir)) {
+    dirs.push(userDir);
   }
 
   // 3. Project-level (./.claude/ecosystems/) — highest priority

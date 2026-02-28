@@ -13,6 +13,7 @@
 const fs = require('fs');
 const path = require('path');
 const {
+  getClaudeDir,
   getSessionsDir,
   getProjectLearnedSkillsDir,
   getUserLearnedSkillsDir,
@@ -130,8 +131,7 @@ function isClaudeMemInstalled() {
   if (process.env.CLAUDE_MEM_INSTALLED === 'true') return true;
 
   try {
-    const homeDir = require('os').homedir();
-    const settingsPath = path.join(homeDir, '.claude', 'settings.json');
+    const settingsPath = path.join(getClaudeDir(), 'settings.json');
     if (!fs.existsSync(settingsPath)) return false;
 
     const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
@@ -196,7 +196,7 @@ function detectSetupNeeds() {
 
   // Check for missing plugin rules
   const pluginRulesDir = path.join(process.env.CLAUDE_PLUGIN_ROOT || path.join(__dirname, '..', '..'), 'rules');
-  const userRulesDir = path.join(require('os').homedir(), '.claude', 'rules');
+  const userRulesDir = path.join(getClaudeDir(), 'rules');
 
   if (fs.existsSync(pluginRulesDir)) {
     const pluginRules = fs.readdirSync(pluginRulesDir).filter(f => f.endsWith('.md'));

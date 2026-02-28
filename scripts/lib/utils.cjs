@@ -21,10 +21,11 @@ function getHomeDir() {
 }
 
 /**
- * Get the Claude config directory
+ * Get the Claude config directory.
+ * Uses CLAUDE_CONFIG_DIR env var if set, otherwise falls back to ~/.claude
  */
 function getClaudeDir() {
-  return path.join(getHomeDir(), '.claude');
+  return process.env.CLAUDE_CONFIG_DIR || path.join(getHomeDir(), '.claude');
 }
 
 /**
