@@ -337,7 +337,7 @@ function runTests() {
   if (test('status command .md file exists with correct frontmatter', () => {
     const cmdPath = path.join(REPO_ROOT, 'commands', 'status.md');
     const content = require('fs').readFileSync(cmdPath, 'utf8');
-    assert.ok(content.includes('disable-model-invocation: true'), 'Should be script-driven');
+    assert.ok(content.includes('disable-model-invocation: false'), 'Should use model invocation (prevents empty text block API errors)');
     assert.ok(content.includes('command:'), 'Should have command field');
     assert.ok(content.includes('status-report.cjs'), 'Should reference the script');
   })) passed++; else failed++;

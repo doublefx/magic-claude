@@ -235,7 +235,7 @@ function formatFullReport(allData) {
 
   const footer = SEPARATOR.repeat(50);
 
-  return [header, '', ...sections, '', footer].join('\n');
+  return [header, ...sections, footer].join('\n');
 }
 
 module.exports = {
