@@ -42,7 +42,8 @@ const TOOL_REFERENCE_FILES = [
   'shadcn-ui.md',
   'storybook.md',
   'magic-ui.md',
-  'screenshot.md'
+  'screenshot.md',
+  'playwright-cli.md'
 ];
 
 // Test suite
@@ -277,6 +278,7 @@ function runTests() {
     assert.ok(parsed.mcpTools !== undefined, 'JSON should have mcpTools');
     assert.ok(parsed.nativeTools !== undefined, 'JSON should have nativeTools');
     assert.ok(parsed.frontendDesignPlugin !== undefined, 'JSON should have frontendDesignPlugin');
+    assert.ok(parsed.playwrightCli !== undefined, 'JSON should have playwrightCli');
     assert.ok(parsed.toolReferenceFiles !== undefined, 'JSON should have toolReferenceFiles');
   })) passed++; else failed++;
 

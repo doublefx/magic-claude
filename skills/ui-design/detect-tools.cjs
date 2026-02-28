@@ -154,6 +154,42 @@ function matchServerToTool(serverName, serverConfig) {
   return null;
 }
 
+// --- CLI Tool Detection ---
+
+/**
+ * Check if playwright-cli is available as a CLI command.
+ */
+function isPlaywrightCliInstalled() {
+  try {
+    const { spawnSync } = require('child_process');
+    const result = spawnSync('playwright-cli', ['--version'], {
+      encoding: 'utf8',
+      timeout: 5000,
+      stdio: ['pipe', 'pipe', 'pipe']
+    });
+    return result.status === 0;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Check if playwright-cli is available as a learned skill.
+ */
+function isPlaywrightCliSkill() {
+  const homeDir = os.homedir();
+  const cwd = process.cwd();
+
+  const skillPaths = [
+    path.join(homeDir, '.claude', 'skills', 'playwright-cli', 'SKILL.md'),
+    path.join(cwd, '.claude', 'skills', 'playwright-cli', 'SKILL.md')
+  ];
+
+  return skillPaths.some(p => {
+    try { return fs.existsSync(p); } catch { return false; }
+  });
+}
+
 // --- Plugin Detection ---
 
 /**
@@ -269,12 +305,19 @@ function detectTools() {
   // 5. Discover tool reference files
   const toolReferenceFiles = discoverToolReferenceFiles();
 
-  // 6. Identify not-installed tools (have reference file but no MCP detected)
+  // 6. Check playwright-cli (CLI tool + learned skill, not an MCP)
+  const playwrightCli = {
+    installed: isPlaywrightCliInstalled(),
+    skill: isPlaywrightCliSkill()
+  };
+
+  // 7. Identify not-installed tools (have reference file but no MCP detected)
   const detectedToolNames = new Set(detectedMcpTools.map(t => t.name));
   const notInstalledTools = [];
 
   for (const [toolName, refInfo] of toolReferenceFiles) {
-    if (toolName === 'screenshot') continue; // Always available, not an MCP tool
+    // Skip non-MCP tools (they have their own detection)
+    if (toolName === 'screenshot' || toolName === 'playwright-cli') continue;
     if (!detectedToolNames.has(toolName) && ALL_MCP_PATTERNS[toolName]) {
       notInstalledTools.push({
         name: toolName,
@@ -285,13 +328,29 @@ function detectTools() {
     }
   }
 
+  // Build native/CLI tools list
+  const nativeTools = [
+    { name: 'screenshot', category: 'native', tier: 'Free (always available)' }
+  ];
+
+  if (playwrightCli.installed || playwrightCli.skill) {
+    nativeTools.push({
+      name: 'playwright-cli',
+      category: 'cli',
+      tier: 'Free',
+      cli: playwrightCli.installed,
+      skill: playwrightCli.skill
+    });
+  }
+
   return {
     mcpTools: detectedMcpTools,
     disabledTools: disabledMcpTools,
     notInstalledTools,
     frontendDesignPlugin: frontendDesignInstalled,
+    playwrightCli,
     toolReferenceFiles: Object.fromEntries(toolReferenceFiles),
-    nativeTools: [{ name: 'screenshot', category: 'native', tier: 'Free (always available)' }]
+    nativeTools
   };
 }
 
@@ -347,10 +406,16 @@ function formatHuman(result, verbose) {
   }
   lines.push('');
 
-  // Native tools
-  lines.push('Native Tools (always available):');
+  // Native and CLI tools
+  lines.push('Native & CLI Tools:');
   for (const tool of result.nativeTools) {
-    lines.push(`  * ${tool.name} (${tool.tier})`);
+    const extra = tool.cli !== undefined
+      ? ` — CLI: ${tool.cli ? 'yes' : 'no'}, Skill: ${tool.skill ? 'yes' : 'no'}`
+      : '';
+    lines.push(`  * ${tool.name} (${tool.tier})${extra}`);
+  }
+  if (!result.playwrightCli.installed && !result.playwrightCli.skill) {
+    lines.push('  ? playwright-cli (not installed — npm install -g playwright-cli)');
   }
   lines.push('');
 

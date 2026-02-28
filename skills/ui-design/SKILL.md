@@ -86,9 +86,24 @@ Use to match design needs to available components:
 
 **On error** → fall to Layer 3.
 
-### Layer 3: Screenshot Analysis (native)
+### Layer 3: Screenshot & Live Capture
 
-Always available — Claude's built-in multimodal vision:
+#### 3a: Active Capture via playwright-cli (if available)
+
+When `playwright-cli` is installed and a dev server is running:
+1. Navigate to the relevant pages: `playwright-cli goto http://localhost:<port>/<path>`
+2. Capture full-page screenshots: `playwright-cli screenshot --filename=<name>.png`
+3. Take DOM snapshots for structured layout data: `playwright-cli snapshot --filename=<name>.yaml`
+4. Test responsive breakpoints by resizing viewport before capture
+5. Screenshot specific components by element ref: `playwright-cli screenshot e15`
+
+**Advantages:** Active capture (no user action needed), structured DOM snapshots, responsive testing, element-level targeting.
+
+**If playwright-cli unavailable or no dev server** → fall to 3b.
+
+#### 3b: Passive Screenshot Analysis (always available)
+
+Claude's built-in multimodal vision:
 1. Ask the user for screenshots of existing UI, mockups, or reference designs
 2. Read image files with the Read tool
 3. Extract layout hierarchy, component types, spacing patterns
