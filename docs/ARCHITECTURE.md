@@ -43,7 +43,7 @@ magic-claude/
 |   |-- ci-cd-architect.md      # CI/CD pipeline generation
 |   |-- git-sync.md             # Git changes impact analysis (background)
 |
-|-- skills/           # Workflow definitions and domain knowledge (36 total)
+|-- skills/           # Workflow definitions and domain knowledge (42 total)
 |   |-- coding-standards/           # TypeScript/JS best practices
 |   |-- jvm-coding-standards/       # Java/Kotlin best practices
 |   |-- python-coding-standards/    # Python best practices
@@ -81,7 +81,7 @@ magic-claude/
 |   |-- serena-cleanup/             # Safe Serena cleanup and removal
 |   |-- serena-code-navigation/     # Serena code navigation tool mapping
 |
-|-- commands/         # Slash commands for quick execution (15 total)
+|-- commands/         # Slash commands for quick execution (19 total)
 |   |-- tdd.md              # /tdd - Test-driven development
 |   |-- plan.md             # /plan - Implementation planning
 |   |-- e2e.md              # /e2e - E2E test generation
@@ -114,14 +114,14 @@ magic-claude/
 |   |-- serena-tools.md     # Serena MCP tool usage rules
 |
 |-- hooks/            # Trigger-based automations
-|   |-- hooks.json                # All hooks config (14 event types supported)
+|   |-- hooks.json                # All hooks config (11 event types supported)
 |
 |-- scripts/          # Cross-platform Node.js scripts
 |   |-- lib/                     # Shared utilities
 |   |   |-- utils.cjs            # Cross-platform file/path/system utilities
 |   |   |-- package-manager.cjs  # Package manager detection and selection
 |   |   |-- ecosystems/          # Auto-discoverable ecosystem modules
-|   |-- hooks/                   # Hook implementations (21 total)
+|   |-- hooks/                   # Hook implementations (17 total)
 |   |   |-- session-start.cjs    # Load context on session start
 |   |   |-- session-end.cjs      # Save state on session end
 |   |   |-- pre-compact.cjs      # Pre-compaction state saving
@@ -155,7 +155,7 @@ magic-claude/
 |   |-- helm/                    # Helm charts
 |   |-- security/                # Security scanning configs
 |
-|-- tests/            # Test suite (247 tests)
+|-- tests/            # Test suite (387 tests)
 |   |-- unit/                    # Unit tests
 |   |-- integration/             # Integration tests
 |   |-- e2e/                     # End-to-end tests

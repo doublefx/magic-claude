@@ -60,6 +60,9 @@ When installed as a plugin, use these slash commands (fully-qualified as `magic-
 /verify            # Run verification loop
 /eval              # Eval-driven development workflow
 
+# Diagnostics
+/status            # Show comprehensive plugin installation status and inventory
+
 # Plugin Extension
 /extend            # Generate new plugin components (agents, skills, hooks, commands, rules)
 

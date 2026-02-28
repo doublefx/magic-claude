@@ -1,7 +1,7 @@
 # Features Documentation
 
-**Version**: 3.1.0
-**Last Updated**: 2026-02-14
+**Version**: 3.2.0
+**Last Updated**: 2026-02-28
 
 ---
 
@@ -905,7 +905,7 @@ Exit code 2 blocks the action and feeds stderr back as feedback.
 | Unit tests (hooks) | 47+ | 1.0s |
 | Integration tests | 80+ | 3.5s |
 | E2E tests | 30+ | 5.0s |
-| **Total** | **247** | **~10s** |
+| **Total** | **387** | **~10s** |
 
 ### Tool Performance (2026 Improvements)
 
@@ -941,4 +941,4 @@ Magic Claude provides:
 
 ---
 
-*Features Documentation Version: 3.1 | Last Updated: 2026-02-14*
+*Features Documentation Version: 3.2 | Last Updated: 2026-02-28*

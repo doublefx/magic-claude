@@ -1,9 +1,9 @@
 # Agent & Skill Catalog
 
-**Version**: 3.1.0
-**Last Updated**: 2026-02-14
-**Total Agents**: 29
-**Total Skills**: 36
+**Version**: 3.2.0
+**Last Updated**: 2026-02-28
+**Total Agents**: 30
+**Total Skills**: 42
 
 ---
 
@@ -968,10 +968,105 @@ Gradle Optimization Report
 **Path**: `skills/serena-code-navigation/SKILL.md`
 **Description**: Serena MCP code navigation tool mapping
 
+#### setup-agent
+**Path**: `agents/setup-agent.md`
+**Type**: Agent (sonnet)
+**Description**: Dedicated agent for complete project setup — workspace detection, package manager configuration, ecosystem detection, tool verification, dependency installation, and Serena integration
+
 #### git-sync
 **Path**: `agents/git-sync.md`
 **Type**: Agent (background, invoked automatically after git operations)
 **Description**: Analyze git changes and report codebase impact
+
+#### using-magic-claude
+**Path**: `skills/using-magic-claude/SKILL.md`
+**Type**: Meta-skill (injected via SessionStart hook on every startup/resume/compact/clear)
+**Description**: Disposition override (quality over speed), skill governance flowchart, EnterPlanMode intercept, anti-rationalization table, learned skills reminder
+
+#### proactive-planning
+**Path**: `skills/proactive-planning/SKILL.md`
+**Type**: Skill (proactive)
+**Description**: Standalone planning for architectural discussions where NO code will be written
+
+#### proactive-tdd
+**Path**: `skills/proactive-tdd/SKILL.md`
+**Type**: Skill (proactive)
+**Description**: Ecosystem-aware TDD enforcement for isolated TDD needs (not part of orchestration)
+
+#### proactive-review
+**Path**: `skills/proactive-review/SKILL.md`
+**Type**: Skill (proactive)
+**Description**: Code quality checks at task completion and pre-commit
+
+#### coding-standards
+**Path**: `skills/coding-standards/SKILL.md`
+**Type**: Skill (domain knowledge, context: fork)
+**Description**: Universal coding standards for TypeScript, JavaScript, React, and Node.js
+
+#### jvm-coding-standards
+**Path**: `skills/jvm-coding-standards/SKILL.md`
+**Type**: Skill (domain knowledge, context: fork)
+**Description**: Java/Kotlin best practices — Google Java Style, Kotlin idioms, null safety, concurrency
+
+#### python-coding-standards
+**Path**: `skills/python-coding-standards/SKILL.md`
+**Type**: Skill (domain knowledge, context: fork)
+**Description**: Python best practices — PEP 8, type hints, modern Python 3.12+ patterns
+
+#### jvm-backend-patterns
+**Path**: `skills/jvm-backend-patterns/SKILL.md`
+**Type**: Skill (domain knowledge, context: fork)
+**Description**: Spring Boot/JPA patterns — repository, DTO mapping, transaction management
+
+#### python-backend-patterns
+**Path**: `skills/python-backend-patterns/SKILL.md`
+**Type**: Skill (domain knowledge, context: fork)
+**Description**: FastAPI/Django/SQLAlchemy patterns — async, dependency injection, API design
+
+#### jvm-tdd-workflow
+**Path**: `skills/jvm-tdd-workflow/SKILL.md`
+**Type**: Skill (domain knowledge, context: fork)
+**Description**: JVM TDD methodology — JUnit 5, Mockito, MockK, AssertJ, JaCoCo 80%+ coverage
+
+#### python-tdd-workflow
+**Path**: `skills/python-tdd-workflow/SKILL.md`
+**Type**: Skill (domain knowledge, context: fork)
+**Description**: Python TDD methodology — pytest, unittest.mock, pytest-cov, hypothesis
+
+#### python-security-review
+**Path**: `skills/python-security-review/SKILL.md`
+**Type**: Skill (domain knowledge, context: fork)
+**Description**: Python security checklist — bandit, pip-audit, semgrep, Django/FastAPI patterns
+
+#### agent-coordination
+**Path**: `skills/agent-coordination/SKILL.md`
+**Type**: Skill (domain knowledge, context: fork)
+**Description**: Guide for traditional (single-orchestrator) agent delegation — catalog, model tier cost awareness, delegation decision framework
+
+#### systematic-debugging
+**Path**: `skills/systematic-debugging/SKILL.md`
+**Type**: Skill (debugging, context: fork)
+**Description**: 4-phase root-cause investigation for bugs that escape the build/test pipeline — includes test pollution bisection tooling
+
+#### receiving-code-review
+**Path**: `skills/receiving-code-review/SKILL.md`
+**Type**: Skill (review)
+**Description**: Governs how to handle review feedback — verify before implementing, push back when wrong, YAGNI check on suggestions
+
+#### using-git-worktrees
+**Path**: `skills/using-git-worktrees/SKILL.md`
+**Type**: Skill (branch & isolation)
+**Description**: Create isolated git worktrees for feature work — filesystem isolation for parallel development
+
+#### finishing-feature
+**Path**: `skills/finishing-feature/SKILL.md`
+**Type**: Skill (branch & isolation)
+**Description**: Structured branch cleanup after feature work — merge locally, push + PR, keep, or discard with test verification
+
+#### strategic-compact
+**Path**: `skills/strategic-compact/SKILL.md`
+**Type**: Skill (workflow)
+**Description**: Manual compaction suggestions at logical workflow boundaries
 
 ---
 
@@ -1036,8 +1131,8 @@ pytest
 
 ## Summary
 
-**27 Agents**:
-- 2 planning agents (planner, architect)
+**30 Agents**:
+- 4 planning agents (discoverer, plan-critic, planner, architect)
 - 3 TDD agents (ts-tdd-guide, jvm-tdd-guide, python-tdd-guide)
 - 1 ecosystem-aware code reviewer
 - 3 security reviewers (ts-, jvm-, python-)
@@ -1048,18 +1143,23 @@ pytest
 - 2 build tool agents (maven-expert, gradle-expert)
 - 1 CI/CD agent
 - 2 utility agents (doc-updater, setup-agent)
+- 1 background agent (git-sync)
 
-**36 Skills**:
+**42 Skills**:
+- 1 meta-skill (using-magic-claude)
+- 4 proactive skills (orchestration, planning, review, TDD)
 - 3 coding standards skills (TS/JS, JVM, Python)
 - 3 backend pattern skills (TS/JS, JVM, Python)
 - 3 TDD workflow skills (TS/JS, JVM, Python)
 - 3 security review skills (TS/JS, JVM, Python)
-- 4 proactive skills (orchestration, review, planning, TDD)
 - 5 language/build tool skills (python, kotlin, maven, gradle, ci-cd)
+- 2 frontend skills (frontend-patterns, ui-design)
 - 4 Serena integration skills (setup, status, cleanup, code-navigation)
-- 1 git-sync agent (background, auto-invoked after git operations)
-- 4 coordination/domain skills (agent-teams, claude-mem-context, clickhouse-io, extend)
-- 6 general/advanced skills (continuous-learning, strategic-compact, eval-harness, verification-loop, frontend-patterns, project-guidelines-example)
+- 2 branch/isolation skills (using-git-worktrees, finishing-feature)
+- 2 review skills (receiving-code-review, agent-coordination)
+- 1 debugging skill (systematic-debugging)
+- 5 coordination/domain skills (agent-teams, claude-mem-context, clickhouse-io, extend, project-guidelines-example)
+- 4 workflow skills (continuous-learning, strategic-compact, eval-harness, verification-loop)
 
 **Best Practices**:
 - Use language-specific agents for code review

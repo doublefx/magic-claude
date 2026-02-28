@@ -364,7 +364,7 @@ User: "Add a health check endpoint to the API"
 | **TaskCompleted hook** | `task-completed.cjs` provides advisory quality gate for task completion events (both regular tasks and Agent Teams) |
 | **Notification hook** | `notify.cjs` provides cross-platform desktop notification when Claude needs user input |
 | **Hook validation tests** | `tests/hooks/hooks.test.cjs` validates hooks.json structure, event types, handler fields, script existence, and matcher validity (17 tests) |
-| **Hook UX** | All 18 hook handlers now include `statusMessage` fields for custom spinner text during execution |
+| **Hook UX** | All 22 hook handlers now include `statusMessage` fields for custom spinner text during execution |
 | **Agent Teams reference** | `skills/agent-teams/SKILL.md` provides pre-configured team scenarios with token cost guard rails (gated by `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`) |
 
 ### Remaining Gaps (Deferred)

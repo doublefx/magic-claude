@@ -55,8 +55,8 @@ A typical workflow after installing the plugin:
 
 | Feature | Description | Details |
 |---------|-------------|---------|
-| **Polyglot agents** | 27 agents: reviewers, TDD guides, build resolvers, security scanners, E2E runners for each ecosystem | [AGENT-CATALOG](docs/AGENT-CATALOG.md) |
-| **Domain skills** | 28 skills: coding standards, backend patterns, TDD workflows, security checklists, proactive orchestration per ecosystem | [FEATURES](docs/FEATURES.md) |
+| **Polyglot agents** | 30 agents: reviewers, TDD guides, build resolvers, security scanners, E2E runners for each ecosystem | [AGENT-CATALOG](docs/AGENT-CATALOG.md) |
+| **Domain skills** | 42 skills: coding standards, backend patterns, TDD workflows, security checklists, proactive orchestration per ecosystem | [FEATURES](docs/FEATURES.md) |
 | **Auto-formatting** | PostToolUse hooks run Ruff, google-java-format, ktfmt, or Prettier based on project type | [Foundations Guide](docs/guides/foundations.md) |
 | **Security scanning** | Semgrep + pip-audit (Python), SpotBugs + FindSecurityBugs (Java), Gitleaks, Trivy | [FEATURES](docs/FEATURES.md) |
 | **CI/CD templates** | 44 templates: GitHub Actions, GitLab CI, Bitbucket Pipelines, Docker, Kubernetes, Helm | [Tutorial 04](docs/tutorials/04-cicd-generation.md) |
@@ -116,7 +116,7 @@ For manual installation steps or adding the plugin via `settings.json`, see [Tut
 ### Reference
 
 - **[FEATURES.md](docs/FEATURES.md)** -- Complete feature documentation
-- **[AGENT-CATALOG.md](docs/AGENT-CATALOG.md)** -- All 27 agents with use cases
+- **[AGENT-CATALOG.md](docs/AGENT-CATALOG.md)** -- All 30 agents with use cases
 - **[PERFORMANCE.md](docs/PERFORMANCE.md)** -- Benchmarks and optimization tips
 
 ### For developers
