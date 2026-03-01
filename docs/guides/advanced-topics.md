@@ -247,7 +247,7 @@ Each handoff passes structured context to the next agent.
 
 Claude automatically selects agents based on context:
 
-- **Complex feature request?** → `proactive-orchestration` fires, coordinating the full pipeline: codebase discovery (discoverer agent), planning (planner agent), adversarial plan review (plan-critic agent), UI design (conditional, for frontend features), TDD (ecosystem TDD agent), verification, and code review
+- **Complex feature request?** → `proactive-orchestration` fires, coordinating the full pipeline: codebase discovery (discoverer agent), planning (planner agent), iterative adversarial plan review (plan-critic auto-loop, max 3 cycles), UI design (conditional, for frontend features), TDD (ecosystem TDD agent), verification, and code review
 - **Editing Python?** → `python-reviewer` for quality checks
 - **Build failing?** → `python-build-resolver` or `jvm-build-resolver`
 - **Standalone planning needed?** → `proactive-planning` for architectural discussions

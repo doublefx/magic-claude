@@ -21,6 +21,10 @@ You are reviewing an implementation plan for feasibility, completeness, and risk
 
 {DISCOVERY_BRIEF — the Discovery Brief from Phase 0.5, if available. If not: "No Discovery Brief available — plan was created without pre-plan codebase research."}
 
+## Prior Cycle Feedback
+
+{PRIOR_FEEDBACK — if this is cycle 2+, include the findings from the previous critic cycle AND what the planner revised in response. If this is cycle 1: "This is the first review cycle — no prior feedback."}
+
 ## CRITICAL: Adversarial Review Mandate
 
 YOU ARE AN ADVERSARIAL PLAN REVIEWER — Find what's wrong or missing!
@@ -54,6 +58,7 @@ Execute each section systematically:
 4. **Backward Compatibility** — Will this break existing consumers?
 5. **Ordering & Dependencies** — Hidden dependencies between steps?
 6. **Negative Constraints** — Does the plan say what NOT to do?
+7. **Regression Check** (cycle 2+ only) — Were the previous cycle's CRITICAL/HIGH issues actually fixed? Did the revision introduce new problems?
 
 ## Your Report
 
@@ -89,12 +94,17 @@ Include confidence levels so the user can distinguish verified issues from possi
 
 **Precedes:** User plan approval gate
 
-**On ISSUES FOUND:**
-- Present the plan AND critic findings to the user together
-- CRITICAL findings highlighted prominently — may require plan revision
+**Auto-loop behavior (max 3 cycles):**
+- If CRITICAL/HIGH issues found: automatically revise the plan (re-invoke planner with findings) and re-critique
+- Early exit: if no CRITICAL/HIGH issues remain, exit loop and present to user
+- Max cycles: after 3 cycles, exit loop regardless and present to user with remaining issues highlighted
+- Each cycle passes prior findings via the `Prior Cycle Feedback` section so the critic can verify fixes and check for regressions
+
+**Presentation to user (after loop exits):**
+- Present the refined plan AND final critic findings together
+- Unresolved CRITICAL findings highlighted prominently — may require user intervention
 - HIGH/MEDIUM findings presented for user judgment
 - LOW findings as footnotes
-- If user requests revision: loop back to Phase 1 (PLAN) with critic feedback as input. Max 1 revision cycle.
-- If user accepts: proceed to Phase 1.5/2 with findings acknowledged
+- Include a loop summary: "Plan refined through N critic cycles. X issues resolved, Y remaining."
 
-**On NO CRITICAL ISSUES:** Present plan with findings. User proceeds normally.
+**On NO CRITICAL/HIGH ISSUES (any cycle):** Exit loop immediately. Present plan with MEDIUM/LOW findings as advisory.

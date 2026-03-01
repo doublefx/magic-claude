@@ -299,10 +299,10 @@ function runTests() {
     );
   })) passed++; else failed++;
 
-  if (test('digraph edge: plan_critic -> user_confirm', () => {
+  if (test('digraph edge: plan_critic -> critic_gate', () => {
     assert.ok(
-      orchestratorContent.includes('plan_critic -> user_confirm'),
-      'Missing plan_critic -> user_confirm edge'
+      orchestratorContent.includes('plan_critic -> critic_gate'),
+      'Missing plan_critic -> critic_gate edge'
     );
   })) passed++; else failed++;
 

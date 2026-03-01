@@ -66,7 +66,7 @@ This skill runs in the **main context** (no `context: fork`) because it needs mu
 
 ## Orchestration Phases
 
-```dot
+```plantuml
 digraph orchestration {
     rankdir=TB;
     node [shape=box, style=rounded];
@@ -84,8 +84,11 @@ digraph orchestration {
     // Phase 1
     plan [label="Phase 1: PLAN\n(magic-claude:planner)"];
 
-    // Phase 1.1
+    // Phase 1.1 (loop)
     plan_critic [label="Phase 1.1: PLAN CRITIC\n(adversarial review)"];
+    critic_gate [label="CRITICAL/HIGH\nissues?", shape=diamond];
+    plan_revise [label="Revise plan\n(incorporate feedback)"];
+    cycle_limit [label="≤ 3 cycles?", shape=diamond];
     user_confirm [label="User confirms plan?", shape=diamond];
 
     // Phase 1.5
@@ -144,7 +147,12 @@ digraph orchestration {
     architect -> discover;
     discover -> plan;
     plan -> plan_critic;
-    plan_critic -> user_confirm;
+    plan_critic -> critic_gate;
+    critic_gate -> plan_revise [label="yes"];
+    critic_gate -> user_confirm [label="no\n(clean)"];
+    plan_revise -> cycle_limit;
+    cycle_limit -> plan_critic [label="yes\n(re-critique)"];
+    cycle_limit -> user_confirm [label="no\n(present as-is)"];
     user_confirm -> plan [label="modify"];
     user_confirm -> eval_gate [label="yes"];
     eval_gate -> eval_define [label="yes"];
@@ -234,23 +242,49 @@ Grounds the planning phase in verified codebase facts. Prevents hallucinated fil
    - The planner translates architecture decisions into actionable implementation steps
    - **If requirements are vague:** the planner will refine them through one-question-at-a-time dialogue before planning
    - **If multiple approaches exist:** the planner will propose 2-3 options with trade-offs and a recommendation
-2. Pass the draft plan to Phase 1.1 (PLAN CRITIC) for adversarial review
-3. Present the plan AND critic findings to the user
+2. Pass the draft plan to Phase 1.1 (PLAN CRITIC auto-loop) for iterative refinement
+3. After the auto-loop converges (or exhausts 3 cycles), present the **refined plan** AND final critic findings to the user
 4. **WAIT for user confirmation** before proceeding
    - If user confirms: proceed to Phase 1.5/2
    - If user says "just do it" or similar: skip plan review, proceed to Phase 1.5/2
-   - If user requests revision based on critic findings: loop back to step 1 with feedback (max 1 revision cycle)
+   - If user requests further changes: loop back to step 1 with user feedback, then re-enter the critic auto-loop
    - If user modifies the plan: incorporate feedback, re-present if needed
 5. **Persist the approved plan** to `.claude/plans/YYYY-MM-DD-<feature-name>.md`
    - This ensures the plan survives session loss, compaction, or exit
    - Record the git SHA at plan approval time for later review context
 
-### Phase 1.1: PLAN CRITIC (adversarial)
+### Phase 1.1: PLAN CRITIC (auto-loop, max 3 cycles)
 
-Stress-tests the draft plan before user approval. Uses BMAD's adversarial mandate: "Must find issues. Zero findings triggers re-analysis."
+Iteratively stress-tests and refines the draft plan before user approval. Uses BMAD's adversarial mandate: "Must find issues. Zero findings triggers re-analysis."
 
-1. After the planner produces a draft plan, invoke a `general-purpose` agent via Task tool using the **plan-critic-prompt.md** template
-2. Pass: the draft plan AND the Discovery Brief (if available)
+The planner and critic iterate automatically to produce a refined plan. The user sees the final result, not the intermediate back-and-forth.
+
+```
+┌──────────────────────────────────────────────────────┐
+│  PLAN ↔ CRITIC AUTO-LOOP (max 3 cycles)              │
+│                                                      │
+│  1. CRITIC reviews the draft plan (adversarial)      │
+│       ↓                                              │
+│  2. Check findings:                                  │
+│     - No CRITICAL/HIGH issues → EXIT (present to     │
+│       user with remaining MEDIUM/LOW findings)       │
+│     - CRITICAL/HIGH issues found → continue to 3     │
+│       ↓                                              │
+│  3. REVISE plan — planner incorporates critic        │
+│     feedback, fixes CRITICAL/HIGH issues             │
+│       ↓                                              │
+│  4. Cycle check:                                     │
+│     - ≤ 3 cycles → loop back to step 1              │
+│     - > 3 cycles → EXIT (present to user with        │
+│       remaining unresolved findings highlighted)     │
+│                                                      │
+└──────────────────────────────────────────────────────┘
+```
+
+**Each cycle:**
+
+1. Invoke a `general-purpose` agent via Task tool using the **plan-critic-prompt.md** template
+2. Pass: the current draft plan, the Discovery Brief (if available), and prior cycle feedback (if any)
 3. The critic reviews for:
    - **Feasibility** — Do referenced files/APIs/dependencies actually exist? (Cross-reference against Discovery Brief)
    - **Completeness** — Missing edge cases, error paths, integration points?
@@ -258,13 +292,26 @@ Stress-tests the draft plan before user approval. Uses BMAD's adversarial mandat
    - **Ordering** — Hidden dependencies between steps? Incorrect sequencing?
    - **Negative constraints** — Does the plan say what NOT to do?
 4. The critic produces severity-classified findings (CRITICAL/HIGH/MEDIUM/LOW) with confidence levels
-5. Findings are presented to the user alongside the plan (in Phase 1, step 3):
-   - CRITICAL findings: highlight prominently — may require plan revision
-   - HIGH/MEDIUM findings: present for user judgment
-   - LOW findings: footnote
-6. If user requests plan revision based on critic findings: loop back to Phase 1 with the critic's feedback as additional input. Max 1 revision cycle before proceeding.
 
-**Human filtering required:** The critic is instructed to find problems, so it will find problems — including false positives. The user decides what's real.
+**Exit conditions (checked after each cycle):**
+- **Early exit — no CRITICAL/HIGH issues:** If the critic finds only MEDIUM/LOW issues, exit the loop immediately. Present the plan to the user with remaining MEDIUM/LOW findings as advisory notes.
+- **Issues resolved — converged:** If the revised plan addresses all CRITICAL/HIGH issues from the previous cycle, exit and present to the user.
+- **Max cycles reached (3):** Exit the loop regardless. Present the plan to the user with any unresolved CRITICAL/HIGH findings **prominently highlighted** so the user can decide whether to proceed or request further revision.
+
+**Revision step (between cycles):**
+- Invoke the **magic-claude:planner** agent again with the critic's findings as additional input
+- The planner revises the plan to address CRITICAL and HIGH issues specifically
+- The planner does NOT need to address MEDIUM/LOW findings during auto-loop — those are advisory for the user
+- Each revision focuses narrowly on the critic's feedback; it does not restart planning from scratch
+
+**Presentation to user (after loop exits):**
+- Present the refined plan with a summary of the auto-loop process (e.g., "Plan refined through 2 critic cycles")
+- CRITICAL findings still unresolved (if any): highlight prominently — may require user intervention
+- HIGH findings still unresolved (if any): present for user judgment
+- MEDIUM/LOW findings: present as advisory notes
+- The user can still request manual revision, which loops back to Phase 1 with user feedback
+
+**Human filtering required:** The critic is instructed to find problems, so it will find problems — including false positives. The auto-loop handles clear-cut CRITICAL/HIGH issues automatically; ambiguous findings and MEDIUM/LOW items are left for the user.
 
 ### Phase 1.5: EVAL DEFINE (opt-in)
 
@@ -473,13 +520,13 @@ Produce a final orchestration report:
 ORCHESTRATION REPORT
 ====================
 
-Pipeline: [ARCHITECT] -> DISCOVER -> PLAN -> PLAN CRITIC -> [EVAL DEFINE] -> [UI DESIGN] -> TDD (per-task) -> VERIFY -> REVIEW+HARDEN -> SIMPLIFY -> [EVAL CHECK] -> [DELIVER]
+Pipeline: [ARCHITECT] -> DISCOVER -> PLAN <-> PLAN CRITIC (auto-loop) -> [EVAL DEFINE] -> [UI DESIGN] -> TDD (per-task) -> VERIFY -> REVIEW+HARDEN -> SIMPLIFY -> [EVAL CHECK] -> [DELIVER]
 Ecosystem: [TypeScript/JVM/Python]
 
 ARCHITECT:[SKIPPED / architecture proposal + ADRs produced]
 DISCOVER: [Discovery Brief produced — N files mapped, M patterns found, K risks identified]
 PLAN:     [APPROVED by user]
-CRITIC:   [N findings (C critical, H high, M medium, L low) — user accepted/revised]
+CRITIC:   [N cycles, M findings resolved automatically, R remaining (C critical, H high, M medium, L low)]
 UI DESIGN:[SKIPPED / design spec produced via <tool> + frontend-design]
 BASELINE: [X tests passing, Y failing / clean]
 TDD:      [N tasks completed, X tests written, Y% coverage]

@@ -855,7 +855,7 @@ Gradle Optimization Report
 **Path**: `plugin/skills/proactive-orchestration/SKILL.md`
 **Description**: Top-level pipeline orchestrator for complex feature work
 
-**Phases**: DISCOVER -> PLAN -> PLAN CRITIC -> [UI DESIGN] -> TDD -> VERIFY -> REVIEW -> REPORT
+**Phases**: DISCOVER -> PLAN ↔ PLAN CRITIC (auto-loop, max 3 cycles) -> [UI DESIGN] -> TDD -> VERIFY -> REVIEW -> REPORT
 
 **When It Fires**:
 - Complex feature requests (multiple components/files)
