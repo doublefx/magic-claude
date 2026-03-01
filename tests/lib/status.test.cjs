@@ -277,13 +277,16 @@ function runTests() {
     assert.ok(result.includes('not installed'), 'Should show not installed');
   })) passed++; else failed++;
 
-  if (test('formatIntegrationsSection shows install hint when claude-code-docs not installed', () => {
+  if (test('formatIntegrationsSection shows install hints when plugins not installed', () => {
     const result = formatter.formatIntegrationsSection({
       serena: false, jetbrains: false, claudeMem: false, frontendDesign: false, claudeCodeDocs: false
     });
     assert.ok(result.includes('claude-code-docs:'), 'Should show claude-code-docs');
     assert.ok(result.includes('not installed'), 'Should show not installed');
-    assert.ok(result.includes('/plugin marketplace add doublefx/claude-code-docs'), 'Should show install hint');
+    assert.ok(result.includes('/plugin marketplace add doublefx/magic-claude-code-docs'), 'Should show claude-code-docs marketplace hint');
+    assert.ok(result.includes('/plugin marketplace add doublefx/magic-claude-mem'), 'Should show claude-mem marketplace hint');
+    assert.ok(result.includes('/plugin install frontend-design'), 'Should show frontend-design official hint');
+    assert.ok(result.includes('/plugin install serena'), 'Should show serena official hint');
   })) passed++; else failed++;
 
   if (test('formatMcpServersSection shows counts', () => {

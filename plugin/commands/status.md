@@ -38,6 +38,7 @@ There are two sources:
 | **code-simplifier** | Official | `code-simplifier@claude-plugins-official` | Reviews changed code for reuse opportunities, quality issues, and efficiency improvements, then fixes any issues found. | `/plugin install code-simplifier` |
 | **magic-claude-mem** | Marketplace | `magic-claude-mem@magic-claude-mem` | Cross-session memory — past decisions, bug patterns, and architectural context persist across conversations. Eliminates redundant re-exploration. | `/plugin marketplace add doublefx/magic-claude-mem` then `/plugin install magic-claude-mem` |
 | **frontend-design** | Official | `frontend-design@claude-plugins-official` | Creates distinctive, production-grade frontend interfaces with high design quality. Valuable for projects with frontend components. | `/plugin install frontend-design` |
+| **magic-claude-docs** | Marketplace | `magic-claude-docs@magic-claude-docs` | Offline Claude Code documentation via `magic-claude-docs:docs` skill. Stops hallucinated plugin specs by injecting real docs. | `/plugin marketplace add doublefx/magic-claude-code-docs` then `/plugin install magic-claude-docs` |
 For each missing plugin, present it as a bullet with a one-sentence benefit and the install command(s). Only mention plugins that are NOT already in the Plugins list. Check both the **MCP Servers → Plugins** list and **MCP Servers → Manual** list, since some plugins appear as manually configured MCP servers.
 
 ### Recommended CLI tools with skills

@@ -8,7 +8,7 @@
 ![Java](https://img.shields.io/badge/-Java-007396?logo=openjdk&logoColor=white)
 ![Kotlin](https://img.shields.io/badge/-Kotlin-7F52FF?logo=kotlin&logoColor=white)
 
-A Claude Code plugin that gives you **27 specialized agents**, **28 domain skills**, and **production-ready hooks** for Python, Java, Kotlin, TypeScript, and CI/CD -- installed in one command. Need Go, Rust, or C#? Run `/extend` to scaffold full ecosystem support.
+A Claude Code plugin that gives you **30 specialized agents**, **42 domain skills**, and **production-ready hooks** for Python, Java, Kotlin, TypeScript, and CI/CD -- installed in one command. Need Go, Rust, or C#? Run `/extend` to scaffold full ecosystem support.
 
 ```bash
 /plugin marketplace add doublefx/magic-claude

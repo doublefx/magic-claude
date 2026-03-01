@@ -99,12 +99,17 @@ In Claude Code, ask:
 "What agents are available?"
 ```
 
-You should see all 19 agents:
-- General: planner, architect, tdd-guide, code-reviewer, etc.
-- Language-specific: python-reviewer, java-reviewer, kotlin-reviewer
+You should see all 30 agents:
+- Planning: planner, discoverer, plan-critic, architect
+- TDD: ts-tdd-guide, jvm-tdd-guide, python-tdd-guide
+- Review: code-reviewer, java-reviewer, kotlin-reviewer, groovy-reviewer, python-reviewer
+- Security: ts-security-reviewer, jvm-security-reviewer, python-security-reviewer
 - Build resolvers: ts-build-resolver, jvm-build-resolver, python-build-resolver
+- E2E: ts-e2e-runner, jvm-e2e-runner, python-e2e-runner
+- Refactoring: ts-refactor-cleaner, jvm-refactor-cleaner, python-refactor-cleaner
 - Build tools: maven-expert, gradle-expert
 - CI/CD: ci-cd-architect
+- Other: doc-updater, setup-agent, git-sync
 
 ### Try an Agent
 

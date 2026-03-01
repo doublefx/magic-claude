@@ -123,7 +123,11 @@ magic-claude/
 |   |   |-- lib/                     # Shared utilities
 |   |   |   |-- utils.cjs            # Cross-platform file/path/system utilities
 |   |   |   |-- package-manager.cjs  # Package manager detection and selection
+|   |   |   |-- deprecation-checker.cjs  # Detect deprecated directory structures
 |   |   |   |-- ecosystems/          # Auto-discoverable ecosystem modules
+|   |   |   |-- status/              # Status report collectors and formatters
+|   |   |   |   |-- collectors.cjs   # Data collection (agents, skills, integrations)
+|   |   |   |   |-- formatter.cjs    # Report formatting and display
 |   |   |-- hooks/                   # Hook implementations (17 total)
 |   |   |   |-- session-start.cjs    # Load context on session start
 |   |   |   |-- session-end.cjs      # Save state on session end
@@ -146,8 +150,11 @@ magic-claude/
 |   |   |   |-- pyright-checker.cjs        # Python type checking
 |   |   |   |-- task-completed.cjs         # TaskCompleted quality gate
 |   |   |   |-- notify.cjs                 # Desktop notifications
+|   |   |-- setup-complete.cjs       # Full setup orchestrator (includes optional integrations)
 |   |   |-- setup-package-manager.cjs # Interactive PM setup
+|   |   |-- setup-ecosystem.cjs     # Ecosystem tool detection and setup
 |   |   |-- setup-rules.cjs          # Plugin rules installation
+|   |   |-- status-report.cjs        # /status command implementation
 |   |
 |   |-- templates/        # CI/CD and deployment templates
 |   |   |-- github-actions/          # GitHub Actions workflows
@@ -170,7 +177,7 @@ magic-claude/
 |   |-- mcp-configs/      # MCP server configurations
 |       |-- mcp-servers.json    # GitHub, Supabase, Vercel, Railway, etc.
 |
-|-- tests/            # Test suite (387 tests)
+|-- tests/            # Test suite (388 tests)
 |   |-- unit/                    # Unit tests
 |   |-- integration/             # Integration tests
 |   |-- e2e/                     # End-to-end tests

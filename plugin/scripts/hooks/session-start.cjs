@@ -325,7 +325,7 @@ async function main() {
     contextParts.push('claude-mem: Installed - cross-session memory available via claude-mem MCP tools (search, timeline, get_observations)');
   } else {
     log('[SessionStart] claude-mem MCP not detected');
-    contextParts.push('claude-mem: Not installed - cross-session memory is unavailable. To install: /plugin marketplace add doublefx/claude-mem then /plugin install claude-mem and enable at user level for persistent session context, architectural history, and decision tracking.');
+    contextParts.push('claude-mem: Not installed - cross-session memory is unavailable. To install: /plugin marketplace add doublefx/magic-claude-mem then /plugin install magic-claude-mem and enable at user level for persistent session context, architectural history, and decision tracking.');
   }
 
   // Use CLAUDE_ENV_FILE to persist detected environment settings

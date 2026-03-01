@@ -20,7 +20,7 @@ Magic Claude v2.2.0 closes two high-value workflow gaps and adds claude-mem inst
 
 ### claude-mem Installation Guidance
 
-Session start now detects whether the claude-mem MCP plugin is installed. When not detected, it recommends installation via `/plugin marketplace add doublefx/claude-mem` and `/plugin install claude-mem` with user-level enablement for cross-session memory, architectural history, and decision tracking.
+Session start now detects whether the claude-mem MCP plugin is installed. When not detected, it recommends installation via `/plugin marketplace add doublefx/magic-claude-mem` and `/plugin install magic-claude-mem` with user-level enablement for cross-session memory, architectural history, and decision tracking.
 
 ### Plugin Version Bump
 

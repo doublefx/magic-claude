@@ -187,7 +187,8 @@ function formatWorkspaceSection(data) {
  */
 function formatIntegrationsSection(data) {
   const status = (installed) => installed ? 'installed' : 'not installed';
-  const installHint = (name) => `  -> Install: /plugin marketplace add doublefx/${name} && /plugin install ${name}`;
+  const marketplaceHint = (repo, plugin) => `  -> Install: /plugin marketplace add doublefx/${repo} && /plugin install ${plugin}`;
+  const officialHint = (plugin) => `  -> Install: /plugin install ${plugin}`;
 
   const lines = [
     `  Serena MCP:        ${status(data.serena)}${data.jetbrains ? ' (JetBrains available)' : ''}`,
@@ -196,8 +197,17 @@ function formatIntegrationsSection(data) {
     `  claude-code-docs:  ${status(data.claudeCodeDocs)}`,
   ];
 
+  if (!data.serena) {
+    lines.push(officialHint('serena'));
+  }
+  if (!data.claudeMem) {
+    lines.push(marketplaceHint('magic-claude-mem', 'magic-claude-mem'));
+  }
+  if (!data.frontendDesign) {
+    lines.push(officialHint('frontend-design'));
+  }
   if (!data.claudeCodeDocs) {
-    lines.push(installHint('claude-code-docs'));
+    lines.push(marketplaceHint('magic-claude-code-docs', 'magic-claude-docs'));
   }
 
   return formatSection('Optional Integrations', lines);

@@ -179,9 +179,9 @@ async function main() {
   console.log('\n━━━ Step 5: Optional Integrations ━━━\n');
 
   const integrations = [
-    { name: 'claude-code-docs', installed: isClaudeCodeDocsInstalled(), install: '/plugin marketplace add doublefx/claude-code-docs && /plugin install claude-code-docs', desc: 'Offline Claude Code documentation' },
-    { name: 'claude-mem', installed: isClaudeMemInstalled(), install: '/plugin marketplace add doublefx/claude-mem && /plugin install claude-mem', desc: 'Cross-session memory and decision history' },
-    { name: 'frontend-design', installed: isFrontendDesignInstalled(), install: '/plugin marketplace add doublefx/frontend-design && /plugin install frontend-design', desc: 'Production-grade UI component generation' },
+    { name: 'claude-code-docs', installed: isClaudeCodeDocsInstalled(), install: '/plugin marketplace add doublefx/magic-claude-code-docs && /plugin install magic-claude-docs', desc: 'Offline Claude Code documentation' },
+    { name: 'claude-mem', installed: isClaudeMemInstalled(), install: '/plugin marketplace add doublefx/magic-claude-mem && /plugin install magic-claude-mem', desc: 'Cross-session memory and decision history' },
+    { name: 'frontend-design', installed: isFrontendDesignInstalled(), install: '/plugin install frontend-design', desc: 'Production-grade UI component generation' },
   ];
 
   const installed = integrations.filter(i => i.installed);

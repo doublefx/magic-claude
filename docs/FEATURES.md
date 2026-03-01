@@ -920,6 +920,37 @@ Exit code 2 blocks the action and feeds stderr back as feedback.
 
 ---
 
+## Optional Integrations Detection
+
+The `/status` command and `/setup` flow automatically detect companion plugins and recommend installation when missing.
+
+### Detected Integrations
+
+| Integration | Detection Method | Benefit |
+|-------------|-----------------|---------|
+| **Serena MCP** | `serena` in enabledPlugins | Semantic code navigation (find symbol, references, type hierarchy) |
+| **claude-mem** | `magic-claude-mem` in enabledPlugins | Cross-session memory for decisions, bug patterns, architectural context |
+| **frontend-design** | `frontend-design` in enabledPlugins | Production-grade UI component generation |
+| **claude-code-docs** | `magic-claude-docs` in enabledPlugins | Offline Claude Code documentation via `magic-claude-docs:docs` skill |
+
+### `/setup` Integration Check
+
+The `/setup` command includes an **Optional Integrations** step (Step 5) that checks for each companion plugin and displays install commands for any that are missing:
+
+```
+Step 5: Optional Integrations
+  claude-code-docs  ✓ installed
+  claude-mem        ✗ not installed
+    -> /plugin marketplace add doublefx/magic-claude-mem && /plugin install magic-claude-mem
+  frontend-design   ✓ installed
+```
+
+### Plugin Name Resolution
+
+Plugins are detected by searching for their **plugin name** (from `plugin.json`) in the `enabledPlugins` keys in `~/.claude/settings.json`. Keys follow the format `pluginName@marketplaceName` (e.g., `magic-claude-docs@magic-claude-docs`).
+
+---
+
 ## Summary
 
 Magic Claude provides:
@@ -929,6 +960,7 @@ Magic Claude provides:
 - **Production-grade tooling** for Python, Java, Kotlin, Groovy
 - **One-command CI/CD generation** for 3 platforms
 - **Security scanning** integrated into workflows
+- **Optional integrations detection** for companion plugins
 - **Excellent performance** with 2026 tooling
 - **13 project rules** for security, coding style, testing, and more (install via `/setup-rules`)
 
@@ -941,4 +973,4 @@ Magic Claude provides:
 
 ---
 
-*Features Documentation Version: 3.2 | Last Updated: 2026-02-28*
+*Features Documentation Version: 3.3 | Last Updated: 2026-03-01*
