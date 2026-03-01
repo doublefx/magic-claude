@@ -64,6 +64,73 @@ This skill runs in the **main context** (no `context: fork`) because it needs mu
 - User may provide feedback between phases
 - Task lifecycle (TaskCreate/TaskUpdate) must be visible in main context
 
+## Orchestration State Persistence
+
+The pipeline is designed to **survive context compaction, session crashes, and `/clear`** by persisting state to disk.
+
+### State File
+
+Active state lives at `.claude/orchestration-state.md` during the pipeline. Update this file after every phase transition.
+
+```markdown
+# Orchestration State
+Feature: <feature name>
+Started: <ISO timestamp>
+Phase: <current phase number and name>
+Plan: <path to .claude/plans/ file>
+Base SHA: <git SHA at plan approval>
+Ecosystem: <TypeScript/JVM/Python>
+
+## Phase Summary
+- ARCHITECT: <SKIPPED / completed — brief summary>
+- DISCOVER: <completed — N files, M patterns, K risks>
+- PLAN: <APPROVED by user / pending>
+- CRITIC: <N cycles, M resolved, R remaining>
+- BASELINE: <X passing, Y failing>
+- TDD: <N/M tasks completed, X tests, Y% coverage>
+- VERIFY: <status>
+- REVIEW: <status>
+- SIMPLIFY: <status>
+- DELIVER: <status>
+
+## Current Task
+Task: <task number/name from plan>
+Status: <in_progress / blocked / pending>
+
+## Key Decisions
+- <user decision 1>
+- <user decision 2>
+```
+
+### Lifecycle
+
+1. **Created** — At pipeline start (before Phase 0), write initial state
+2. **Updated** — After each phase completes, update the relevant phase summary line + advance the Phase field
+3. **Survives compaction** — After compaction, read `.claude/orchestration-state.md` to restore phase context. The plan is at the path in the state file.
+4. **Archived on completion** — In Phase 5 (REPORT), move to `.claude/plans/<date>-<feature>.state.md` alongside the plan
+5. **Overwritten on next pipeline** — A new orchestration overwrites the active state file
+
+### Crash Recovery
+
+**At pipeline start, before Phase 0, check for an orphaned state file:**
+
+1. If `.claude/orchestration-state.md` exists and has a phase beyond "PLAN: APPROVED":
+   - Read the state file
+   - Present to user: "Found incomplete orchestration for **<feature>** (Phase <N>, task <X/Y>). Resume or start fresh?"
+   - If resume: read the plan from disk, restore phase context, continue from the recorded phase
+   - If start fresh: delete the state file, proceed normally
+2. If no state file exists: proceed normally
+
+### Strategic Compact After Plan Approval
+
+After Phase 1 completes (plan approved, state persisted), run a strategic compact to reclaim context consumed by discovery, planning, and critic iterations:
+
+```
+/compact Preserve: approved plan location (.claude/plans/<file>), orchestration state (.claude/orchestration-state.md), current phase, user decisions. Discard: discovery details, critic back-and-forth, plan drafts.
+```
+
+This gives Phase 2 (TDD) a fresh context window with the plan readable from disk.
+
 ## Orchestration Phases
 
 ```plantuml
@@ -252,6 +319,8 @@ Grounds the planning phase in verified codebase facts. Prevents hallucinated fil
 5. **Persist the approved plan** to `.claude/plans/YYYY-MM-DD-<feature-name>.md`
    - This ensures the plan survives session loss, compaction, or exit
    - Record the git SHA at plan approval time for later review context
+6. **Update orchestration state** — Write the plan path, base SHA, critic summary, and user decisions to `.claude/orchestration-state.md`
+7. **Strategic compact** — Run `/compact` with instructions to preserve only the plan location and orchestration state. This reclaims context consumed by discovery, planning, and critic iterations, giving Phase 2 a fresh context window.
 
 ### Phase 1.1: PLAN CRITIC (auto-loop, max 3 cycles)
 
@@ -552,6 +621,12 @@ Next Steps:
 - **SHIP** - All phases green, review approved
 - **NEEDS WORK** - Minor issues found, list specific `magic-claude:<command>` remediation
 - **BLOCKED** - Critical issues (security vulnerabilities, build failures after remediation, review BLOCK)
+
+**Archive orchestration state:**
+After producing the report, archive the state file alongside the plan:
+1. Move `.claude/orchestration-state.md` to `.claude/plans/YYYY-MM-DD-<feature-name>.state.md`
+2. This serves as an audit trail (critic cycles, harden rounds, coverage, timing)
+3. If verdict is NEEDS WORK or BLOCKED, keep the active state file as-is (pipeline is not complete)
 
 ## Relationship to Other Proactive Skills
 

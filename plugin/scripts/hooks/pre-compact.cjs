@@ -8,6 +8,7 @@
  * preserve important state that might get lost in summarization.
  */
 
+const fs = require('fs');
 const path = require('path');
 const {
   getSessionsDir,
@@ -36,6 +37,20 @@ function main() {
     const activeSession = sessions[0].path;
     const timeStr = getTimeString();
     appendFile(activeSession, `\n---\n**[Compaction occurred at ${timeStr}]** - Context was summarized\n`);
+  }
+
+  // Check for active orchestration state and remind Claude to preserve it
+  const stateFile = path.join(process.cwd(), '.claude', 'orchestration-state.md');
+  if (fs.existsSync(stateFile)) {
+    const stateContent = fs.readFileSync(stateFile, 'utf8');
+    const phaseMatch = stateContent.match(/^Phase:\s*(.+)$/m);
+    const featureMatch = stateContent.match(/^Feature:\s*(.+)$/m);
+    const phase = phaseMatch ? phaseMatch[1].trim() : 'unknown';
+    const feature = featureMatch ? featureMatch[1].trim() : 'unknown';
+
+    log(`[PreCompact] Active orchestration detected: "${feature}" at ${phase}`);
+    log('[PreCompact] IMPORTANT: After compaction, read .claude/orchestration-state.md to restore pipeline context.');
+    log('[PreCompact] The approved plan is at the path specified in the state file.');
   }
 
   log('[PreCompact] State saved before compaction');
