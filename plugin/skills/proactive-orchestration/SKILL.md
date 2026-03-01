@@ -510,6 +510,8 @@ If the approved plan includes a **Delivery Strategy** (from the planner's step 3
 - **feature-branch-pr** — Push the feature branch with `-u`, create a PR via `gh pr create` with the orchestration report as the PR body
 - **user-managed** — Skip; user handles branching
 
+**Documentation check (all strategies):** Before delivering, verify that any doc update tasks from the plan were completed. If the plan included documentation tasks that weren't executed, flag them as incomplete in the orchestration report. If the plan explicitly noted "No documentation changes required," skip this check.
+
 **Skip this phase** if no delivery strategy was recorded or the user said they'd handle it.
 
 ### Phase 5: REPORT

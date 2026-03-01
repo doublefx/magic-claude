@@ -92,7 +92,12 @@ Create detailed steps with:
 - Estimated complexity
 - Potential risks
 
-### 7. Implementation Order
+### 7. Documentation Impact
+- If the feature changes public APIs, CLI commands, configuration, or user-facing behavior: include a task to update relevant documentation (README, docs/, CLAUDE.md, API docs)
+- If the project has a doc sync skill or convention (e.g., `plugin-docs-sync`), reference it in the task
+- If no docs are affected, explicitly note "No documentation changes required" so the critic doesn't flag it
+
+### 8. Implementation Order
 - Prioritize by dependencies
 - Group related changes
 - Minimize context switching
