@@ -68,6 +68,21 @@ For feature requests that involve writing code:
 4. EnterPlanMode is ONLY for pure research/exploration or explicit `magic-claude:plan` commands
 5. Simple bug fixes, single-file edits, documentation, and refactoring do NOT need orchestration
 
+## Orchestration Recovery (After Compaction or /clear)
+
+This meta-skill survives compaction and `/clear` because SessionStart re-injects it. Use this to recover an in-progress orchestration pipeline.
+
+**On every session start, resume, compaction, or /clear — check:**
+
+1. Does `.claude/orchestration-state.md` exist?
+2. If YES: read it. It contains the feature name, current phase, plan path, and key decisions.
+3. Invoke `magic-claude:proactive-orchestration` — the skill's crash recovery logic will parse the state file and offer to resume or start fresh.
+4. Read the plan from the path recorded in the state file (e.g., `.claude/plans/YYYY-MM-DD-feature.md`).
+
+**If NO state file exists:** no recovery needed, proceed normally.
+
+This is why the state file exists — the orchestration skill's instructions are lost during compaction, but this meta-skill is re-injected and bridges the gap by triggering re-invocation.
+
 ## Red Flags
 
 These thoughts mean STOP -- you're rationalizing skipping a skill or workflow step:

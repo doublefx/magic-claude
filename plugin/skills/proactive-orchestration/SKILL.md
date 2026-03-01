@@ -121,15 +121,15 @@ Status: <in_progress / blocked / pending>
    - If start fresh: delete the state file, proceed normally
 2. If no state file exists: proceed normally
 
-### Strategic Compact After Plan Approval
+### Context Recovery After Compaction
 
-After Phase 1 completes (plan approved, state persisted), run a strategic compact to reclaim context consumed by discovery, planning, and critic iterations:
+Claude cannot programmatically invoke `/compact` or `/clear` — these are user-invoked CLI commands. Instead, the pipeline relies on **automatic recovery**:
 
-```
-/compact Preserve: approved plan location (.claude/plans/<file>), orchestration state (.claude/orchestration-state.md), current phase, user decisions. Discard: discovery details, critic back-and-forth, plan drafts.
-```
+1. **Auto-compaction** occurs naturally at ~95% context capacity. The `using-magic-claude` meta-skill (re-injected by SessionStart hook) detects the orphaned state file and triggers re-invocation of this skill.
+2. **User-initiated `/compact`**: After plan approval, suggest to the user: *"The planning phase consumed significant context. You can run `/compact` now to free up space for implementation, or continue — the state file will ensure recovery if auto-compaction occurs."* Do NOT claim to run `/compact` yourself.
+3. **PreCompact hook**: Detects active orchestration and logs reminders about the state file, ensuring post-compaction recovery guidance is visible.
 
-This gives Phase 2 (TDD) a fresh context window with the plan readable from disk.
+In all cases, the plan and state file on disk ensure the pipeline can resume from the correct phase.
 
 ## Orchestration Phases
 
@@ -320,7 +320,7 @@ Grounds the planning phase in verified codebase facts. Prevents hallucinated fil
    - This ensures the plan survives session loss, compaction, or exit
    - Record the git SHA at plan approval time for later review context
 6. **Update orchestration state** — Write the plan path, base SHA, critic summary, and user decisions to `.claude/orchestration-state.md`
-7. **Strategic compact** — Run `/compact` with instructions to preserve only the plan location and orchestration state. This reclaims context consumed by discovery, planning, and critic iterations, giving Phase 2 a fresh context window.
+7. **Suggest compact** — Inform the user: *"Planning phase complete. You can run `/compact` to free context for implementation, or continue as-is — the state file ensures recovery if auto-compaction occurs."* Do NOT attempt to run `/compact` programmatically.
 
 ### Phase 1.1: PLAN CRITIC (auto-loop, max 3 cycles)
 
