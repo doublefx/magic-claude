@@ -105,10 +105,12 @@ Status: <in_progress / blocked / pending>
 ### Lifecycle
 
 1. **Created** — At pipeline start (before Phase 0), write initial state
-2. **Updated** — After each phase completes, update the relevant phase summary line + advance the Phase field
+2. **Updated — AFTER EVERY PHASE AND SUB-PHASE** — Update the Phase field and phase summary line immediately when a phase completes, BEFORE starting the next phase. This is NOT optional — skipping a state update means compaction kills the pipeline.
 3. **Survives compaction** — After compaction, read `.claude/orchestration-state.md` to restore phase context. The plan is at the path in the state file.
 4. **Archived on completion** — In Phase 5 (REPORT), move to `.claude/plans/<date>-<feature>.state.md` alongside the plan
 5. **Overwritten on next pipeline** — A new orchestration overwrites the active state file
+
+**CRITICAL RULE:** Every phase section below includes an explicit `**Update state →**` step. If you skip it, the next compaction destroys the pipeline. Treat state updates like saving a game — do it before every boss fight.
 
 ### Crash Recovery
 
@@ -281,7 +283,8 @@ digraph orchestration {
 
 1. Invoke the **magic-claude:architect** agent (opus) via Task tool
 2. The architect produces: architecture proposal, trade-off analysis, and ADRs for key decisions
-3. Pass the architect's output as context to Phase 0.5
+3. **Update state →** Set `Phase: ARCHITECT completed`, update ARCHITECT summary line
+4. Pass the architect's output as context to Phase 0.5
 
 ### Phase 0.5: DISCOVER (always runs)
 
@@ -297,7 +300,8 @@ Grounds the planning phase in verified codebase facts. Prevents hallucinated fil
    - Existing patterns and reusable code
    - Dependencies and integration points
    - Risks and constraints (with confidence levels)
-3. Pass the Discovery Brief as input context to Phase 1 (PLAN)
+3. **Update state →** Set `Phase: DISCOVER completed`, update DISCOVER summary line with file/pattern/risk counts
+4. Pass the Discovery Brief as input context to Phase 1 (PLAN)
 
 **Lightweight by default:** For simple features, discovery takes ~30s (quick claude-mem search + targeted Serena lookup). For complex features touching many files, discovery scales up naturally as more symbols need exploration.
 
@@ -309,18 +313,19 @@ Grounds the planning phase in verified codebase facts. Prevents hallucinated fil
    - The planner translates architecture decisions into actionable implementation steps
    - **If requirements are vague:** the planner will refine them through one-question-at-a-time dialogue before planning
    - **If multiple approaches exist:** the planner will propose 2-3 options with trade-offs and a recommendation
-2. Pass the draft plan to Phase 1.1 (PLAN CRITIC auto-loop) for iterative refinement
-3. After the auto-loop converges (or exhausts 3 cycles), present the **refined plan** AND final critic findings to the user
-4. **WAIT for user confirmation** before proceeding
+2. **Update state →** Set `Phase: PLAN — draft produced, entering critic auto-loop`, update PLAN summary line
+3. Pass the draft plan to Phase 1.1 (PLAN CRITIC auto-loop) for iterative refinement
+4. After the auto-loop converges (or exhausts 3 cycles), present the **refined plan** AND final critic findings to the user
+5. **WAIT for user confirmation** before proceeding
    - If user confirms: proceed to Phase 1.5/2
    - If user says "just do it" or similar: skip plan review, proceed to Phase 1.5/2
    - If user requests further changes: loop back to step 1 with user feedback, then re-enter the critic auto-loop
    - If user modifies the plan: incorporate feedback, re-present if needed
-5. **Persist the approved plan** to `.claude/plans/YYYY-MM-DD-<feature-name>.md`
+6. **Persist the approved plan** to `.claude/plans/YYYY-MM-DD-<feature-name>.md`
    - This ensures the plan survives session loss, compaction, or exit
    - Record the git SHA at plan approval time for later review context
-6. **Update orchestration state** — Write the plan path, base SHA, critic summary, and user decisions to `.claude/orchestration-state.md`
-7. **Suggest compact** — Inform the user: *"Planning phase complete. You can run `/compact` to free context for implementation, or continue as-is — the state file ensures recovery if auto-compaction occurs."* Do NOT attempt to run `/compact` programmatically.
+7. **Update state →** Set `Phase: PLAN APPROVED`, write plan path, base SHA, critic summary, and user decisions to `.claude/orchestration-state.md`
+8. **Suggest compact** — Inform the user: *"Planning phase complete. You can run `/compact` to free context for implementation, or continue as-is — the state file ensures recovery if auto-compaction occurs."* Do NOT attempt to run `/compact` programmatically.
 
 ### Phase 1.1: PLAN CRITIC (auto-loop, max 3 cycles)
 
@@ -354,13 +359,14 @@ The planner and critic iterate automatically to produce a refined plan. The user
 
 1. Invoke a `general-purpose` agent via Task tool using the **plan-critic-prompt.md** template
 2. Pass: the current draft plan, the Discovery Brief (if available), and prior cycle feedback (if any)
-3. The critic reviews for:
+3. **Update state →** Set `Phase: CRITIC — cycle N/3, evaluating`, update CRITIC summary line with cycle count and findings
+4. The critic reviews for:
    - **Feasibility** — Do referenced files/APIs/dependencies actually exist? (Cross-reference against Discovery Brief)
    - **Completeness** — Missing edge cases, error paths, integration points?
    - **Risk** — What assumptions could be wrong? What are the backward compatibility implications?
    - **Ordering** — Hidden dependencies between steps? Incorrect sequencing?
    - **Negative constraints** — Does the plan say what NOT to do?
-4. The critic produces severity-classified findings (CRITICAL/HIGH/MEDIUM/LOW) with confidence levels
+5. The critic produces severity-classified findings (CRITICAL/HIGH/MEDIUM/LOW) with confidence levels
 
 **Exit conditions (checked after each cycle):**
 - **Early exit — no CRITICAL/HIGH issues:** If the critic finds only MEDIUM/LOW issues, exit the loop immediately. Present the plan to the user with remaining MEDIUM/LOW findings as advisory notes.
@@ -386,9 +392,10 @@ The planner and critic iterate automatically to produce a refined plan. The user
 
 When the user includes `--with-evals <name>` or explicitly requests eval-driven development:
 
-1. Run `magic-claude:eval define <name>` to create capability and regression eval criteria based on the approved plan
-2. Present eval definitions to user for confirmation
-3. Store in `.claude/evals/<name>.md`
+1. **Update state →** Set `Phase: EVAL DEFINE`
+2. Run `magic-claude:eval define <name>` to create capability and regression eval criteria based on the approved plan
+3. Present eval definitions to user for confirmation
+4. Store in `.claude/evals/<name>.md`
 
 **Skip this phase** unless the user explicitly requests evals.
 
@@ -404,24 +411,26 @@ Default action = proceed. User says "skip" → go directly to Phase 2.
 
 **Skip when:** The feature is purely backend, CLI, infrastructure, or DevOps.
 
-1. Invoke the **magic-claude:ui-design** skill to orchestrate design context gathering
-2. The skill runs `detect-tools.cjs` to discover available design MCP tools and presents them
-3. If no design tools are installed, present installation options (user decides whether to install or proceed without)
-4. Gather design context through layered fallback (MCP errors treated as "unavailable", fall to next layer):
+1. **Update state →** Set `Phase: UI DESIGN`
+2. Invoke the **magic-claude:ui-design** skill to orchestrate design context gathering
+3. The skill runs `detect-tools.cjs` to discover available design MCP tools and presents them
+4. If no design tools are installed, present installation options (user decides whether to install or proceed without)
+5. Gather design context through layered fallback (MCP errors treated as "unavailable", fall to next layer):
    - Design MCP → Component Library MCP → Screenshot analysis → `frontend-design:frontend-design` plugin skill (if installed) → Claude built-in design knowledge (final fallback)
-5. Respect architectural decisions from Phase 0/1. Do not override component library choices, framework, or design system selections already in the plan
-6. Produce a **UI Design Spec** with confidence indicator `[MCP/screenshot/inference-only]`
-7. **Persist spec** to `.claude/design-specs/YYYY-MM-DD-<feature-name>.md`
-8. Pass the spec as context to Phase 2 (TDD). No separate user approval for the spec — it flows directly into TDD
+6. Respect architectural decisions from Phase 0/1. Do not override component library choices, framework, or design system selections already in the plan
+7. Produce a **UI Design Spec** with confidence indicator `[MCP/screenshot/inference-only]`
+8. **Persist spec** to `.claude/design-specs/YYYY-MM-DD-<feature-name>.md`
+9. Pass the spec as context to Phase 2 (TDD). No separate user approval for the spec — it flows directly into TDD
 
 ### Phase 2: TDD (Per-Task Loop)
 
 #### 2.0 Baseline Verification
 
 Before starting any implementation:
-1. Run the project's test suite to establish a clean baseline
-2. Record passing/failing counts
-3. If pre-existing failures exist: report to user and ask whether to proceed or fix first
+1. **Update state →** Set `Phase: TDD — baseline verification`
+2. Run the project's test suite to establish a clean baseline
+3. Record passing/failing counts
+4. If pre-existing failures exist: report to user and ask whether to proceed or fix first
 
 This prevents confusion between pre-existing and newly introduced failures.
 
@@ -463,7 +472,7 @@ For **each task** in the approved plan, execute this cycle:
 3. The spec reviewer reads the actual code independently — does NOT trust the report
 
 **Step 3: Resolve**
-- **PASS** — Commit the task's changes, mark TaskUpdate as completed, proceed to next task
+- **PASS** — Commit the task's changes, mark TaskUpdate as completed, **update state →** set `Current Task` to next task and update TDD summary line (N/M tasks, X tests, Y% coverage). Proceed to next task.
 - **ISSUES FOUND** — Send the issues list back to the TDD agent for remediation. Re-run spec review after fixes. Max 2 fix cycles per task; if still failing, escalate to user with the specific issues.
 
 **Mid-point review checkpoint**: If the plan has more than 5 tasks, invoke a lightweight **magic-claude:code-reviewer** check after task ~3 to catch cross-task drift early. Fix issues before continuing.
@@ -474,16 +483,17 @@ After all tasks complete, verify 80%+ overall coverage before proceeding to Phas
 
 ### Phase 3: VERIFY
 
-1. Run verification following the `magic-claude:verify full` workflow:
+1. **Update state →** Set `Phase: VERIFY`
+2. Run verification following the `magic-claude:verify full` workflow:
    - Build check (STOP if fails)
    - Type check
    - Lint check
    - Test suite with coverage
    - Debug statement audit
-2. If build or type check fails:
+3. If build or type check fails:
    - Auto-invoke the appropriate build-resolver agent (**magic-claude:ts-build-resolver**, **magic-claude:jvm-build-resolver**, or **magic-claude:python-build-resolver**)
    - Re-run verification after fixes
-3. If tests fail: report failures and suggest fixes before proceeding
+4. If tests fail: report failures and suggest fixes before proceeding
 
 ### Phase 4: REVIEW + HARDEN (iterative)
 
@@ -512,14 +522,15 @@ This phase runs an iterative loop until no MEDIUM+ issues remain.
 
 #### 4.1 Initial Review
 
-1. Invoke **magic-claude:code-reviewer** agent (opus) via Task tool for comprehensive review
+1. **Update state →** Set `Phase: REVIEW+HARDEN`
+2. Invoke **magic-claude:code-reviewer** agent (opus) via Task tool for comprehensive review
    - **Pass plan context**: Include the approved plan from Phase 1 (or read from `.claude/plans/` file) so the reviewer can check plan alignment
    - **Pass git range**: Provide `BASE_SHA..HEAD_SHA` for the changes being reviewed (BASE_SHA recorded at Phase 1 approval)
-2. For security-sensitive changes, also invoke the ecosystem-specific security reviewer:
+3. For security-sensitive changes, also invoke the ecosystem-specific security reviewer:
    - **magic-claude:ts-security-reviewer** for TypeScript/JavaScript
    - **magic-claude:jvm-security-reviewer** for JVM
    - **magic-claude:python-security-reviewer** for Python
-3. For language-specific idiomatic review, invoke:
+4. For language-specific idiomatic review, invoke:
    - **magic-claude:java-reviewer** for `.java` files
    - **magic-claude:kotlin-reviewer** for `.kt` files
    - **magic-claude:python-reviewer** for `.py` files
@@ -552,9 +563,10 @@ Process review feedback using the **`magic-claude:receiving-code-review`** skill
 
 After hardening, run code simplification on the changed files to improve clarity and maintainability.
 
-1. **Identify changed files** — Use `git diff --name-only BASE_SHA..HEAD` to get the list of files modified during this orchestration
-2. **Invoke code-simplifier** — Run `code-simplifier:code-simplifier` agent via Task tool, passing the list of changed files and instructing it to simplify for clarity, consistency, and maintainability while preserving all functionality
-3. **Verify simplification** — Run types → lint → tests. Simplification **must not** break anything.
+1. **Update state →** Set `Phase: SIMPLIFY`
+2. **Identify changed files** — Use `git diff --name-only BASE_SHA..HEAD` to get the list of files modified during this orchestration
+3. **Invoke code-simplifier** — Run `code-simplifier:code-simplifier` agent via Task tool, passing the list of changed files and instructing it to simplify for clarity, consistency, and maintainability while preserving all functionality
+4. **Verify simplification** — Run types → lint → tests. Simplification **must not** break anything.
    - If verification passes → proceed to next phase
    - If verification fails → **attempt to fix** the issues (invoke appropriate build-resolver agent or fix manually). Re-verify after fixes.
    - If fix succeeds → proceed to next phase
@@ -571,6 +583,8 @@ When evals were defined in Phase 1.5:
 **Skip this phase** unless Phase 1.5 was executed.
 
 ### Phase 4.7: DELIVER (conditional)
+
+1. **Update state →** Set `Phase: DELIVER`
 
 If the approved plan includes a **Delivery Strategy** (from the planner's step 3):
 
