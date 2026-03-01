@@ -26,9 +26,9 @@ Magic Claude has six component types. Understanding them is key.
 
 ### Skills vs Commands
 
-**Skills** are workflow definitions that Claude invokes proactively or on demand. They live in `skills/` and can fork context to avoid polluting your main conversation.
+**Skills** are workflow definitions that Claude invokes proactively or on demand. They live in `plugin/skills/` and can fork context to avoid polluting your main conversation.
 
-**Commands** are slash-command shortcuts that users invoke explicitly. They live in `commands/`.
+**Commands** are slash-command shortcuts that users invoke explicitly. They live in `plugin/commands/`.
 
 They overlap but serve different purposes:
 

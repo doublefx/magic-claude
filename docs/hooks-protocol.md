@@ -104,7 +104,7 @@ Since matchers cannot evaluate complex conditions, **hook scripts perform runtim
 
 **Hook Script** (Runtime Filtering):
 ```javascript
-// scripts/hooks/smart-formatter.cjs
+// plugin/scripts/hooks/smart-formatter.cjs
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
@@ -379,6 +379,6 @@ describe('smart-formatter', () => {
 
 **References**:
 - Official hooks documentation: https://docs.anthropic.com/en/docs/claude-code/hooks
-- Current hooks: `/hooks/hooks.json`
+- Current hooks: `/plugin/hooks/hooks.json`
 - Hook validation tests: `/tests/hooks/hooks.test.cjs`
-- Plugin dev reference: `/docs/PLUGIN_DEVELOPMENT/03-HOOKS.md`
+- Plugin dev reference: `magic-claude-docs:docs hooks` and `magic-claude-docs:docs hooks-guide`

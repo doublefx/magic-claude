@@ -43,17 +43,17 @@ my-monorepo/
 ```bash
 # In backend/
 cd backend
-node -e "console.log(require('../scripts/lib/detect-project-type').detectProjectType())"
+node -e "console.log(require('../plugin/scripts/lib/detect-project-type').detectProjectType())"
 # Output: [ 'maven', 'java' ]
 
 # In frontend/
 cd ../frontend
-node -e "console.log(require('../scripts/lib/detect-project-type').detectProjectType())"
+node -e "console.log(require('../plugin/scripts/lib/detect-project-type').detectProjectType())"
 # Output: [ 'nodejs' ]
 
 # In ml/
 cd ../ml
-node -e "console.log(require('../scripts/lib/detect-project-type').detectProjectType())"
+node -e "console.log(require('../plugin/scripts/lib/detect-project-type').detectProjectType())"
 # Output: [ 'python' ]
 ```
 
@@ -178,7 +178,7 @@ jobs:
 
 ```bash
 # Create custom hook script
-cat > scripts/hooks/check-todos.cjs << 'EOF'
+cat > plugin/scripts/hooks/check-todos.cjs << 'EOF'
 const { readHookInput, writeHookOutput } = require('../lib/hook-utils');
 const fs = require('fs');
 
@@ -544,7 +544,7 @@ You've learned:
 **Fix**: Check project detection:
 ```bash
 cd your/subdirectory
-node -e "console.log(require('../../scripts/lib/detect-project-type').detectProjectType())"
+node -e "console.log(require('../../plugin/scripts/lib/detect-project-type').detectProjectType())"
 ```
 
 If incorrect, verify manifest files exist.
@@ -556,7 +556,7 @@ If incorrect, verify manifest files exist.
 2. Verify `${CLAUDE_PLUGIN_ROOT}` is set
 3. Test hook manually:
 ```bash
-echo '{"tool":"Edit","tool_input":{"file_path":"test.py"}}' | node scripts/hooks/your-hook.cjs
+echo '{"tool":"Edit","tool_input":{"file_path":"test.py"}}' | node plugin/scripts/hooks/your-hook.cjs
 ```
 
 ### Issue: Memory Persistence Not Working

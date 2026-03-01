@@ -36,7 +36,7 @@ Steps overview:
 1. Parse Arguments
 2. Discover Existing Components
 3. Ask User (target level, scope, confirmation)
-4. Read Authoritative Specs (PLUGIN_DEVELOPMENT docs)
+4. Read Authoritative Specs (Official Docs)
 5. Research Domain Knowledge
 6. Find Template Components
 7. Generate Components (dependency order)
@@ -138,19 +138,20 @@ Options:
 
 ---
 
-### Step 4: Read Authoritative Specs (PLUGIN_DEVELOPMENT)
+### Step 4: Read Authoritative Specs (Official Docs)
 
-The PLUGIN_DEVELOPMENT docs ship with the plugin. Read these for current field specs, deprecations, and novelties:
+Use the `magic-claude-docs:docs` skill to look up current field specs, deprecations, and novelties:
 
-```
-${CLAUDE_PLUGIN_ROOT}/docs/PLUGIN_DEVELOPMENT/00-OVERVIEW.md          — plugin architecture, component types, variable substitution
-${CLAUDE_PLUGIN_ROOT}/docs/PLUGIN_DEVELOPMENT/01-COMMANDS-SKILLS.md   — skill/command frontmatter fields
-${CLAUDE_PLUGIN_ROOT}/docs/PLUGIN_DEVELOPMENT/02-AGENTS.md            — agent frontmatter fields
-${CLAUDE_PLUGIN_ROOT}/docs/PLUGIN_DEVELOPMENT/03-HOOKS.md             — hook types, matchers, JSON structure
-${CLAUDE_PLUGIN_ROOT}/docs/PLUGIN_DEVELOPMENT/05-BEST-PRACTICES.md    — model selection, performance guidelines
-```
+| Topic | Docs Skill Query |
+|-------|-----------------|
+| Plugin architecture, component types | `magic-claude-docs:docs plugins` |
+| Plugin reference (fields, variables) | `magic-claude-docs:docs plugins-reference` |
+| Skill/command frontmatter fields | `magic-claude-docs:docs skills` |
+| Agent frontmatter fields | `magic-claude-docs:docs sub-agents` |
+| Hook types, matchers, JSON structure | `magic-claude-docs:docs hooks-guide` and `magic-claude-docs:docs hooks` |
+| Best practices, model selection | `magic-claude-docs:docs best-practices` |
 
-Read only the docs relevant to the components being generated. For example, if only generating a skill, read `01-COMMANDS-SKILLS.md` and `05-BEST-PRACTICES.md`.
+Read only the docs relevant to the components being generated. For example, if only generating a skill, look up `skills` and `best-practices`.
 
 ---
 

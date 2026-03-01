@@ -28,7 +28,7 @@ let detectPackageEcosystem, detectWorkspaceEcosystems, enrichPackagesWithEcosyst
 let moduleLoaded = false;
 
 try {
-  const workspaceEcosystemsModule = require('../../scripts/lib/workspace/ecosystems.cjs');
+  const workspaceEcosystemsModule = require('../../plugin/scripts/lib/workspace/ecosystems.cjs');
   detectPackageEcosystem = workspaceEcosystemsModule.detectPackageEcosystem;
   detectWorkspaceEcosystems = workspaceEcosystemsModule.detectWorkspaceEcosystems;
   enrichPackagesWithEcosystems = workspaceEcosystemsModule.enrichPackagesWithEcosystems;
@@ -355,7 +355,7 @@ function runTests() {
       );
 
       // Detect workspace
-      const { detectWorkspace } = require('../../scripts/lib/workspace/detection.cjs');
+      const { detectWorkspace } = require('../../plugin/scripts/lib/workspace/detection.cjs');
       const workspace = detectWorkspace(tempDir);
 
       if (workspace && workspace.packages) {

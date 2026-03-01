@@ -51,13 +51,13 @@ describe('Python project integration', () => {
 
   describe('Smart formatter integration', () => {
     it('should have smart-formatter.js hook', async () => {
-      const hookPath = path.join(__dirname, '../../scripts/hooks/smart-formatter.cjs');
+      const hookPath = path.join(__dirname, '../../plugin/scripts/hooks/smart-formatter.cjs');
       const exists = await fs.access(hookPath).then(() => true).catch(() => false);
       expect(exists).toBe(true);
     });
 
     it('should handle Python files', async () => {
-      const hookPath = path.join(__dirname, '../../scripts/hooks/smart-formatter.cjs');
+      const hookPath = path.join(__dirname, '../../plugin/scripts/hooks/smart-formatter.cjs');
       const content = await fs.readFile(hookPath, 'utf8');
       expect(content).toContain('.py');
       expect(content).toContain('python');
@@ -66,13 +66,13 @@ describe('Python project integration', () => {
 
   describe('Security hook integration', () => {
     it('should have python-security.js hook', async () => {
-      const hookPath = path.join(__dirname, '../../scripts/hooks/python-security.cjs');
+      const hookPath = path.join(__dirname, '../../plugin/scripts/hooks/python-security.cjs');
       const exists = await fs.access(hookPath).then(() => true).catch(() => false);
       expect(exists).toBe(true);
     });
 
     it('should be executable', async () => {
-      const hookPath = path.join(__dirname, '../../scripts/hooks/python-security.cjs');
+      const hookPath = path.join(__dirname, '../../plugin/scripts/hooks/python-security.cjs');
       const stats = await fs.stat(hookPath);
       const isExecutable = (stats.mode & 0o111) !== 0;
       expect(isExecutable).toBe(true);
@@ -81,20 +81,20 @@ describe('Python project integration', () => {
 
   describe('Python reviewer agent', () => {
     it('should exist', async () => {
-      const agentPath = path.join(__dirname, '../../agents/python-reviewer.md');
+      const agentPath = path.join(__dirname, '../../plugin/agents/python-reviewer.md');
       const exists = await fs.access(agentPath).then(() => true).catch(() => false);
       expect(exists).toBe(true);
     });
 
     it('should have frontmatter', async () => {
-      const agentPath = path.join(__dirname, '../../agents/python-reviewer.md');
+      const agentPath = path.join(__dirname, '../../plugin/agents/python-reviewer.md');
       const content = await fs.readFile(agentPath, 'utf8');
       expect(content).toMatch(/^---/);
       expect(content).toContain('name: python-reviewer');
     });
 
     it('should mention modern tools', async () => {
-      const agentPath = path.join(__dirname, '../../agents/python-reviewer.md');
+      const agentPath = path.join(__dirname, '../../plugin/agents/python-reviewer.md');
       const content = await fs.readFile(agentPath, 'utf8');
       expect(content).toContain('Ruff');
       expect(content).toContain('Semgrep');
@@ -103,13 +103,13 @@ describe('Python project integration', () => {
 
   describe('Python patterns skill', () => {
     it('should exist', async () => {
-      const skillPath = path.join(__dirname, '../../skills/python-patterns/SKILL.md');
+      const skillPath = path.join(__dirname, '../../plugin/skills/python-patterns/SKILL.md');
       const exists = await fs.access(skillPath).then(() => true).catch(() => false);
       expect(exists).toBe(true);
     });
 
     it('should cover modern packaging', async () => {
-      const skillPath = path.join(__dirname, '../../skills/python-patterns/SKILL.md');
+      const skillPath = path.join(__dirname, '../../plugin/skills/python-patterns/SKILL.md');
       const content = await fs.readFile(skillPath, 'utf8');
       expect(content).toContain('uv');
       expect(content).toContain('poetry');
@@ -118,13 +118,13 @@ describe('Python project integration', () => {
 
   describe('Python style rules', () => {
     it('should exist', async () => {
-      const rulesPath = path.join(__dirname, '../../rules/python-style.md');
+      const rulesPath = path.join(__dirname, '../../plugin/rules/python-style.md');
       const exists = await fs.access(rulesPath).then(() => true).catch(() => false);
       expect(exists).toBe(true);
     });
 
     it('should reference PEP 8', async () => {
-      const rulesPath = path.join(__dirname, '../../rules/python-style.md');
+      const rulesPath = path.join(__dirname, '../../plugin/rules/python-style.md');
       const content = await fs.readFile(rulesPath, 'utf8');
       expect(content).toMatch(/PEP.*8/i);
     });
@@ -133,11 +133,11 @@ describe('Python project integration', () => {
   describe('Phase 2 deliverables', () => {
     it('should have all required files', async () => {
       const deliverables = [
-        'agents/python-reviewer.md',
-        'skills/python-patterns/SKILL.md',
-        'rules/python-style.md',
-        'scripts/hooks/python-security.cjs',
-        'scripts/hooks/smart-formatter.cjs',
+        'plugin/agents/python-reviewer.md',
+        'plugin/skills/python-patterns/SKILL.md',
+        'plugin/rules/python-style.md',
+        'plugin/scripts/hooks/python-security.cjs',
+        'plugin/scripts/hooks/smart-formatter.cjs',
       ];
 
       for (const deliverable of deliverables) {

@@ -46,17 +46,17 @@ Full documentation index. Pick a starting point based on what you need.
 
 ## Plugin Development
 
-Build your own components for Magic Claude:
+Build your own components using the official Claude Code docs (via `magic-claude-docs:docs` skill):
 
-| Doc | Description |
-|-----|-------------|
-| [00-OVERVIEW.md](PLUGIN_DEVELOPMENT/00-OVERVIEW.md) | Plugin architecture overview |
-| [01-COMMANDS-SKILLS.md](PLUGIN_DEVELOPMENT/01-COMMANDS-SKILLS.md) | Writing commands and skills |
-| [02-AGENTS.md](PLUGIN_DEVELOPMENT/02-AGENTS.md) | Creating specialized agents |
-| [03-HOOKS.md](PLUGIN_DEVELOPMENT/03-HOOKS.md) | Hook development guide |
-| [04-PLUGIN-STRUCTURE.md](PLUGIN_DEVELOPMENT/04-PLUGIN-STRUCTURE.md) | File organization and manifests |
-| [05-BEST-PRACTICES.md](PLUGIN_DEVELOPMENT/05-BEST-PRACTICES.md) | Quality and testing standards |
-| [06-EXAMPLES.md](PLUGIN_DEVELOPMENT/06-EXAMPLES.md) | Concrete component examples |
+| Topic | Skill Query |
+|-------|-------------|
+| Plugin architecture overview | `magic-claude-docs:docs plugins` |
+| Plugin reference (fields, variables) | `magic-claude-docs:docs plugins-reference` |
+| Writing commands and skills | `magic-claude-docs:docs skills` |
+| Creating specialized agents | `magic-claude-docs:docs sub-agents` |
+| Hook development guide | `magic-claude-docs:docs hooks-guide` |
+| Hooks reference | `magic-claude-docs:docs hooks` |
+| Best practices | `magic-claude-docs:docs best-practices` |
 
 ## Project
 

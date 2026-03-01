@@ -30,6 +30,7 @@ const {
   isJetBrainsAvailable,
   detectLanguages
 } = require('./lib/serena.cjs');
+const { isClaudeMemInstalled, isFrontendDesignInstalled, isClaudeCodeDocsInstalled } = require('./lib/status/collectors.cjs');
 const { getAllProjectSubTypes } = require('./lib/ecosystems/index.cjs');
 
 // Project type indicators — built dynamically from the ecosystem registry
@@ -174,8 +175,32 @@ async function main() {
 
   runScript('setup-rules.cjs', ['--install'], { verbose });
 
-  // Step 5: Serena Integration
-  console.log('\n━━━ Step 5: Serena Integration ━━━\n');
+  // Step 5: Optional Integrations Check
+  console.log('\n━━━ Step 5: Optional Integrations ━━━\n');
+
+  const integrations = [
+    { name: 'claude-code-docs', installed: isClaudeCodeDocsInstalled(), install: '/plugin marketplace add doublefx/claude-code-docs && /plugin install claude-code-docs', desc: 'Offline Claude Code documentation' },
+    { name: 'claude-mem', installed: isClaudeMemInstalled(), install: '/plugin marketplace add doublefx/claude-mem && /plugin install claude-mem', desc: 'Cross-session memory and decision history' },
+    { name: 'frontend-design', installed: isFrontendDesignInstalled(), install: '/plugin marketplace add doublefx/frontend-design && /plugin install frontend-design', desc: 'Production-grade UI component generation' },
+  ];
+
+  const installed = integrations.filter(i => i.installed);
+  const missing = integrations.filter(i => !i.installed);
+
+  for (const i of installed) {
+    console.log(`  ✓ ${i.name}`);
+  }
+  for (const i of missing) {
+    console.log(`  ○ ${i.name} — ${i.desc}`);
+    console.log(`    Install: ${i.install}`);
+  }
+
+  if (missing.length === 0) {
+    console.log('  ✓ All optional integrations installed');
+  }
+
+  // Step 6: Serena Integration
+  console.log('\n━━━ Step 6: Serena Integration ━━━\n');
 
   const serenaInstalled = isSerenaInstalled();
   const serenaSetupComplete = isSerenaSetupComplete();
@@ -229,7 +254,7 @@ async function main() {
     console.log('   To install: /plugin install serena');
   }
 
-  // Step 6: Final Summary
+  // Step 7: Final Summary
   console.log('\n━━━ Setup Summary ━━━\n');
 
   const hasPackageJson = fs.existsSync(path.join(process.cwd(), 'package.json'));

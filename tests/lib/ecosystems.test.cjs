@@ -30,7 +30,7 @@ let getAllFileFormatters;
 let moduleLoaded = false;
 
 try {
-  const ecosystemModule = require('../../scripts/lib/ecosystems/index.cjs');
+  const ecosystemModule = require('../../plugin/scripts/lib/ecosystems/index.cjs');
   Ecosystem = ecosystemModule.Ecosystem;
   getEcosystem = ecosystemModule.getEcosystem;
   detectEcosystem = ecosystemModule.detectEcosystem;

@@ -675,7 +675,7 @@ Gradle Optimization Report
 ### Language Pattern Skills
 
 #### python-patterns
-**Path**: `skills/python-patterns/SKILL.md`
+**Path**: `plugin/skills/python-patterns/SKILL.md`
 **Description**: Modern Python 3.10+ patterns and best practices
 
 **Covers**:
@@ -691,7 +691,7 @@ Gradle Optimization Report
 ---
 
 #### kotlin-patterns
-**Path**: `skills/kotlin-patterns/SKILL.md`
+**Path**: `plugin/skills/kotlin-patterns/SKILL.md`
 **Description**: Modern Kotlin 1.9+ patterns
 
 **Covers**:
@@ -708,7 +708,7 @@ Gradle Optimization Report
 ### Build Tool Skills
 
 #### maven-patterns
-**Path**: `skills/maven-patterns/SKILL.md`
+**Path**: `plugin/skills/maven-patterns/SKILL.md`
 **Description**: Maven best practices and patterns
 
 **Covers**:
@@ -722,7 +722,7 @@ Gradle Optimization Report
 ---
 
 #### gradle-patterns
-**Path**: `skills/gradle-patterns/SKILL.md`
+**Path**: `plugin/skills/gradle-patterns/SKILL.md`
 **Description**: Gradle best practices and patterns
 
 **Covers**:
@@ -738,7 +738,7 @@ Gradle Optimization Report
 ### Architecture Skills
 
 #### backend-patterns
-**Path**: `skills/backend-patterns/SKILL.md`
+**Path**: `plugin/skills/backend-patterns/SKILL.md`
 **Description**: Backend API and database patterns
 
 **Covers**:
@@ -752,7 +752,7 @@ Gradle Optimization Report
 ---
 
 #### frontend-patterns
-**Path**: `skills/frontend-patterns/SKILL.md`
+**Path**: `plugin/skills/frontend-patterns/SKILL.md`
 **Description**: React and Next.js patterns
 
 **Covers**:
@@ -766,7 +766,7 @@ Gradle Optimization Report
 ---
 
 #### ci-cd-patterns
-**Path**: `skills/ci-cd-patterns/SKILL.md`
+**Path**: `plugin/skills/ci-cd-patterns/SKILL.md`
 **Description**: CI/CD and deployment patterns
 
 **Covers**:
@@ -785,7 +785,7 @@ Gradle Optimization Report
 ### Testing Skills
 
 #### tdd-workflow
-**Path**: `skills/tdd-workflow/SKILL.md`
+**Path**: `plugin/skills/tdd-workflow/SKILL.md`
 **Description**: Test-driven development methodology
 
 **Covers**:
@@ -799,7 +799,7 @@ Gradle Optimization Report
 ---
 
 #### security-review
-**Path**: `skills/security-review/SKILL.md`
+**Path**: `plugin/skills/security-review/SKILL.md`
 **Description**: Security review checklist
 
 **Covers**:
@@ -816,7 +816,7 @@ Gradle Optimization Report
 ### Advanced Skills
 
 #### continuous-learning
-**Path**: `skills/continuous-learning/SKILL.md`
+**Path**: `plugin/skills/continuous-learning/SKILL.md`
 **Description**: Auto-extract patterns from sessions ([Advanced Topics](guides/advanced-topics.md))
 
 **Covers**:
@@ -828,7 +828,7 @@ Gradle Optimization Report
 ---
 
 #### verification-loop
-**Path**: `skills/verification-loop/SKILL.md`
+**Path**: `plugin/skills/verification-loop/SKILL.md`
 **Description**: Continuous verification ([Advanced Topics](guides/advanced-topics.md))
 
 **Covers**:
@@ -840,7 +840,7 @@ Gradle Optimization Report
 ---
 
 #### eval-harness
-**Path**: `skills/eval-harness/SKILL.md`
+**Path**: `plugin/skills/eval-harness/SKILL.md`
 **Description**: Verification loop evaluation ([Advanced Topics](guides/advanced-topics.md))
 
 **Covers**:
@@ -852,7 +852,7 @@ Gradle Optimization Report
 ---
 
 #### proactive-orchestration
-**Path**: `skills/proactive-orchestration/SKILL.md`
+**Path**: `plugin/skills/proactive-orchestration/SKILL.md`
 **Description**: Top-level pipeline orchestrator for complex feature work
 
 **Phases**: DISCOVER -> PLAN -> PLAN CRITIC -> [UI DESIGN] -> TDD -> VERIFY -> REVIEW -> REPORT
@@ -871,7 +871,7 @@ Gradle Optimization Report
 ---
 
 #### ui-design
-**Path**: `skills/ui-design/SKILL.md`
+**Path**: `plugin/skills/ui-design/SKILL.md`
 **Description**: Conditional UI design context gathering (Phase 1.75 of proactive-orchestration)
 
 **Gate**: Advisory with user opt-out — triggered when plan tasks touch frontend files (`.tsx`, `.jsx`, `.vue`, `.svelte`, `.html`, `.css`) or mention UI components/layouts.
@@ -891,7 +891,7 @@ Gradle Optimization Report
 ### Coordination Skills
 
 #### agent-teams
-**Path**: `skills/agent-teams/SKILL.md`
+**Path**: `plugin/skills/agent-teams/SKILL.md`
 **Description**: Guide for Agent Teams coordination when `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` is enabled
 
 **Prerequisite**: `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` must be set
@@ -907,7 +907,7 @@ Gradle Optimization Report
 ---
 
 #### extend
-**Path**: `skills/extend/SKILL.md`
+**Path**: `plugin/skills/extend/SKILL.md`
 **Description**: Generate new plugin components following existing patterns
 
 **Covers**:
@@ -918,7 +918,7 @@ Gradle Optimization Report
 ---
 
 #### claude-mem-context
-**Path**: `skills/claude-mem-context/SKILL.md`
+**Path**: `plugin/skills/claude-mem-context/SKILL.md`
 **Description**: Cross-session historical context via claude-mem MCP
 
 **Covers**:
@@ -929,7 +929,7 @@ Gradle Optimization Report
 ---
 
 #### clickhouse-io
-**Path**: `skills/clickhouse-io/SKILL.md`
+**Path**: `plugin/skills/clickhouse-io/SKILL.md`
 **Description**: ClickHouse database patterns and query optimization
 
 **Covers**:
@@ -940,7 +940,7 @@ Gradle Optimization Report
 ---
 
 #### project-guidelines-example
-**Path**: `skills/project-guidelines-example/SKILL.md`
+**Path**: `plugin/skills/project-guidelines-example/SKILL.md`
 **Description**: Template for project-specific skills
 
 **Covers**:
@@ -953,118 +953,118 @@ Gradle Optimization Report
 ### Serena Integration Skills
 
 #### serena-setup
-**Path**: `skills/serena-setup/SKILL.md`
+**Path**: `plugin/skills/serena-setup/SKILL.md`
 **Description**: Complete Serena MCP setup workflow
 
 #### serena-status
-**Path**: `skills/serena-status/SKILL.md`
+**Path**: `plugin/skills/serena-status/SKILL.md`
 **Description**: Serena configuration diagnostics
 
 #### serena-cleanup
-**Path**: `skills/serena-cleanup/SKILL.md`
+**Path**: `plugin/skills/serena-cleanup/SKILL.md`
 **Description**: Safe Serena cleanup and removal
 
 #### serena-code-navigation
-**Path**: `skills/serena-code-navigation/SKILL.md`
+**Path**: `plugin/skills/serena-code-navigation/SKILL.md`
 **Description**: Serena MCP code navigation tool mapping
 
 #### setup-agent
-**Path**: `agents/setup-agent.md`
+**Path**: `plugin/agents/setup-agent.md`
 **Type**: Agent (sonnet)
 **Description**: Dedicated agent for complete project setup — workspace detection, package manager configuration, ecosystem detection, tool verification, dependency installation, and Serena integration
 
 #### git-sync
-**Path**: `agents/git-sync.md`
+**Path**: `plugin/agents/git-sync.md`
 **Type**: Agent (background, invoked automatically after git operations)
 **Description**: Analyze git changes and report codebase impact
 
 #### using-magic-claude
-**Path**: `skills/using-magic-claude/SKILL.md`
+**Path**: `plugin/skills/using-magic-claude/SKILL.md`
 **Type**: Meta-skill (injected via SessionStart hook on every startup/resume/compact/clear)
 **Description**: Disposition override (quality over speed), skill governance flowchart, EnterPlanMode intercept, anti-rationalization table, learned skills reminder
 
 #### proactive-planning
-**Path**: `skills/proactive-planning/SKILL.md`
+**Path**: `plugin/skills/proactive-planning/SKILL.md`
 **Type**: Skill (proactive)
 **Description**: Standalone planning for architectural discussions where NO code will be written
 
 #### proactive-tdd
-**Path**: `skills/proactive-tdd/SKILL.md`
+**Path**: `plugin/skills/proactive-tdd/SKILL.md`
 **Type**: Skill (proactive)
 **Description**: Ecosystem-aware TDD enforcement for isolated TDD needs (not part of orchestration)
 
 #### proactive-review
-**Path**: `skills/proactive-review/SKILL.md`
+**Path**: `plugin/skills/proactive-review/SKILL.md`
 **Type**: Skill (proactive)
 **Description**: Code quality checks at task completion and pre-commit
 
 #### coding-standards
-**Path**: `skills/coding-standards/SKILL.md`
+**Path**: `plugin/skills/coding-standards/SKILL.md`
 **Type**: Skill (domain knowledge, context: fork)
 **Description**: Universal coding standards for TypeScript, JavaScript, React, and Node.js
 
 #### jvm-coding-standards
-**Path**: `skills/jvm-coding-standards/SKILL.md`
+**Path**: `plugin/skills/jvm-coding-standards/SKILL.md`
 **Type**: Skill (domain knowledge, context: fork)
 **Description**: Java/Kotlin best practices — Google Java Style, Kotlin idioms, null safety, concurrency
 
 #### python-coding-standards
-**Path**: `skills/python-coding-standards/SKILL.md`
+**Path**: `plugin/skills/python-coding-standards/SKILL.md`
 **Type**: Skill (domain knowledge, context: fork)
 **Description**: Python best practices — PEP 8, type hints, modern Python 3.12+ patterns
 
 #### jvm-backend-patterns
-**Path**: `skills/jvm-backend-patterns/SKILL.md`
+**Path**: `plugin/skills/jvm-backend-patterns/SKILL.md`
 **Type**: Skill (domain knowledge, context: fork)
 **Description**: Spring Boot/JPA patterns — repository, DTO mapping, transaction management
 
 #### python-backend-patterns
-**Path**: `skills/python-backend-patterns/SKILL.md`
+**Path**: `plugin/skills/python-backend-patterns/SKILL.md`
 **Type**: Skill (domain knowledge, context: fork)
 **Description**: FastAPI/Django/SQLAlchemy patterns — async, dependency injection, API design
 
 #### jvm-tdd-workflow
-**Path**: `skills/jvm-tdd-workflow/SKILL.md`
+**Path**: `plugin/skills/jvm-tdd-workflow/SKILL.md`
 **Type**: Skill (domain knowledge, context: fork)
 **Description**: JVM TDD methodology — JUnit 5, Mockito, MockK, AssertJ, JaCoCo 80%+ coverage
 
 #### python-tdd-workflow
-**Path**: `skills/python-tdd-workflow/SKILL.md`
+**Path**: `plugin/skills/python-tdd-workflow/SKILL.md`
 **Type**: Skill (domain knowledge, context: fork)
 **Description**: Python TDD methodology — pytest, unittest.mock, pytest-cov, hypothesis
 
 #### python-security-review
-**Path**: `skills/python-security-review/SKILL.md`
+**Path**: `plugin/skills/python-security-review/SKILL.md`
 **Type**: Skill (domain knowledge, context: fork)
 **Description**: Python security checklist — bandit, pip-audit, semgrep, Django/FastAPI patterns
 
 #### agent-coordination
-**Path**: `skills/agent-coordination/SKILL.md`
+**Path**: `plugin/skills/agent-coordination/SKILL.md`
 **Type**: Skill (domain knowledge, context: fork)
 **Description**: Guide for traditional (single-orchestrator) agent delegation — catalog, model tier cost awareness, delegation decision framework
 
 #### systematic-debugging
-**Path**: `skills/systematic-debugging/SKILL.md`
+**Path**: `plugin/skills/systematic-debugging/SKILL.md`
 **Type**: Skill (debugging, context: fork)
 **Description**: 4-phase root-cause investigation for bugs that escape the build/test pipeline — includes test pollution bisection tooling
 
 #### receiving-code-review
-**Path**: `skills/receiving-code-review/SKILL.md`
+**Path**: `plugin/skills/receiving-code-review/SKILL.md`
 **Type**: Skill (review)
 **Description**: Governs how to handle review feedback — verify before implementing, push back when wrong, YAGNI check on suggestions
 
 #### using-git-worktrees
-**Path**: `skills/using-git-worktrees/SKILL.md`
+**Path**: `plugin/skills/using-git-worktrees/SKILL.md`
 **Type**: Skill (branch & isolation)
 **Description**: Create isolated git worktrees for feature work — filesystem isolation for parallel development
 
 #### finishing-feature
-**Path**: `skills/finishing-feature/SKILL.md`
+**Path**: `plugin/skills/finishing-feature/SKILL.md`
 **Type**: Skill (branch & isolation)
 **Description**: Structured branch cleanup after feature work — merge locally, push + PR, keep, or discard with test verification
 
 #### strategic-compact
-**Path**: `skills/strategic-compact/SKILL.md`
+**Path**: `plugin/skills/strategic-compact/SKILL.md`
 **Type**: Skill (workflow)
 **Description**: Manual compaction suggestions at logical workflow boundaries
 

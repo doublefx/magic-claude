@@ -349,7 +349,7 @@ User: "Add a health check endpoint to the API"
 | Gap | Resolution |
 |-----|-----------|
 | **Test coverage delegation** | `/test-coverage` now delegates to ecosystem TDD agents (`ts-tdd-guide`, `jvm-tdd-guide`, `python-tdd-guide`) for RED-GREEN-REFACTOR test generation |
-| **Auto-learn** | `evaluate-session.cjs` emits `ACTION REQUIRED` message; `rules/continuous-learning.md` instructs Claude to proactively run `/learn` when patterns are detected |
+| **Auto-learn** | `evaluate-session.cjs` emits `ACTION REQUIRED` message; `plugin/rules/continuous-learning.md` instructs Claude to proactively run `/learn` when patterns are detected |
 
 ### Resolved (v2.2.2)
 
@@ -365,7 +365,7 @@ User: "Add a health check endpoint to the API"
 | **Notification hook** | `notify.cjs` provides cross-platform desktop notification when Claude needs user input |
 | **Hook validation tests** | `tests/hooks/hooks.test.cjs` validates hooks.json structure, event types, handler fields, script existence, and matcher validity (17 tests) |
 | **Hook UX** | All 22 hook handlers now include `statusMessage` fields for custom spinner text during execution |
-| **Agent Teams reference** | `skills/agent-teams/SKILL.md` provides pre-configured team scenarios with token cost guard rails (gated by `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`) |
+| **Agent Teams reference** | `plugin/skills/agent-teams/SKILL.md` provides pre-configured team scenarios with token cost guard rails (gated by `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`) |
 
 ### Remaining Gaps (Deferred)
 
@@ -401,7 +401,7 @@ The plugin has the right components but the wrong wiring. Three independent proa
 
 ### Skills vs Commands: The Key Insight
 
-Per the plugin spec (`docs/PLUGIN_DEVELOPMENT/01-COMMANDS-SKILLS.md`), skills and commands are merged in Claude Code. Both create slash commands. Skills add: `context: fork`, `user-invocable: false`, `disable-model-invocation`, and **auto-loading by Claude based on description**. Skills with `user-invocable: false` let Claude load them automatically when context matches -- the user never invokes them explicitly.
+Per the plugin spec (see official docs: `magic-claude-docs:docs skills`), skills and commands are merged in Claude Code. Both create slash commands. Skills add: `context: fork`, `user-invocable: false`, `disable-model-invocation`, and **auto-loading by Claude based on description**. Skills with `user-invocable: false` let Claude load them automatically when context matches -- the user never invokes them explicitly.
 
 This means the fix is architectural, not additive. Instead of adding more proactive skills, unify the orchestration.
 

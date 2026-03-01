@@ -36,9 +36,9 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './scripts'),
-      '@lib': path.resolve(__dirname, './scripts/lib'),
-      '@hooks': path.resolve(__dirname, './scripts/hooks'),
+      '@': path.resolve(__dirname, './plugin/scripts'),
+      '@lib': path.resolve(__dirname, './plugin/scripts/lib'),
+      '@hooks': path.resolve(__dirname, './plugin/scripts/hooks'),
       '@tests': path.resolve(__dirname, './tests')
     }
   }

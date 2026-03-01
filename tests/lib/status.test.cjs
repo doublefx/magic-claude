@@ -22,10 +22,11 @@ function test(name, fn) {
 }
 
 const REPO_ROOT = path.join(__dirname, '..', '..');
+const PLUGIN_ROOT = path.join(REPO_ROOT, 'plugin');
 
 // Import modules under test
-const collectors = require(path.join(REPO_ROOT, 'scripts', 'lib', 'status', 'collectors.cjs'));
-const formatter = require(path.join(REPO_ROOT, 'scripts', 'lib', 'status', 'formatter.cjs'));
+const collectors = require(path.join(PLUGIN_ROOT, 'scripts', 'lib', 'status', 'collectors.cjs'));
+const formatter = require(path.join(PLUGIN_ROOT, 'scripts', 'lib', 'status', 'formatter.cjs'));
 
 function runTests() {
   console.log('\n=== Testing Status Report ===\n');
@@ -39,7 +40,7 @@ function runTests() {
   console.log('Collectors:');
 
   if (test('collectPluginInfo returns expected shape', () => {
-    const data = collectors.collectPluginInfo(REPO_ROOT);
+    const data = collectors.collectPluginInfo(PLUGIN_ROOT);
     assert.strictEqual(typeof data.name, 'string');
     assert.strictEqual(typeof data.version, 'string');
     assert.strictEqual(typeof data.path, 'string');
@@ -50,7 +51,7 @@ function runTests() {
   })) passed++; else failed++;
 
   if (test('collectAgents returns agents grouped by model', () => {
-    const data = collectors.collectAgents(REPO_ROOT);
+    const data = collectors.collectAgents(PLUGIN_ROOT);
     assert.strictEqual(typeof data.total, 'number');
     assert.ok(data.total > 0, 'Should find at least one agent');
     assert.strictEqual(typeof data.byModel, 'object');
@@ -65,13 +66,13 @@ function runTests() {
   })) passed++; else failed++;
 
   if (test('collectAgents detects background agents', () => {
-    const data = collectors.collectAgents(REPO_ROOT);
+    const data = collectors.collectAgents(PLUGIN_ROOT);
     assert.strictEqual(typeof data.backgroundCount, 'number');
     assert.ok(data.backgroundCount >= 1, 'Should detect at least 1 background agent (git-sync)');
   })) passed++; else failed++;
 
   if (test('collectSkills returns skills with categories', () => {
-    const data = collectors.collectSkills(REPO_ROOT);
+    const data = collectors.collectSkills(PLUGIN_ROOT);
     assert.strictEqual(typeof data.total, 'number');
     assert.ok(data.total > 0, 'Should find at least one skill');
     assert.strictEqual(typeof data.byCategory, 'object');
@@ -87,7 +88,7 @@ function runTests() {
   })) passed++; else failed++;
 
   if (test('collectHooks returns hook counts by event type', () => {
-    const data = collectors.collectHooks(REPO_ROOT);
+    const data = collectors.collectHooks(PLUGIN_ROOT);
     assert.strictEqual(typeof data.totalRules, 'number');
     assert.strictEqual(typeof data.totalEventTypes, 'number');
     assert.ok(data.totalRules > 0, 'Should have at least one hook rule');
@@ -99,7 +100,7 @@ function runTests() {
   })) passed++; else failed++;
 
   if (test('collectRules returns rule counts at plugin level', () => {
-    const data = collectors.collectRules(REPO_ROOT);
+    const data = collectors.collectRules(PLUGIN_ROOT);
     assert.strictEqual(typeof data.pluginCount, 'number');
     assert.ok(data.pluginCount > 0, 'Should find at least one plugin rule');
     assert.ok(Array.isArray(data.pluginRules), 'pluginRules should be an array');
@@ -107,7 +108,7 @@ function runTests() {
   })) passed++; else failed++;
 
   if (test('collectCommands returns command list', () => {
-    const data = collectors.collectCommands(REPO_ROOT);
+    const data = collectors.collectCommands(PLUGIN_ROOT);
     assert.strictEqual(typeof data.total, 'number');
     assert.ok(data.total > 0, 'Should find at least one command');
     assert.ok(Array.isArray(data.commands), 'commands should be an array');
@@ -145,6 +146,7 @@ function runTests() {
     assert.strictEqual(typeof data.jetbrains, 'boolean');
     assert.strictEqual(typeof data.claudeMem, 'boolean');
     assert.strictEqual(typeof data.frontendDesign, 'boolean');
+    assert.strictEqual(typeof data.claudeCodeDocs, 'boolean');
   })) passed++; else failed++;
 
   if (test('collectMcpServers returns count structure', () => {
@@ -267,11 +269,21 @@ function runTests() {
 
   if (test('formatIntegrationsSection shows status', () => {
     const result = formatter.formatIntegrationsSection({
-      serena: true, jetbrains: false, claudeMem: false, frontendDesign: true
+      serena: true, jetbrains: false, claudeMem: false, frontendDesign: true, claudeCodeDocs: true
     });
     assert.ok(result.includes('Serena MCP:'), 'Should show Serena');
+    assert.ok(result.includes('claude-code-docs:'), 'Should show claude-code-docs');
     assert.ok(result.includes('installed'), 'Should show installed');
     assert.ok(result.includes('not installed'), 'Should show not installed');
+  })) passed++; else failed++;
+
+  if (test('formatIntegrationsSection shows install hint when claude-code-docs not installed', () => {
+    const result = formatter.formatIntegrationsSection({
+      serena: false, jetbrains: false, claudeMem: false, frontendDesign: false, claudeCodeDocs: false
+    });
+    assert.ok(result.includes('claude-code-docs:'), 'Should show claude-code-docs');
+    assert.ok(result.includes('not installed'), 'Should show not installed');
+    assert.ok(result.includes('/plugin marketplace add doublefx/claude-code-docs'), 'Should show install hint');
   })) passed++; else failed++;
 
   if (test('formatMcpServersSection shows counts', () => {
@@ -296,7 +308,7 @@ function runTests() {
       ecosystem: { detected: null, tools: {} },
       packageManager: { name: 'npm', source: 'default' },
       workspace: { isWorkspace: false, type: null, packageCount: 0 },
-      integrations: { serena: false, jetbrains: false, claudeMem: false, frontendDesign: false },
+      integrations: { serena: false, jetbrains: false, claudeMem: false, frontendDesign: false, claudeCodeDocs: false },
       mcpServers: { manual: { count: 0, names: [] }, plugins: { count: 0, names: [] }, disabled: [] },
     };
     const report = formatter.formatFullReport(allData);
@@ -326,7 +338,7 @@ function runTests() {
   console.log('\nIntegration:');
 
   if (test('status-report.cjs runs and exits with code 0', () => {
-    const scriptPath = path.join(REPO_ROOT, 'scripts', 'status-report.cjs');
+    const scriptPath = path.join(PLUGIN_ROOT, 'scripts', 'status-report.cjs');
     const output = execSync(`node "${scriptPath}"`, { encoding: 'utf8', timeout: 10000 });
     assert.ok(output.includes('magic-claude Status Report'), 'Output should contain report header');
     assert.ok(output.includes('--- Plugin ---'), 'Output should contain Plugin section');
@@ -335,7 +347,7 @@ function runTests() {
   })) passed++; else failed++;
 
   if (test('status command .md file exists with correct frontmatter', () => {
-    const cmdPath = path.join(REPO_ROOT, 'commands', 'status.md');
+    const cmdPath = path.join(PLUGIN_ROOT, 'commands', 'status.md');
     const content = require('fs').readFileSync(cmdPath, 'utf8');
     assert.ok(content.includes('disable-model-invocation: false'), 'Should use model invocation (prevents empty text block API errors)');
     assert.ok(content.includes('command:'), 'Should have command field');

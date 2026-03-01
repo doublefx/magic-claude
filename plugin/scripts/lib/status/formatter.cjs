@@ -187,12 +187,20 @@ function formatWorkspaceSection(data) {
  */
 function formatIntegrationsSection(data) {
   const status = (installed) => installed ? 'installed' : 'not installed';
+  const installHint = (name) => `  -> Install: /plugin marketplace add doublefx/${name} && /plugin install ${name}`;
 
-  return formatSection('Optional Integrations', [
-    `  Serena MCP:       ${status(data.serena)}${data.jetbrains ? ' (JetBrains available)' : ''}`,
-    `  claude-mem:       ${status(data.claudeMem)}`,
-    `  frontend-design:  ${status(data.frontendDesign)}`,
-  ]);
+  const lines = [
+    `  Serena MCP:        ${status(data.serena)}${data.jetbrains ? ' (JetBrains available)' : ''}`,
+    `  claude-mem:        ${status(data.claudeMem)}`,
+    `  frontend-design:   ${status(data.frontendDesign)}`,
+    `  claude-code-docs:  ${status(data.claudeCodeDocs)}`,
+  ];
+
+  if (!data.claudeCodeDocs) {
+    lines.push(installHint('claude-code-docs'));
+  }
+
+  return formatSection('Optional Integrations', lines);
 }
 
 /**

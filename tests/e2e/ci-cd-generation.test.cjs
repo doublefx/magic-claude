@@ -7,7 +7,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import yaml from 'js-yaml';
-import { generatePipeline, generateAdditionalFiles } from '../../commands/ci-cd.js';
+import { generatePipeline, generateAdditionalFiles } from '../../plugin/commands/ci-cd.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -89,7 +89,7 @@ describe('CI/CD Pipeline Generation', () => {
 
   describe('Template Validation', () => {
     it('should have valid YAML syntax in all GitHub Actions templates', () => {
-      const templatesDir = path.join(__dirname, '..', '..', 'templates', 'github-actions');
+      const templatesDir = path.join(__dirname, '..', '..', 'plugin', 'templates', 'github-actions');
       const templates = fs.readdirSync(templatesDir).filter(f => f.endsWith('.yml'));
 
       for (const template of templates) {
@@ -99,7 +99,7 @@ describe('CI/CD Pipeline Generation', () => {
     });
 
     it('should have valid YAML syntax in all GitLab CI templates', () => {
-      const templatesDir = path.join(__dirname, '..', '..', 'templates', 'gitlab-ci');
+      const templatesDir = path.join(__dirname, '..', '..', 'plugin', 'templates', 'gitlab-ci');
       const templates = fs.readdirSync(templatesDir).filter(f => f.endsWith('.yml'));
 
       for (const template of templates) {
@@ -109,7 +109,7 @@ describe('CI/CD Pipeline Generation', () => {
     });
 
     it('should have valid YAML syntax in all Bitbucket Pipelines templates', () => {
-      const templatesDir = path.join(__dirname, '..', '..', 'templates', 'bitbucket-pipelines');
+      const templatesDir = path.join(__dirname, '..', '..', 'plugin', 'templates', 'bitbucket-pipelines');
       const templates = fs.readdirSync(templatesDir).filter(f => f.endsWith('.yml'));
 
       for (const template of templates) {

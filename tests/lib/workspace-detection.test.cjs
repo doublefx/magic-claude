@@ -28,7 +28,7 @@ let WorkspaceDetector, WORKSPACE_TYPES, detectWorkspace, findWorkspaceRoot;
 let moduleLoaded = false;
 
 try {
-  const workspaceModule = require('../../scripts/lib/workspace/detection.cjs');
+  const workspaceModule = require('../../plugin/scripts/lib/workspace/detection.cjs');
   WorkspaceDetector = workspaceModule.WorkspaceDetector;
   WORKSPACE_TYPES = workspaceModule.WORKSPACE_TYPES;
   detectWorkspace = workspaceModule.detectWorkspace;

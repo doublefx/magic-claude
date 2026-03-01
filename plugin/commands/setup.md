@@ -19,8 +19,9 @@ TaskCreate for each step:
 5. "Verify development tools"
 6. "Install dependencies" (ask user first)
 7. "Install plugin rules" (copies rules to ~/.claude/rules/)
-8. "Run Serena setup" (if installed - INVOKE magic-claude:serena-setup skill)
-9. "Verify setup complete" (.serena/project.yml exists)
+8. "Check optional integrations" (claude-code-docs, claude-mem, frontend-design)
+9. "Run Serena setup" (if installed - INVOKE magic-claude:serena-setup skill)
+10. "Verify setup complete" (.serena/project.yml exists)
 
 Mark each task in_progress before starting, completed when done.
 Do NOT skip tasks - if a step is not applicable, mark it completed with a note.
@@ -37,8 +38,9 @@ Automated, interactive setup that handles everything:
 5. **Tool Checking** - Verifies required development tools
 6. **Dependency Installation** - Installs workspace and package dependencies
 7. **Rules Installation** - Copies plugin rules to `~/.claude/rules/`
-8. **Configuration** - Sets up .claude/ configs
-9. **Serena Integration** - **INVOKE magic-claude:serena-setup skill** (activate, onboard, memories, CLAUDE.md migration)
+8. **Optional Integrations** - Checks claude-code-docs, claude-mem, frontend-design; suggests install commands for missing ones
+9. **Configuration** - Sets up .claude/ configs
+10. **Serena Integration** - **INVOKE magic-claude:serena-setup skill** (activate, onboard, memories, CLAUDE.md migration)
 
 ## Step 9: Serena Integration (CRITICAL)
 

@@ -49,7 +49,7 @@
 ```bash
 # Benchmark script
 for i in {1..100}; do
-  time node -e "require('./scripts/lib/detect-project-type').detectProjectType()"
+  time node -e "require('./plugin/scripts/lib/detect-project-type').detectProjectType()"
 done | awk '{sum+=$2; count++} END {print "Average:", sum/count "ms"}'
 ```
 

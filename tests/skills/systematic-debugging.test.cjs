@@ -11,7 +11,7 @@ const { spawnSync } = require('child_process');
 
 // Import utils
 const { parseFrontmatter } = require(
-  path.join(__dirname, '..', '..', 'scripts', 'lib', 'utils.cjs')
+  path.join(__dirname, '..', '..', 'plugin', 'scripts', 'lib', 'utils.cjs')
 );
 
 // Test helper
@@ -29,7 +29,7 @@ function test(name, fn) {
 
 // Constants
 const REPO_ROOT = path.join(__dirname, '..', '..');
-const SKILL_DIR = path.join(REPO_ROOT, 'skills', 'systematic-debugging');
+const SKILL_DIR = path.join(REPO_ROOT, 'plugin', 'skills', 'systematic-debugging');
 const SKILL_PATH = path.join(SKILL_DIR, 'SKILL.md');
 
 const SUPPORTING_FILES = [

@@ -19,7 +19,7 @@ describe('JVM Polyglot Project Integration', () => {
 
   describe('Project Detection', () => {
     it('should detect Maven project from pom.xml', async () => {
-      const { detectProjectType } = await import('../../scripts/lib/detect-project-type.js');
+      const { detectProjectType } = await import('../../plugin/scripts/lib/detect-project-type.js');
       const mavenFixture = path.join(fixturesRoot, 'sample-maven-project');
 
       const types = detectProjectType(mavenFixture);
@@ -28,7 +28,7 @@ describe('JVM Polyglot Project Integration', () => {
     });
 
     it('should detect Java in monorepo backend', async () => {
-      const { detectProjectType } = await import('../../scripts/lib/detect-project-type.js');
+      const { detectProjectType } = await import('../../plugin/scripts/lib/detect-project-type.js');
       const backendFixture = path.join(fixturesRoot, 'sample-monorepo/backend');
 
       const types = detectProjectType(backendFixture);
@@ -38,7 +38,7 @@ describe('JVM Polyglot Project Integration', () => {
   });
 
   describe('Smart Formatter Hook - Java', () => {
-    const smartFormatterPath = path.join(projectRoot, 'scripts/hooks/smart-formatter.cjs');
+    const smartFormatterPath = path.join(projectRoot, 'plugin/scripts/hooks/smart-formatter.cjs');
     const javaFilePath = path.join(
       fixturesRoot,
       'sample-maven-project/src/main/java/com/example/App.java'
@@ -98,7 +98,7 @@ describe('JVM Polyglot Project Integration', () => {
   });
 
   describe('Smart Formatter Hook - Kotlin', () => {
-    const smartFormatterPath = path.join(projectRoot, 'scripts/hooks/smart-formatter.cjs');
+    const smartFormatterPath = path.join(projectRoot, 'plugin/scripts/hooks/smart-formatter.cjs');
 
     it('should process Kotlin file in Gradle project', async () => {
       // Create a minimal Gradle project for testing
@@ -132,7 +132,7 @@ describe('JVM Polyglot Project Integration', () => {
   });
 
   describe('Java Security Hook', () => {
-    const securityHookPath = path.join(projectRoot, 'scripts/hooks/java-security.cjs');
+    const securityHookPath = path.join(projectRoot, 'plugin/scripts/hooks/java-security.cjs');
     const javaFilePath = path.join(
       fixturesRoot,
       'sample-maven-project/src/main/java/com/example/App.java'
@@ -243,7 +243,7 @@ public class Config {
   });
 
   describe('Polyglot Monorepo - No Interference', () => {
-    const smartFormatterPath = path.join(projectRoot, 'scripts/hooks/smart-formatter.cjs');
+    const smartFormatterPath = path.join(projectRoot, 'plugin/scripts/hooks/smart-formatter.cjs');
     const monorepoRoot = path.join(fixturesRoot, 'sample-monorepo');
 
     it('should format Java in backend without affecting Python in ml/', async () => {
@@ -281,8 +281,8 @@ public class Config {
 
   describe('Hook Execution Order', () => {
     it('should execute both formatter and security hooks independently', async () => {
-      const smartFormatterPath = path.join(projectRoot, 'scripts/hooks/smart-formatter.cjs');
-      const securityHookPath = path.join(projectRoot, 'scripts/hooks/java-security.cjs');
+      const smartFormatterPath = path.join(projectRoot, 'plugin/scripts/hooks/smart-formatter.cjs');
+      const securityHookPath = path.join(projectRoot, 'plugin/scripts/hooks/java-security.cjs');
       const javaFilePath = path.join(
         fixturesRoot,
         'sample-maven-project/src/main/java/com/example/App.java'
@@ -312,7 +312,7 @@ public class Config {
   });
 
   describe('Error Handling', () => {
-    const smartFormatterPath = path.join(projectRoot, 'scripts/hooks/smart-formatter.cjs');
+    const smartFormatterPath = path.join(projectRoot, 'plugin/scripts/hooks/smart-formatter.cjs');
 
     it('should handle non-existent file gracefully', async () => {
       const nonExistentFile = '/tmp/nonexistent.java';

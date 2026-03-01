@@ -25,7 +25,7 @@ let ToolDetector, detectTool, checkEcosystemTools, getInstallationHelp;
 let moduleLoaded = false;
 
 try {
-  const toolDetectionModule = require('../../scripts/lib/workspace/tool-detection.cjs');
+  const toolDetectionModule = require('../../plugin/scripts/lib/workspace/tool-detection.cjs');
   ToolDetector = toolDetectionModule.ToolDetector;
   detectTool = toolDetectionModule.detectTool;
   checkEcosystemTools = toolDetectionModule.checkEcosystemTools;

@@ -92,8 +92,8 @@ When installed as a plugin, use these slash commands (fully-qualified as `magic-
 The repository is structured as a Claude Code plugin with components loaded via `plugin.json`:
 
 ```
-.claude-plugin/plugin.json  # Plugin metadata, points to commands/ and skills/
-hooks/hooks.json            # All hook definitions (PreToolUse, PostToolUse, SessionStart, etc.)
+plugin/.claude-plugin/plugin.json  # Plugin metadata, points to commands/ and skills/
+plugin/hooks/hooks.json            # All hook definitions (PreToolUse, PostToolUse, SessionStart, etc.)
 ```
 
 All components are auto-loaded when installed via `/plugin install`.
@@ -104,7 +104,7 @@ Ecosystem modules are the **single source of truth** for all language/platform m
 
 | Priority | Level | Path |
 |----------|-------|------|
-| 1 (base) | Plugin | `scripts/lib/ecosystems/` |
+| 1 (base) | Plugin | `plugin/scripts/lib/ecosystems/` |
 | 2 | User | `~/.claude/ecosystems/` |
 | 3 (wins) | Project | `./.claude/ecosystems/` |
 
@@ -112,7 +112,7 @@ Later levels override earlier ones. Adding a new ecosystem (e.g., Go) requires o
 
 Each ecosystem module is self-describing — it declares tools, version commands, installation help, setup categories, debug patterns, project sub-types, and config-aware command generation. All consumers (tool-detection, commands, setup scripts, hook scripts) aggregate metadata from the registry instead of maintaining hardcoded maps.
 
-Key exports from `scripts/lib/ecosystems/index.cjs`:
+Key exports from `plugin/scripts/lib/ecosystems/index.cjs`:
 - `getEcosystem(type, config)` — Get an instance by type
 - `detectEcosystem(dir)` — Detect ecosystem from directory indicators
 - `getRegistry()` — Full registry map
@@ -123,9 +123,9 @@ Key exports from `scripts/lib/ecosystems/index.cjs`:
 
 All automation is Node.js-based (no shell scripts) for Windows/macOS/Linux compatibility:
 
-- **scripts/lib/utils.cjs** - Cross-platform utilities (file operations, path handling, system detection)
-- **scripts/lib/package-manager.cjs** - Package manager detection with 4-tier priority system
-- **scripts/hooks/** - Hook implementations (session-start, session-end, pre-compact, etc.)
+- **plugin/scripts/lib/utils.cjs** - Cross-platform utilities (file operations, path handling, system detection)
+- **plugin/scripts/lib/package-manager.cjs** - Package manager detection with 4-tier priority system
+- **plugin/scripts/hooks/** - Hook implementations (session-start, session-end, pre-compact, etc.)
 
 **Package Manager Detection Priority:**
 1. `CLAUDE_PACKAGE_MANAGER` environment variable
@@ -137,7 +137,7 @@ All automation is Node.js-based (no shell scripts) for Windows/macOS/Linux compa
 
 ### Hook System
 
-Hooks execute Node.js scripts on tool events. Key hooks in `hooks/hooks.json`:
+Hooks execute Node.js scripts on tool events. Key hooks in `plugin/hooks/hooks.json`:
 
 **PreToolUse:**
 - **Suggest code review before git commit** (safety net)
@@ -172,7 +172,7 @@ Hooks execute Node.js scripts on tool events. Key hooks in `hooks/hooks.json`:
 - Check for debug statements in modified files (console.log, print(), System.out.println)
 - **Detect task completion and suggest code review**
 
-All hooks use inline Node.js via `node -e` or reference scripts in `scripts/hooks/` via `${CLAUDE_PLUGIN_ROOT}`.
+All hooks use inline Node.js via `node -e` or reference scripts in `plugin/scripts/hooks/` via `${CLAUDE_PLUGIN_ROOT}`.
 
 **Hook Message Visibility:**
 - SessionStart and PostToolUse hooks inject `additionalContext` that appears in your context - **surface these messages to the user** when they contain actionable recommendations
@@ -181,7 +181,7 @@ All hooks use inline Node.js via `node -e` or reference scripts in `scripts/hook
 
 ### Agent Orchestration
 
-Specialized agents in `agents/` directory:
+Specialized agents in `plugin/agents/` directory:
 
 | Agent | Model | Purpose |
 |-------|-------|---------|
@@ -224,7 +224,7 @@ Specialized agents in `agents/` directory:
 **Skills = Proactive** (Claude-invoked when context suggests)
 **Commands = Explicit** (User-invoked via slash commands)
 
-Skills define reusable workflows and domain knowledge in `skills/` directory:
+Skills define reusable workflows and domain knowledge in `plugin/skills/` directory:
 
 **Meta-Skill** (Injected via SessionStart hook on every startup/resume/compact/clear):
 - **magic-claude:using-magic-claude** - Disposition override (quality over speed), skill governance flowchart, EnterPlanMode intercept, anti-rationalization table, learned skills reminder. Re-injected automatically to survive context loss.
@@ -286,7 +286,7 @@ If Serena MCP plugin is installed, the plugin provides Serena management skills:
 
 **JetBrains Recommendation**: For polyglot/monorepo projects, JetBrains plugin provides better performance ($5/mo or $50/yr).
 
-See `skills/serena-setup/` and `skills/serena-status/` for configuration details.
+See `plugin/skills/serena-setup/` and `plugin/skills/serena-status/` for configuration details.
 
 ### claude-mem Integration (Optional)
 
@@ -298,17 +298,17 @@ If claude-mem MCP is installed, agents with the `claude-mem-context` skill can q
 
 The plugin has comprehensive monorepo/workspace support with **100% backward compatibility**.
 
-**Workspace Detection** (`scripts/lib/workspace/detection.cjs`):
+**Workspace Detection** (`plugin/scripts/lib/workspace/detection.cjs`):
 - Auto-detects: pnpm workspaces, Nx, Lerna, Yarn workspaces, Turborepo
 - Discovers all packages in workspace
 - Caches detection results for performance
 
-**Multi-Ecosystem Support** (`scripts/lib/workspace/ecosystems.cjs`):
+**Multi-Ecosystem Support** (`plugin/scripts/lib/workspace/ecosystems.cjs`):
 - Detects project types: nodejs, jvm, python, rust
 - Per-package ecosystem identification
 - Mixed-language monorepo support
 
-**Configuration Hierarchy** (`scripts/lib/workspace/config.cjs`):
+**Configuration Hierarchy** (`plugin/scripts/lib/workspace/config.cjs`):
 ```
 ~/.claude/settings.json              # Global (lowest priority)
   ↓
@@ -317,9 +317,9 @@ workspace-root/.claude/settings.json # Workspace
 package-dir/.claude/settings.json    # Package (highest priority)
 ```
 
-**WorkspaceContext API** (`scripts/lib/workspace-context.cjs`):
+**WorkspaceContext API** (`plugin/scripts/lib/workspace-context.cjs`):
 ```javascript
-const { getWorkspaceContext } = require('./scripts/lib/workspace-context.cjs');
+const { getWorkspaceContext } = require('./plugin/scripts/lib/workspace-context.cjs');
 
 const workspace = getWorkspaceContext();
 
@@ -344,9 +344,9 @@ if (workspace.isWorkspace()) {
 }
 ```
 
-**Command Generation** (`scripts/lib/workspace/commands.cjs`):
+**Command Generation** (`plugin/scripts/lib/workspace/commands.cjs`):
 ```javascript
-const { CommandGenerator } = require('./scripts/lib/workspace/commands.cjs');
+const { CommandGenerator } = require('./plugin/scripts/lib/workspace/commands.cjs');
 
 // Generate commands for any ecosystem
 const gen = new CommandGenerator('nodejs', { packageManager: 'pnpm' });
@@ -363,9 +363,9 @@ const jvmGen = new CommandGenerator('jvm', {
 jvmGen.build();  // gradlew.bat build
 ```
 
-**Tool Detection** (`scripts/lib/workspace/tool-detection.cjs`):
+**Tool Detection** (`plugin/scripts/lib/workspace/tool-detection.cjs`):
 ```javascript
-const { ToolDetector, checkEcosystemTools } = require('./scripts/lib/workspace/tool-detection.cjs');
+const { ToolDetector, checkEcosystemTools } = require('./plugin/scripts/lib/workspace/tool-detection.cjs');
 
 const detector = new ToolDetector();
 detector.isAvailable('node');        // true/false
@@ -376,14 +376,14 @@ const tools = checkEcosystemTools('nodejs');
 // { node: true, npm: true, pnpm: true, yarn: false, bun: false }
 ```
 
-**Package Manager Functions** (`scripts/lib/package-manager.cjs`):
+**Package Manager Functions** (`plugin/scripts/lib/package-manager.cjs`):
 ```javascript
 const {
   getPackageManager,
   isInWorkspace,
   getPackageManagerForFile,
   getAllWorkspacePackageManagers
-} = require('./scripts/lib/package-manager.cjs');
+} = require('./plugin/scripts/lib/package-manager.cjs');
 
 // Workspace-aware functions
 if (isInWorkspace()) {
@@ -494,7 +494,7 @@ Use the appropriate TDD agent proactively for new features:
 
 ### Hook Implementation Pattern
 
-Hooks are defined in `hooks/hooks.json` with:
+Hooks are defined in `plugin/hooks/hooks.json` with:
 - **matcher:** CEL expression to match tool/event
 - **hooks:** Array of command objects with inline Node.js or script references
 - **description:** Human-readable explanation

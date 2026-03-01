@@ -33,7 +33,7 @@ export class HookTestHarness {
         cwd,
         env: {
           ...process.env,
-          CLAUDE_PLUGIN_ROOT: path.resolve(__dirname, '../..'),
+          CLAUDE_PLUGIN_ROOT: path.resolve(__dirname, '../../plugin'),
           ...env
         },
         timeout

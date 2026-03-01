@@ -34,13 +34,13 @@ git clone https://github.com/doublefx/magic-claude.git
 cd magic-claude
 
 # 2. Copy components
-cp agents/*.md ~/.claude/agents/
-cp commands/*.md ~/.claude/commands/
-cp -r skills/* ~/.claude/skills/
-cp rules/*.md ~/.claude/rules/
+cp plugin/agents/*.md ~/.claude/agents/
+cp plugin/commands/*.md ~/.claude/commands/
+cp -r plugin/skills/* ~/.claude/skills/
+cp plugin/rules/*.md ~/.claude/rules/
 
 # 3. Add hooks to settings.json
-# Copy hooks from hooks/hooks.json to ~/.claude/settings.json
+# Copy hooks from plugin/hooks/hooks.json to ~/.claude/settings.json
 ```
 
 Or add the plugin directly to your `~/.claude/settings.json`:
@@ -272,7 +272,7 @@ ls ~/.claude/agents/python-reviewer.md
 cat ~/.claude/settings.json | grep hooks
 
 # 2. Verify hook scripts exist
-ls scripts/hooks/smart-formatter.cjs
+ls plugin/scripts/hooks/smart-formatter.cjs
 
 # 3. Install formatters
 pip install ruff  # Python

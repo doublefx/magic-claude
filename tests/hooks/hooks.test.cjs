@@ -23,7 +23,7 @@ function test(name, fn) {
 
 // Constants
 const REPO_ROOT = path.join(__dirname, '..', '..');
-const HOOKS_PATH = path.join(REPO_ROOT, 'hooks', 'hooks.json');
+const HOOKS_PATH = path.join(REPO_ROOT, 'plugin', 'hooks', 'hooks.json');
 
 const VALID_EVENT_TYPES = [
   'UserPromptSubmit',
@@ -284,7 +284,7 @@ function runTests() {
             scriptPathRegex.lastIndex = 0;
             while ((match = scriptPathRegex.exec(handler.command)) !== null) {
               const relativePath = match[1];
-              const absolutePath = path.join(REPO_ROOT, relativePath);
+              const absolutePath = path.join(REPO_ROOT, 'plugin', relativePath);
               if (!fs.existsSync(absolutePath)) {
                 missingFiles.push({
                   eventType,

@@ -10,7 +10,7 @@ const fs = require('fs');
 const os = require('os');
 
 // Import the module
-const utils = require('../../scripts/lib/utils.cjs');
+const utils = require('../../plugin/scripts/lib/utils.cjs');
 
 // Test helper
 function test(name, fn) {

@@ -9,7 +9,7 @@ const __dirname = path.dirname(__filename);
 
 describe('maven-advisor hook', () => {
   const harness = new HookTestHarness();
-  const hookPath = path.join(__dirname, '../../../scripts/hooks/maven-advisor.cjs');
+  const hookPath = path.join(__dirname, '../../../plugin/scripts/hooks/maven-advisor.cjs');
   const fixturesDir = path.join(__dirname, '../../fixtures');
 
   describe('Protocol compliance', () => {

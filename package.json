@@ -1,6 +1,6 @@
 {
   "name": "magic-claude",
-  "version": "2.22.4",
+  "version": "2.23.0",
   "description": "Enterprise Stack Extension - Claude Code plugin for Python, Java, Kotlin, Gradle, Maven, and CI/CD pipelines",
   "type": "module",
   "scripts": {
@@ -12,9 +12,9 @@
     "test:integration": "vitest tests/integration",
     "test:e2e": "vitest tests/e2e",
     "test:harness": "vitest tests/harnesses",
-    "lint": "eslint scripts/hooks/*.cjs scripts/hooks/*.js scripts/lib/*.cjs scripts/lib/*.js",
-    "lint:fix": "eslint --fix scripts/hooks/*.cjs scripts/hooks/*.js scripts/lib/*.cjs scripts/lib/*.js",
-    "lint:deprecated": "node scripts/lib/deprecation-checker.cjs scripts",
+    "lint": "eslint plugin/scripts/hooks/*.cjs plugin/scripts/hooks/*.js plugin/scripts/lib/*.cjs plugin/scripts/lib/*.js",
+    "lint:fix": "eslint --fix plugin/scripts/hooks/*.cjs plugin/scripts/hooks/*.js plugin/scripts/lib/*.cjs plugin/scripts/lib/*.js",
+    "lint:deprecated": "node plugin/scripts/lib/deprecation-checker.cjs plugin/scripts",
     "lint:dead-code": "knip",
     "lint:all": "npm run lint && npm run lint:deprecated && npm run lint:dead-code",
     "check": "npm run lint:all && npm run test"

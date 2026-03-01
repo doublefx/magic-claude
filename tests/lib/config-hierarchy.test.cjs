@@ -28,7 +28,7 @@ let ConfigLoader, loadConfig, mergeConfigs, getConfigForPackage;
 let moduleLoaded = false;
 
 try {
-  const configModule = require('../../scripts/lib/workspace/config.cjs');
+  const configModule = require('../../plugin/scripts/lib/workspace/config.cjs');
   ConfigLoader = configModule.ConfigLoader;
   loadConfig = configModule.loadConfig;
   mergeConfigs = configModule.mergeConfigs;

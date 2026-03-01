@@ -122,7 +122,7 @@ For manual installation steps or adding the plugin via `settings.json`, see [Tut
 ### For developers
 
 - **[ARCHITECTURE.md](docs/ARCHITECTURE.md)** -- Directory structure, ecosystem registry, workspace support
-- **[Plugin Development](docs/PLUGIN_DEVELOPMENT/00-OVERVIEW.md)** -- Build your own agents, skills, hooks, and commands
+- **Plugin Development** -- Use `magic-claude-docs:docs plugins` for building agents, skills, hooks, and commands
 
 See [docs/README.md](docs/README.md) for the full documentation map.
 

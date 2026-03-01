@@ -82,7 +82,7 @@ async function runTests() {
   let passed = 0;
   let failed = 0;
 
-  const scriptsDir = path.join(__dirname, '..', '..', 'scripts', 'hooks');
+  const scriptsDir = path.join(__dirname, '..', '..', 'plugin', 'scripts', 'hooks');
 
   // session-start.js tests
   console.log('session-start.js:');
@@ -242,13 +242,13 @@ async function runTests() {
   console.log('\nhooks.json Validation:');
 
   if (test('hooks.json is valid JSON', () => {
-    const hooksPath = path.join(__dirname, '..', '..', 'hooks', 'hooks.json');
+    const hooksPath = path.join(__dirname, '..', '..', 'plugin', 'hooks', 'hooks.json');
     const content = fs.readFileSync(hooksPath, 'utf8');
     JSON.parse(content); // Will throw if invalid
   })) passed++; else failed++;
 
   if (test('hooks.json has required event types', () => {
-    const hooksPath = path.join(__dirname, '..', '..', 'hooks', 'hooks.json');
+    const hooksPath = path.join(__dirname, '..', '..', 'plugin', 'hooks', 'hooks.json');
     const hooks = JSON.parse(fs.readFileSync(hooksPath, 'utf8'));
 
     assert.ok(hooks.hooks.PreToolUse, 'Should have PreToolUse hooks');
@@ -259,7 +259,7 @@ async function runTests() {
   })) passed++; else failed++;
 
   if (test('all hook commands use node', () => {
-    const hooksPath = path.join(__dirname, '..', '..', 'hooks', 'hooks.json');
+    const hooksPath = path.join(__dirname, '..', '..', 'plugin', 'hooks', 'hooks.json');
     const hooks = JSON.parse(fs.readFileSync(hooksPath, 'utf8'));
 
     const checkHooks = (hookArray) => {
@@ -281,7 +281,7 @@ async function runTests() {
   })) passed++; else failed++;
 
   if (test('script references use CLAUDE_PLUGIN_ROOT variable', () => {
-    const hooksPath = path.join(__dirname, '..', '..', 'hooks', 'hooks.json');
+    const hooksPath = path.join(__dirname, '..', '..', 'plugin', 'hooks', 'hooks.json');
     const hooks = JSON.parse(fs.readFileSync(hooksPath, 'utf8'));
 
     const checkHooks = (hookArray) => {

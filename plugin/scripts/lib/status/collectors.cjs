@@ -312,8 +312,16 @@ function isFrontendDesignInstalled() {
 }
 
 /**
+ * Check if claude-code-docs plugin is installed
+ * Plugin key is "magic-claude-docs@magic-claude-docs" (plugin name, not repo name)
+ */
+function isClaudeCodeDocsInstalled() {
+  return isPluginEnabled('magic-claude-docs');
+}
+
+/**
  * Collect optional integration statuses
- * @returns {{ serena: boolean, jetbrains: boolean, claudeMem: boolean, frontendDesign: boolean }}
+ * @returns {{ serena: boolean, jetbrains: boolean, claudeMem: boolean, frontendDesign: boolean, claudeCodeDocs: boolean }}
  */
 function collectIntegrations() {
   return {
@@ -321,6 +329,7 @@ function collectIntegrations() {
     jetbrains: isJetBrainsAvailable(),
     claudeMem: isClaudeMemInstalled(),
     frontendDesign: isFrontendDesignInstalled(),
+    claudeCodeDocs: isClaudeCodeDocsInstalled(),
   };
 }
 
@@ -406,6 +415,7 @@ module.exports = {
   // Exposed for testing
   isClaudeMemInstalled,
   isFrontendDesignInstalled,
+  isClaudeCodeDocsInstalled,
   isPluginEnabled,
   getEnabledPlugins,
   safeReadDir,

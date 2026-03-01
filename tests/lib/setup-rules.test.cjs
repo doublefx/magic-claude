@@ -19,7 +19,7 @@ const {
   checkRules,
   installRules,
   uninstallRules
-} = require('../../scripts/setup-rules.cjs');
+} = require('../../plugin/scripts/setup-rules.cjs');
 
 // Test helper
 function test(name, fn) {

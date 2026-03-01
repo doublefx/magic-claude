@@ -256,10 +256,10 @@ Generated manifests include:
 
 ### Helm Charts
 
-For more advanced deployments, Helm charts are available in `templates/helm/app-chart/`:
+For more advanced deployments, Helm charts are available in `plugin/templates/helm/app-chart/`:
 
 ```bash
-helm install myapp templates/helm/app-chart \
+helm install myapp plugin/templates/helm/app-chart \
   --set image.repository=myapp \
   --set image.tag=v1.0.0 \
   --set ingress.hosts[0].host=myapp.example.com

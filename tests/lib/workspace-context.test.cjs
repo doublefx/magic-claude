@@ -27,7 +27,7 @@ let WorkspaceContext, getWorkspaceContext;
 let moduleLoaded = false;
 
 try {
-  const module = require('../../scripts/lib/workspace-context.cjs');
+  const module = require('../../plugin/scripts/lib/workspace-context.cjs');
   WorkspaceContext = module.WorkspaceContext;
   getWorkspaceContext = module.getWorkspaceContext;
   moduleLoaded = true;

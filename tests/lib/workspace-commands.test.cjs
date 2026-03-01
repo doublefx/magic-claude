@@ -26,7 +26,7 @@ let CommandGenerator, generateCommand, generateInstallCommand, generateTestComma
 let moduleLoaded = false;
 
 try {
-  const commandsModule = require('../../scripts/lib/workspace/commands.cjs');
+  const commandsModule = require('../../plugin/scripts/lib/workspace/commands.cjs');
   CommandGenerator = commandsModule.CommandGenerator;
   generateCommand = commandsModule.generateCommand;
   generateInstallCommand = commandsModule.generateInstallCommand;

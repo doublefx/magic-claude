@@ -47,7 +47,7 @@ The plugin automatically detects your project type(s) by scanning for manifest f
 ### Code Example
 
 ```javascript
-const { detectProjectType } = require('./scripts/lib/detect-project-type');
+const { detectProjectType } = require('./plugin/scripts/lib/detect-project-type');
 
 // Detect from current directory
 const types = detectProjectType();
@@ -603,7 +603,7 @@ jobs:
 
 ### Docker Multi-Stage Builds
 
-**Generated Files**: `templates/docker/Dockerfile.<language>`
+**Generated Files**: `plugin/templates/docker/Dockerfile.<language>`
 
 **Python Example**:
 ```dockerfile
@@ -708,7 +708,7 @@ spec:
 
 ### Helm Charts
 
-**Generated Chart**: `templates/helm/app-chart/`
+**Generated Chart**: `plugin/templates/helm/app-chart/`
 
 **Files**:
 - `Chart.yaml`: Chart metadata

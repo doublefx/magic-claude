@@ -42,7 +42,7 @@ async function runTests() {
 
   try {
     // Try to load the module
-    serena = require('../../scripts/lib/serena.cjs');
+    serena = require('../../plugin/scripts/lib/serena.cjs');
   } catch (error) {
     console.log('\n❌ Module not found: scripts/lib/serena.cjs');
     console.log('   This is expected - implement the module to pass tests.\n');

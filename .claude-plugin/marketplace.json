@@ -9,7 +9,7 @@
   "plugins": [
     {
       "name": "magic-claude",
-      "source": "./",
+      "source": "./plugin/",
       "description": "Complete collection of agents, skills, hooks, commands, and rules evolved over months of intensive daily use",
       "author": {
         "name": "doublefx",

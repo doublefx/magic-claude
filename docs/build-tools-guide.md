@@ -448,7 +448,7 @@ The hook runs automatically on:
 
 ### Disable Hook (if needed)
 
-If you want to disable the hook advice, you can modify `hooks/hooks.json`:
+If you want to disable the hook advice, you can modify `plugin/hooks/hooks.json`:
 
 ```json
 {

@@ -10,7 +10,7 @@ const fs = require('fs');
 
 // Import utils
 const { parseFrontmatter } = require(
-  path.join(__dirname, '..', '..', 'scripts', 'lib', 'utils.cjs')
+  path.join(__dirname, '..', '..', 'plugin', 'scripts', 'lib', 'utils.cjs')
 );
 
 // Test helper
@@ -28,12 +28,12 @@ function test(name, fn) {
 
 // Constants
 const REPO_ROOT = path.join(__dirname, '..', '..');
-const AGENTS_DIR = path.join(REPO_ROOT, 'agents');
+const AGENTS_DIR = path.join(REPO_ROOT, 'plugin', 'agents');
 const DISCOVERER_PATH = path.join(AGENTS_DIR, 'discoverer.md');
 const PLAN_CRITIC_PATH = path.join(AGENTS_DIR, 'plan-critic.md');
 const PLANNER_PATH = path.join(AGENTS_DIR, 'planner.md');
-const ORCHESTRATOR_PATH = path.join(REPO_ROOT, 'skills', 'proactive-orchestration', 'SKILL.md');
-const PLAN_CRITIC_PROMPT_PATH = path.join(REPO_ROOT, 'skills', 'proactive-orchestration', 'plan-critic-prompt.md');
+const ORCHESTRATOR_PATH = path.join(REPO_ROOT, 'plugin', 'skills', 'proactive-orchestration', 'SKILL.md');
+const PLAN_CRITIC_PROMPT_PATH = path.join(REPO_ROOT, 'plugin', 'skills', 'proactive-orchestration', 'plan-critic-prompt.md');
 
 // Test suite
 function runTests() {
