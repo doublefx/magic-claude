@@ -76,12 +76,14 @@ This meta-skill survives compaction and `/clear` because SessionStart re-injects
 
 1. Does `.claude/orchestration-state.md` exist?
 2. If YES: read it. It contains the feature name, current phase, plan path, and key decisions.
-3. Invoke `magic-claude:proactive-orchestration` — the skill's crash recovery logic will parse the state file and offer to resume or start fresh.
-4. Read the plan from the path recorded in the state file (e.g., `.claude/plans/YYYY-MM-DD-feature.md`).
+3. Read the plan from the path recorded in the state file (e.g., `.claude/plans/YYYY-MM-DD-feature.md`).
+4. **Determine recovery mode:**
+   - **Auto-resume (compaction):** If your compressed context mentions the same feature or orchestration work — you were just working on this. **Do NOT ask the user.** Re-read the orchestration skill (`magic-claude:proactive-orchestration`), restore phase context from the state file, and **continue from the recorded phase immediately.** The user expects you to keep going.
+   - **Ask user (new session or /clear):** If your context has NO memory of this feature — this is a crash or fresh start. Ask: *"Found incomplete orchestration for **<feature>** at Phase <N>. Resume or start fresh?"*
 
 **If NO state file exists:** no recovery needed, proceed normally.
 
-This is why the state file exists — the orchestration skill's instructions are lost during compaction, but this meta-skill is re-injected and bridges the gap by triggering re-invocation.
+**CRITICAL:** After compaction, the #1 failure mode is stopping to ask the user instead of continuing. If in doubt, auto-resume — the user can always redirect you.
 
 ## Red Flags
 

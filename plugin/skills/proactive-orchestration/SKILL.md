@@ -114,13 +114,14 @@ Status: <in_progress / blocked / pending>
 
 ### Crash Recovery
 
-**At pipeline start, before Phase 0, check for an orphaned state file:**
+**At pipeline start or after context recovery, check for an orphaned state file:**
 
-1. If `.claude/orchestration-state.md` exists and has a phase beyond "PLAN: APPROVED":
-   - Read the state file
-   - Present to user: "Found incomplete orchestration for **<feature>** (Phase <N>, task <X/Y>). Resume or start fresh?"
-   - If resume: read the plan from disk, restore phase context, continue from the recorded phase
-   - If start fresh: delete the state file, proceed normally
+1. If `.claude/orchestration-state.md` exists:
+   - Read the state file and the plan from the recorded path
+   - **After compaction (compressed context references this feature):** Auto-resume from the recorded phase. Do NOT ask the user — they were just working on this and expect you to continue.
+   - **New session or /clear (no context about this feature):** Present to user: "Found incomplete orchestration for **<feature>** (Phase <N>, task <X/Y>). Resume or start fresh?"
+     - If resume: restore phase context, continue from the recorded phase
+     - If start fresh: delete the state file, proceed normally
 2. If no state file exists: proceed normally
 
 ### Context Recovery After Compaction
