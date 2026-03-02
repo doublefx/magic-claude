@@ -20,6 +20,7 @@ const {
   collectPackageManager,
   collectWorkspace,
   collectIntegrations,
+  collectGitHooks,
   collectMcpServers,
 } = require('./lib/status/collectors.cjs');
 const { formatFullReport } = require('./lib/status/formatter.cjs');
@@ -42,6 +43,7 @@ function main() {
     ['packageManager', () => collectPackageManager()],
     ['workspace', () => collectWorkspace()],
     ['integrations', () => collectIntegrations()],
+    ['gitHooks', () => collectGitHooks(pluginRoot)],
     ['mcpServers', () => collectMcpServers()],
   ];
 

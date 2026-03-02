@@ -149,6 +149,39 @@ function runTests() {
     assert.strictEqual(typeof data.claudeCodeDocs, 'boolean');
   })) passed++; else failed++;
 
+  if (test('collectGitHooks detects git repo and hook status', () => {
+    const data = collectors.collectGitHooks(PLUGIN_ROOT);
+    assert.strictEqual(typeof data.isGitRepo, 'boolean');
+    assert.ok(data.isGitRepo, 'Test repo should be a git repo');
+    assert.strictEqual(typeof data.hooks, 'object');
+    assert.strictEqual(typeof data.installedCount, 'number');
+    assert.strictEqual(typeof data.totalCount, 'number');
+    assert.strictEqual(data.totalCount, 4, 'Should check 4 git-sync hooks');
+    // Verify all expected hook names are present
+    const expectedHooks = ['post-merge', 'post-checkout', 'post-rebase', 'post-rewrite'];
+    for (const hookName of expectedHooks) {
+      assert.ok(hookName in data.hooks, `Should check ${hookName} hook`);
+      assert.strictEqual(typeof data.hooks[hookName], 'boolean');
+    }
+    // installedCount should match the number of true values
+    const trueCount = Object.values(data.hooks).filter(v => v).length;
+    assert.strictEqual(data.installedCount, trueCount, 'installedCount should match actual installed hooks');
+  })) passed++; else failed++;
+
+  if (test('collectGitHooks handles non-git directory', () => {
+    // /tmp is unlikely to be a git repo
+    const origCwd = process.cwd();
+    try {
+      process.chdir('/tmp');
+      const data = collectors.collectGitHooks(PLUGIN_ROOT);
+      assert.strictEqual(data.isGitRepo, false);
+      assert.strictEqual(data.installedCount, 0);
+      assert.strictEqual(data.totalCount, 4);
+    } finally {
+      process.chdir(origCwd);
+    }
+  })) passed++; else failed++;
+
   if (test('collectMcpServers returns count structure', () => {
     const data = collectors.collectMcpServers();
     assert.strictEqual(typeof data.manual.count, 'number');
@@ -289,6 +322,44 @@ function runTests() {
     assert.ok(result.includes('/plugin install serena'), 'Should show serena official hint');
   })) passed++; else failed++;
 
+  if (test('formatGitHooksSection shows all installed', () => {
+    const result = formatter.formatGitHooksSection({
+      isGitRepo: true,
+      hooks: { 'post-merge': true, 'post-checkout': true, 'post-rebase': true, 'post-rewrite': true },
+      installedCount: 4,
+      totalCount: 4,
+    });
+    assert.ok(result.includes('Git Hooks'), 'Should have Git Hooks header');
+    assert.ok(result.includes('4/4 installed'), 'Should show all installed');
+    assert.ok(!result.includes('Missing:'), 'Should not show missing');
+    assert.ok(!result.includes('/serena-setup'), 'Should not show install hint');
+  })) passed++; else failed++;
+
+  if (test('formatGitHooksSection shows missing hooks with recommendation', () => {
+    const result = formatter.formatGitHooksSection({
+      isGitRepo: true,
+      hooks: { 'post-merge': true, 'post-checkout': false, 'post-rebase': false, 'post-rewrite': true },
+      installedCount: 2,
+      totalCount: 4,
+    });
+    assert.ok(result.includes('2/4 installed'), 'Should show partial count');
+    assert.ok(result.includes('Missing:'), 'Should show missing label');
+    assert.ok(result.includes('post-checkout'), 'Should list missing hook');
+    assert.ok(result.includes('post-rebase'), 'Should list missing hook');
+    assert.ok(result.includes('/serena-setup'), 'Should show install recommendation');
+    assert.ok(result.includes('git-sync agent'), 'Should explain benefit');
+  })) passed++; else failed++;
+
+  if (test('formatGitHooksSection handles non-git repo', () => {
+    const result = formatter.formatGitHooksSection({
+      isGitRepo: false,
+      hooks: {},
+      installedCount: 0,
+      totalCount: 4,
+    });
+    assert.ok(result.includes('Not a git repository'), 'Should indicate not a git repo');
+  })) passed++; else failed++;
+
   if (test('formatMcpServersSection shows counts', () => {
     const result = formatter.formatMcpServersSection({
       plugins: { count: 3, names: ['serena', 'context7', 'atlassian'] },
@@ -312,6 +383,7 @@ function runTests() {
       packageManager: { name: 'npm', source: 'default' },
       workspace: { isWorkspace: false, type: null, packageCount: 0 },
       integrations: { serena: false, jetbrains: false, claudeMem: false, frontendDesign: false, claudeCodeDocs: false },
+      gitHooks: { isGitRepo: true, hooks: { 'post-merge': false }, installedCount: 0, totalCount: 4 },
       mcpServers: { manual: { count: 0, names: [] }, plugins: { count: 0, names: [] }, disabled: [] },
     };
     const report = formatter.formatFullReport(allData);
@@ -326,6 +398,7 @@ function runTests() {
     assert.ok(report.includes('--- Package Manager ---'), 'Should have Package Manager section');
     assert.ok(report.includes('--- Workspace ---'), 'Should have Workspace section');
     assert.ok(report.includes('--- Optional Integrations ---'), 'Should have Integrations section');
+    assert.ok(report.includes('--- Git Hooks ---'), 'Should have Git Hooks section');
     assert.ok(report.includes('--- MCP Servers ---'), 'Should have MCP Servers section');
   })) passed++; else failed++;
 

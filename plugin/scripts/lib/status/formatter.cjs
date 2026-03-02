@@ -214,6 +214,34 @@ function formatIntegrationsSection(data) {
 }
 
 /**
+ * Format git hooks section (Serena git-sync hooks)
+ */
+function formatGitHooksSection(data) {
+  if (!data.isGitRepo) {
+    return formatSection('Git Hooks', ['  Not a git repository']);
+  }
+
+  const lines = [];
+
+  if (data.installedCount === data.totalCount) {
+    lines.push(`  git-sync hooks:  ${data.installedCount}/${data.totalCount} installed`);
+  } else {
+    lines.push(`  git-sync hooks:  ${data.installedCount}/${data.totalCount} installed`);
+
+    const missing = Object.entries(data.hooks)
+      .filter(([, installed]) => !installed)
+      .map(([name]) => name);
+    lines.push(`  Missing:         ${missing.join(', ')}`);
+    lines.push('');
+    lines.push('  These hooks auto-trigger the git-sync agent after git pull, merge,');
+    lines.push('  rebase, and branch switch to analyze incoming changes and report impact.');
+    lines.push('  -> Install: /serena-setup (configures hooks as part of Serena setup)');
+  }
+
+  return formatSection('Git Hooks', lines);
+}
+
+/**
  * Format MCP servers section
  */
 function formatMcpServersSection(data) {
@@ -258,6 +286,7 @@ function formatFullReport(allData) {
   if (allData.packageManager) sections.push(formatPackageManagerSection(allData.packageManager));
   if (allData.workspace) sections.push(formatWorkspaceSection(allData.workspace));
   if (allData.integrations) sections.push(formatIntegrationsSection(allData.integrations));
+  if (allData.gitHooks) sections.push(formatGitHooksSection(allData.gitHooks));
   if (allData.mcpServers) sections.push(formatMcpServersSection(allData.mcpServers));
 
   const footer = SEPARATOR.repeat(50);
@@ -277,6 +306,7 @@ module.exports = {
   formatPackageManagerSection,
   formatWorkspaceSection,
   formatIntegrationsSection,
+  formatGitHooksSection,
   formatMcpServersSection,
   formatFullReport,
 };

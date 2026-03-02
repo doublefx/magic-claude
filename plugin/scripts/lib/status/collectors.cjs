@@ -320,6 +320,60 @@ function isClaudeCodeDocsInstalled() {
 }
 
 /**
+ * Names of the Serena git hooks that trigger the git-sync agent
+ */
+const GIT_SYNC_HOOKS = ['post-merge', 'post-checkout', 'post-rebase', 'post-rewrite'];
+
+/**
+ * Collect git hook installation status for the current repository.
+ * Detects whether the Serena git-sync hooks are installed in .git/hooks/.
+ * @param {string} pluginRoot - Plugin root (used to locate hook templates)
+ * @returns {{ isGitRepo: boolean, hooks: Record<string, boolean>, installedCount: number, totalCount: number }}
+ */
+function collectGitHooks(pluginRoot) {
+  const result = {
+    isGitRepo: false,
+    hooks: {},
+    installedCount: 0,
+    totalCount: GIT_SYNC_HOOKS.length,
+  };
+
+  // Find the git dir for the current working directory
+  const gitDir = path.join(process.cwd(), '.git');
+  try {
+    const stat = fs.statSync(gitDir);
+    result.isGitRepo = stat.isDirectory() || stat.isFile(); // .git can be a file in worktrees
+  } catch {
+    return result;
+  }
+
+  // Resolve actual git hooks dir (handles worktrees where .git is a file)
+  let hooksDir;
+  try {
+    const { execSync } = require('child_process');
+    const gitCommonDir = execSync('git rev-parse --git-common-dir', {
+      encoding: 'utf-8',
+      cwd: process.cwd(),
+      stdio: ['pipe', 'pipe', 'pipe'],
+    }).trim();
+    hooksDir = path.resolve(process.cwd(), gitCommonDir, 'hooks');
+  } catch {
+    hooksDir = path.join(gitDir, 'hooks');
+  }
+
+  for (const hookName of GIT_SYNC_HOOKS) {
+    const hookPath = path.join(hooksDir, hookName);
+    const content = readFile(hookPath);
+    // Check for the [git-sync] marker that our templates use
+    const installed = !!(content && content.includes('[git-sync]'));
+    result.hooks[hookName] = installed;
+    if (installed) result.installedCount++;
+  }
+
+  return result;
+}
+
+/**
  * Collect optional integration statuses
  * @returns {{ serena: boolean, jetbrains: boolean, claudeMem: boolean, frontendDesign: boolean, claudeCodeDocs: boolean }}
  */
@@ -411,6 +465,7 @@ module.exports = {
   collectPackageManager,
   collectWorkspace,
   collectIntegrations,
+  collectGitHooks,
   collectMcpServers,
   // Exposed for testing
   isClaudeMemInstalled,
@@ -421,4 +476,5 @@ module.exports = {
   safeReadDir,
   safeParseJson,
   SKILL_CATEGORIES,
+  GIT_SYNC_HOOKS,
 };
