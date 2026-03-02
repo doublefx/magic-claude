@@ -28,6 +28,7 @@ process.stdin.on('end', () => {
       }
 
       if (fs.existsSync(path.join(dir, 'tsconfig.json'))) {
+        let errorLines = [];
         try {
           const result = execSync('npx tsc --noEmit --pretty false 2>&1', {
             cwd: dir,
@@ -35,28 +36,33 @@ process.stdin.on('end', () => {
             stdio: ['pipe', 'pipe', 'pipe']
           });
 
-          // Filter to errors in this file only
-          const lines = result.split('\n').filter(line => line.includes(filePath)).slice(0, 10);
-          if (lines.length) {
-            console.error('[TypeScript] Type errors found:');
-            console.error(lines.join('\n'));
-          }
+          errorLines = result.split('\n').filter(line => line.includes(filePath)).slice(0, 10);
         } catch (error) {
           // tsc exits non-zero when there are errors
           const stdout = error.stdout || '';
-          const lines = stdout.split('\n').filter(line => line.includes(filePath)).slice(0, 10);
-          if (lines.length) {
-            console.error('[TypeScript] Type errors found:');
-            console.error(lines.join('\n'));
-          }
+          errorLines = stdout.split('\n').filter(line => line.includes(filePath)).slice(0, 10);
+        }
+
+        if (errorLines.length) {
+          console.error('[TypeScript] Type errors found:');
+          console.error(errorLines.join('\n'));
+
+          // Inject errors as context for Claude
+          console.log(JSON.stringify({
+            hookSpecificOutput: {
+              hookEventName: 'PostToolUse',
+              additionalContext: `[TypeScript] Type errors in ${path.basename(filePath)}:\n${errorLines.join('\n')}`
+            }
+          }));
+          return;
         }
       }
     }
 
-    // Pass through unchanged
-    console.log(data);
+    // No errors — exit cleanly
+    process.exit(0);
   } catch (error) {
     console.error(`[TypeScript] Error: ${error.message}`);
-    console.log(data);
+    process.exit(0);
   }
 });

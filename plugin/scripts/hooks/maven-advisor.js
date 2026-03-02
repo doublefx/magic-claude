@@ -11,7 +11,7 @@
 
 import {
   readHookInput,
-  writeHookOutput,
+  writeHookResult,
   getCommand,
   detectProjectType,
   logHook
@@ -33,50 +33,45 @@ async function main() {
     // Extract command from context
     const command = getCommand(context);
 
-    // If no command, pass through
     if (!command) {
-      writeHookOutput(context);
       process.exit(0);
     }
 
-    // Detect project types in current directory
     const projectTypes = detectProjectType(process.cwd());
+    const advice = [];
 
     // Maven advice (only in Maven projects)
     if (projectTypes.includes('maven')) {
-      // Suggest mvn verify instead of mvn install for local builds
       if (command.includes('mvn install') && !command.includes('mvn clean install')) {
-        logHook('Consider: mvn verify (faster than install for local builds)', 'INFO');
-        logHook('Use "mvn clean install" only when you need to publish to local repo', 'INFO');
+        advice.push('Consider: mvn verify (faster than install for local builds). Use "mvn clean install" only when publishing to local repo.');
       }
-
-      // Suggest using Gradle wrapper
       if (command.includes('gradle') && !command.includes('./gradlew') && !command.includes('.\\gradlew')) {
-        logHook('Consider: Use ./gradlew instead of gradle for wrapper consistency', 'INFO');
+        advice.push('Consider: Use ./gradlew instead of gradle for wrapper consistency.');
       }
     }
 
     // Gradle advice (only in Gradle projects)
     if (projectTypes.includes('gradle')) {
-      // Suggest using Gradle wrapper
       if (command.includes('gradle') && !command.includes('./gradlew') && !command.includes('.\\gradlew')) {
-        logHook('Consider: Use ./gradlew instead of gradle for wrapper consistency', 'INFO');
+        advice.push('Consider: Use ./gradlew instead of gradle for wrapper consistency.');
       }
     }
 
-    // Always pass through context (required by hook protocol)
-    writeHookOutput(context);
+    if (advice.length > 0) {
+      advice.forEach(a => logHook(a, 'INFO'));
+      writeHookResult('PostToolUse', {
+        additionalContext: `[Build Advisor] ${advice.join(' ')}`
+      });
+    }
+
     process.exit(0);
 
   } catch (error) {
     logHook(`Unexpected error: ${error.message}`, 'ERROR');
-    // Even on error, try to pass through empty context
-    writeHookOutput({});
     process.exit(0);
   }
 }
 
-// Run main function
 main().catch((err) => {
   logHook(`Fatal error: ${err.message}`, 'ERROR');
   process.exit(0);

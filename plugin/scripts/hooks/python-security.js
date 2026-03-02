@@ -18,7 +18,7 @@ import fs from 'fs';
 import path from 'path';
 import {
   readHookInput,
-  writeHookOutput,
+  writeHookResult,
   getFilePath,
   getToolName,
   detectProjectType,
@@ -229,7 +229,6 @@ async function main() {
 
     // Only run on Python projects
     if (!projectTypes.includes('python')) {
-      writeHookOutput(context);
       process.exit(0);
     }
 
@@ -239,46 +238,32 @@ async function main() {
 
     // Only run on Edit/Write of Python files
     if ((tool === 'Edit' || tool === 'Write') && filePath && filePath.endsWith('.py')) {
-      // Check if file exists
       if (fs.existsSync(filePath)) {
-        // Run Semgrep scan on the file
+        const findings = [];
+
         const semgrepIssues = runSemgrepScan(filePath);
+        if (semgrepIssues) findings.push(`Semgrep found security issues in ${path.basename(filePath)}`);
 
-        // Run pip-audit on project (throttled to avoid running too often)
         const pipAuditIssues = runPipAudit(process.cwd());
+        if (pipAuditIssues) findings.push('pip-audit found vulnerable dependencies');
 
-        // If no issues found, log success
-        if (!semgrepIssues && !pipAuditIssues) {
-          // Silent success - don't spam logs
+        if (findings.length > 0) {
+          writeHookResult('PostToolUse', {
+            additionalContext: `[Python Security] ${findings.join('. ')}. Review and fix before committing.`
+          });
         }
       }
     }
 
-    // Always pass through context (required by hook protocol)
-    writeHookOutput(context);
     process.exit(0);
 
   } catch (error) {
     logHook(`Unexpected error: ${error.message}`, 'ERROR');
-    // CRITICAL: Always pass through context, even on catastrophic failure
-    try {
-      writeHookOutput({});
-    } catch (_writeError) {
-      // Last resort: output minimal valid context to maintain hook chain
-      console.log('{}');
-    }
     process.exit(0);
   }
 }
 
-// Run main function
 main().catch((err) => {
   logHook(`Fatal error: ${err.message}`, 'ERROR');
-  // Last resort: output empty context to maintain hook chain
-  try {
-    console.log('{}');
-  } catch {
-    // Can't do anything more
-  }
   process.exit(0);
 });

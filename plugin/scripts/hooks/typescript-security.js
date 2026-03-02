@@ -18,7 +18,7 @@ import fs from 'fs';
 import path from 'path';
 import {
   readHookInput,
-  writeHookOutput,
+  writeHookResult,
   getFilePath,
   getToolName,
   detectProjectType,
@@ -162,19 +162,16 @@ function runBasicSecurityChecks(filePath) {
       issues.push('Potential open redirect. Validate redirect URLs against an allowlist.');
     }
 
-    // Report issues
+    // Report issues to stderr (visible in verbose mode)
     if (issues.length > 0) {
       logHook(`Security issues found in ${path.basename(filePath)}:`, 'WARNING');
-      issues.forEach(issue => {
-        console.error(`  - ${issue}`);
-      });
-      return true;
+      issues.forEach(issue => console.error(`  - ${issue}`));
     }
 
-    return false;
+    return issues;
   } catch (error) {
     logHook(`Failed to run security checks: ${error.message}`, 'ERROR');
-    return false;
+    return [];
   }
 }
 
@@ -294,54 +291,44 @@ async function main() {
 
     // Only run on Node.js/TypeScript projects
     if (!projectTypes.includes('nodejs') && !projectTypes.includes('typescript')) {
-      writeHookOutput(context);
       process.exit(0);
     }
 
-    // Get tool name and file path
     const tool = getToolName(context);
     const filePath = getFilePath(context);
 
-    // Only run on Edit/Write of TS/JS files
     if ((tool === 'Edit' || tool === 'Write') && filePath && isTsJsFile(filePath)) {
       if (fs.existsSync(filePath)) {
-        // Run basic pattern checks (fast, always available)
+        const findings = [];
+
         const patternIssues = runBasicSecurityChecks(filePath);
+        if (patternIssues.length > 0) {
+          findings.push(`Pattern checks: ${patternIssues.join('; ')}`);
+        }
 
-        // Run Semgrep scan if available
         const semgrepIssues = runSemgrepScan(filePath);
+        if (semgrepIssues) findings.push(`Semgrep found security issues in ${path.basename(filePath)}`);
 
-        // Run npm audit on project (throttled)
         const npmAuditIssues = runNpmAudit(process.cwd());
+        if (npmAuditIssues) findings.push('npm audit found vulnerable dependencies');
 
-        // Silent success if no issues
-        if (!patternIssues && !semgrepIssues && !npmAuditIssues) {
-          // No issues found
+        if (findings.length > 0) {
+          writeHookResult('PostToolUse', {
+            additionalContext: `[TS/JS Security] ${findings.join('. ')}. Review and fix before committing.`
+          });
         }
       }
     }
 
-    // Always pass through context (required by hook protocol)
-    writeHookOutput(context);
     process.exit(0);
 
   } catch (error) {
     logHook(`Unexpected error: ${error.message}`, 'ERROR');
-    try {
-      writeHookOutput({});
-    } catch (_writeError) {
-      console.log('{}');
-    }
     process.exit(0);
   }
 }
 
 main().catch((err) => {
   logHook(`Fatal error: ${err.message}`, 'ERROR');
-  try {
-    console.log('{}');
-  } catch {
-    // Can't do anything more
-  }
   process.exit(0);
 });

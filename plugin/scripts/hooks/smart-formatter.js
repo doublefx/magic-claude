@@ -13,7 +13,6 @@ import path from 'path';
 import { createRequire } from 'module';
 import {
   readHookInput,
-  writeHookOutput,
   getFilePath,
   logHook,
   commandExists,
@@ -43,21 +42,8 @@ async function main() {
     // Extract file path from context
     const filePath = getFilePath(context);
 
-    // If no file path or file doesn't exist, pass through
-    if (!filePath) {
-      writeHookOutput(context);
-      process.exit(0);
-    }
-
-    if (!fs.existsSync(filePath)) {
-      logHook(`File does not exist: ${filePath}`, 'WARNING');
-      writeHookOutput(context);
-      process.exit(0);
-    }
-
-    if (!isValidFilePath(filePath)) {
-      logHook(`Invalid file path: ${filePath}`, 'WARNING');
-      writeHookOutput(context);
+    // If no file path or file doesn't exist, nothing to do
+    if (!filePath || !fs.existsSync(filePath) || !isValidFilePath(filePath)) {
       process.exit(0);
     }
 
@@ -90,31 +76,16 @@ async function main() {
       }
     }
 
-    // Always pass through context (required by hook protocol)
-    writeHookOutput(context);
+    // Side-effect only (formatting) — no stdout needed
     process.exit(0);
 
   } catch (error) {
     logHook(`Unexpected error: ${error.message}`, 'ERROR');
-    // CRITICAL: Always pass through context, even on catastrophic failure
-    try {
-      writeHookOutput({});
-    } catch (_writeError) {
-      // Last resort: output minimal valid context to maintain hook chain
-      console.log('{}');
-    }
     process.exit(0);
   }
 }
 
-// Run main function
 main().catch((err) => {
   logHook(`Fatal error: ${err.message}`, 'ERROR');
-  // Last resort: output empty context to maintain hook chain
-  try {
-    console.log('{}');
-  } catch {
-    // Can't do anything more
-  }
   process.exit(0);
 });

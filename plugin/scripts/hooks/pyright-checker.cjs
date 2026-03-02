@@ -37,19 +37,24 @@ process.stdin.on('end', () => {
 
       if (hasPyproject || hasPyrightConfig) {
         // Check if pyright is available
+        let pyrightAvailable = false;
         try {
           execSync('which pyright', { stdio: 'pipe' });
+          pyrightAvailable = true;
         } catch {
-          // pyright not installed, try npx
           try {
             execSync('npx pyright --version', { stdio: 'pipe', timeout: 10000 });
+            pyrightAvailable = true;
           } catch {
-            // pyright not available at all, skip silently
-            console.log(data);
-            return;
+            // pyright not available at all
           }
         }
 
+        if (!pyrightAvailable) {
+          process.exit(0);
+        }
+
+        let errorLines = [];
         try {
           const result = execSync(`pyright "${filePath}" 2>&1`, {
             cwd: dir,
@@ -58,34 +63,36 @@ process.stdin.on('end', () => {
             timeout: 30000
           });
 
-          // Filter to errors only
-          const errorLines = result.split('\n').filter(line =>
+          errorLines = result.split('\n').filter(line =>
             line.includes('error:') && line.includes(filePath)
           ).slice(0, 10);
-
-          if (errorLines.length) {
-            console.error('[Pyright] Type errors found:');
-            console.error(errorLines.join('\n'));
-          }
         } catch (error) {
           // pyright exits non-zero when there are errors
           const stdout = error.stdout || '';
-          const errorLines = stdout.split('\n').filter(line =>
+          errorLines = stdout.split('\n').filter(line =>
             line.includes('error:') && line.includes(filePath)
           ).slice(0, 10);
+        }
 
-          if (errorLines.length) {
-            console.error('[Pyright] Type errors found:');
-            console.error(errorLines.join('\n'));
-          }
+        if (errorLines.length) {
+          console.error('[Pyright] Type errors found:');
+          console.error(errorLines.join('\n'));
+
+          console.log(JSON.stringify({
+            hookSpecificOutput: {
+              hookEventName: 'PostToolUse',
+              additionalContext: `[Pyright] Type errors in ${path.basename(filePath)}:\n${errorLines.join('\n')}`
+            }
+          }));
+          return;
         }
       }
     }
 
-    // Pass through unchanged
-    console.log(data);
+    // No errors — exit cleanly
+    process.exit(0);
   } catch (error) {
     console.error(`[Pyright] Error: ${error.message}`);
-    console.log(data);
+    process.exit(0);
   }
 });

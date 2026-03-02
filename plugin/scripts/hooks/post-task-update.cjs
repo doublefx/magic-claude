@@ -5,8 +5,8 @@
  * Cross-platform (Windows, macOS, Linux)
  *
  * Runs after TaskUpdate tool to detect task completion.
- * Uses hookSpecificOutput.additionalContext (supported by PostToolUse)
- * to inject visible context that Claude will surface to the user.
+ * Uses hookSpecificOutput.additionalContext to inject visible context
+ * that Claude will surface to the user.
  */
 
 const { log } = require('../lib/utils.cjs');
@@ -56,7 +56,6 @@ async function main() {
 
   // Only trigger on task completion
   if (status !== 'completed') {
-    console.log(JSON.stringify(input));
     process.exit(0);
   }
 
@@ -64,32 +63,24 @@ async function main() {
   const modifiedFiles = getModifiedSourceFiles();
 
   if (modifiedFiles.length === 0) {
-    // No source files modified, no review needed
-    console.log(JSON.stringify(input));
     process.exit(0);
   }
 
   // Task completed with source file changes - inject context for Claude
   log(`[TaskComplete] Task completed with ${modifiedFiles.length} source file(s) modified`);
 
-  const output = {
-    ...input,
+  const fileList = modifiedFiles.slice(0, 5).join(', ') + (modifiedFiles.length > 5 ? '...' : '');
+  console.log(JSON.stringify({
     hookSpecificOutput: {
-      additionalContext: `[Code Review Recommended] Task completed with ${modifiedFiles.length} source file(s) modified: ${modifiedFiles.slice(0, 5).join(', ')}${modifiedFiles.length > 5 ? '...' : ''}. Consider running code-reviewer agent to verify code quality and security before committing. You should inform the user about this recommendation.`
+      hookEventName: 'PostToolUse',
+      additionalContext: `[Code Review Recommended] Task completed with ${modifiedFiles.length} source file(s) modified: ${fileList}. Consider running code-reviewer agent to verify code quality and security before committing. You should inform the user about this recommendation.`
     }
-  };
+  }));
 
-  console.log(JSON.stringify(output));
   process.exit(0);
 }
 
 main().catch(err => {
   console.error('[TaskComplete] Error:', err.message);
-  process.stdin.resume();
-  let data = '';
-  process.stdin.on('data', c => data += c);
-  process.stdin.on('end', () => {
-    console.log(data || '{}');
-    process.exit(0);
-  });
+  process.exit(0);
 });

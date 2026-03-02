@@ -30,14 +30,23 @@ process.stdin.on('end', () => {
 
           console.error(`[Hook] PR created: ${prUrl}`);
           console.error(`[Hook] To review: gh pr review ${prNumber} --repo ${repo}`);
+
+          // Inject PR URL as context for Claude
+          console.log(JSON.stringify({
+            hookSpecificOutput: {
+              hookEventName: 'PostToolUse',
+              additionalContext: `PR created: ${prUrl}. To review: gh pr review ${prNumber} --repo ${repo}`
+            }
+          }));
+          return;
         }
       }
     }
 
-    // Pass through unchanged
-    console.log(data);
+    // Nothing to report — exit cleanly
+    process.exit(0);
   } catch (error) {
     console.error(`[PRLogger] Error: ${error.message}`);
-    console.log(data);
+    process.exit(0);
   }
 });

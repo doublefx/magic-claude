@@ -22,12 +22,12 @@ process.stdin.on('end', () => {
     const filePath = input.tool_input?.file_path;
 
     if (!filePath || !fs.existsSync(filePath)) {
-      console.log(data);
-      return;
+      process.exit(0);
     }
 
     const content = fs.readFileSync(filePath, 'utf8');
     const lines = content.split('\n');
+    const allFindings = [];
 
     for (const dp of DEBUG_PATTERNS) {
       if (!dp.extensions.test(filePath)) continue;
@@ -44,13 +44,23 @@ process.stdin.on('end', () => {
         console.error(`[Hook] WARNING: ${dp.name} found in ${filePath}`);
         matches.slice(0, 5).forEach(m => console.error(m));
         console.error(`[Hook] ${dp.message}`);
+
+        allFindings.push(`${dp.name} (${matches.length} occurrence${matches.length > 1 ? 's' : ''})`);
       }
     }
 
-    // Pass through unchanged
-    console.log(data);
+    if (allFindings.length > 0) {
+      console.log(JSON.stringify({
+        hookSpecificOutput: {
+          hookEventName: 'PostToolUse',
+          additionalContext: `[Debug Statements] Found in ${filePath}: ${allFindings.join(', ')}. Remove before committing.`
+        }
+      }));
+    }
+
+    process.exit(0);
   } catch (error) {
     console.error(`[DebugDetector] Error: ${error.message}`);
-    console.log(data);
+    process.exit(0);
   }
 });

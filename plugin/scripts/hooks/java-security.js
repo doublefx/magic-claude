@@ -19,7 +19,7 @@ import path from 'path';
 import { execSync } from 'child_process';
 import {
   readHookInput,
-  writeHookOutput,
+  writeHookResult,
   getFilePath,
   detectProjectType,
   logHook,
@@ -93,6 +93,7 @@ function runSpotBugs(classesDir) {
 /**
  * Run basic security pattern checks on Java source file
  * @param {string} filePath - Path to Java file
+ * @returns {string[]} Array of issue descriptions
  */
 function runBasicSecurityChecks(filePath) {
   try {
@@ -132,16 +133,10 @@ function runBasicSecurityChecks(filePath) {
       issues.push('Using java.util.Random for security-sensitive operations. Use SecureRandom instead.');
     }
 
-    // Report issues
-    if (issues.length > 0) {
-      logHook(`Security issues found in ${path.basename(filePath)}:`, 'WARNING');
-      issues.forEach(issue => {
-        console.error(`  - ${issue}`);
-      });
-    }
-
+    return issues;
   } catch (error) {
     logHook(`Failed to run security checks: ${error.message}`, 'ERROR');
+    return [];
   }
 }
 
@@ -230,8 +225,16 @@ async function main() {
       process.exit(0);
     }
 
+    // Collect all findings
+    const findings = [];
+
     // Run basic security checks on source file (fast)
-    runBasicSecurityChecks(filePath);
+    const issues = runBasicSecurityChecks(filePath);
+    if (issues.length > 0) {
+      findings.push(`Security issues in ${path.basename(filePath)}: ${issues.join('; ')}`);
+      logHook(`Security issues found in ${path.basename(filePath)}:`, 'WARNING');
+      issues.forEach(issue => console.error(`  - ${issue}`));
+    }
 
     // Check if security plugins are configured
     checkSecurityPluginConfiguration(process.cwd(), projectTypes);
@@ -240,28 +243,23 @@ async function main() {
     const classesDir = findClassesDirectory(process.cwd(), projectTypes);
 
     if (classesDir) {
-      // Run SpotBugs on compiled classes (requires prior build)
       runSpotBugs(classesDir);
-    } else {
-      logHook(
-        'Compiled classes not found. Run `mvn compile` or `./gradlew compileJava` first for full security analysis.',
-        'INFO'
-      );
     }
 
-    // Always pass through context (required by hook protocol)
-    writeHookOutput(context);
+    // Output findings as additionalContext if any issues found
+    if (findings.length > 0) {
+      writeHookResult('PostToolUse', {
+        additionalContext: `[Java Security] ${findings.join(' | ')}. Review and fix before committing.`
+      });
+    }
     process.exit(0);
 
   } catch (error) {
     logHook(`Unexpected error: ${error.message}`, 'ERROR');
-    // Even on error, try to pass through context
-    writeHookOutput({});
     process.exit(0);
   }
 }
 
-// Run main function
 main().catch((err) => {
   logHook(`Fatal error: ${err.message}`, 'ERROR');
   process.exit(0);

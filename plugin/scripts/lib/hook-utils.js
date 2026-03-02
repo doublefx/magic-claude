@@ -79,25 +79,56 @@ export function readHookInputSync() {
 }
 
 /**
- * Write tool context to stdout (pass-through)
- * REQUIRED by Claude Code hook protocol - must pass through the context
- * @param {object} context - Tool context to write
+ * Write hook result to stdout following the official Claude Code hook protocol.
+ *
+ * For PostToolUse hooks:
+ * - No output needed (just exit 0) if nothing to report
+ * - Use additionalContext to inject context Claude will see
+ * - Use decision: "block" + reason to flag issues
+ *
+ * @param {string} hookEventName - The hook event name (e.g., "PostToolUse")
+ * @param {object} [options] - Optional result fields
+ * @param {string} [options.additionalContext] - Context string injected for Claude
+ * @param {string} [options.decision] - "block" to flag issues to Claude
+ * @param {string} [options.reason] - Reason shown to Claude when decision is "block"
  */
-export function writeHookOutput(context) {
-  if (!context) {
-    console.error('[Hook] Warning: Attempting to write null context');
-    console.log('{}'); // Still output empty object to maintain protocol
+export function writeHookResult(hookEventName, options = {}) {
+  const { additionalContext, decision, reason } = options;
+
+  // If nothing to report, don't write anything — just exit 0
+  if (!additionalContext && !decision) {
     return;
   }
 
-  try {
-    const output = typeof context === 'string' ? context : JSON.stringify(context);
-    console.log(output);
-  } catch (error) {
-    console.error('[Hook] Failed to write context:', error.message);
-    // Still try to output something to maintain protocol
-    console.log('{}');
+  const result = {};
+
+  if (decision) {
+    result.decision = decision;
+    if (reason) result.reason = reason;
   }
+
+  if (additionalContext) {
+    result.hookSpecificOutput = {
+      hookEventName,
+      additionalContext,
+    };
+  }
+
+  try {
+    console.log(JSON.stringify(result));
+  } catch (error) {
+    console.error('[Hook] Failed to write result:', error.message);
+  }
+}
+
+/**
+ * @deprecated Use writeHookResult() instead. This function incorrectly echoes
+ * the full input context back to stdout, which Claude Code tries to parse as
+ * a decision JSON — causing "PostToolUse hook error" messages.
+ */
+export function writeHookOutput(context) {
+  console.error('[Hook] WARNING: writeHookOutput is deprecated — use writeHookResult() instead');
+  // For backward compat, output nothing (safe) rather than the input (broken)
 }
 
 /**
@@ -200,6 +231,7 @@ export { detectProjectType, commandExists, safeExecSync, safeExecAsync, isValidF
 export default {
   readHookInput,
   readHookInputSync,
+  writeHookResult,
   writeHookOutput,
   shouldProcessFile,
   matchesCommand,
