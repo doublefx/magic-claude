@@ -40,6 +40,7 @@ vitest.config.js
 eslint.config.js
 knip.json
 package.json
+!plugin/scripts/package.json
 package-lock.json
 docs/internal/
 scripts/hooks/post-edit-lint.cjs
