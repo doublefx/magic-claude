@@ -13,6 +13,7 @@ import path from 'path';
 import { createRequire } from 'module';
 import {
   readHookInput,
+  debugHook,
   getFilePath,
   logHook,
   commandExists,
@@ -44,6 +45,7 @@ async function main() {
 
     // If no file path or file doesn't exist, nothing to do
     if (!filePath || !fs.existsSync(filePath) || !isValidFilePath(filePath)) {
+      debugHook('smart-formatter', 'process', 'Skipping — no file, missing, or invalid path', filePath);
       process.exit(0);
     }
 

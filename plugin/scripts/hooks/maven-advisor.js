@@ -12,6 +12,7 @@
 import {
   readHookInput,
   writeHookResult,
+  debugHook,
   getCommand,
   detectProjectType,
   logHook
@@ -34,6 +35,7 @@ async function main() {
     const command = getCommand(context);
 
     if (!command) {
+      debugHook('maven-advisor', 'process', 'Skipping — no command in context');
       process.exit(0);
     }
 

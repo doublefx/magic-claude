@@ -8,45 +8,44 @@
  * Filters internally for "gh pr create" commands.
  */
 
-let data = '';
-process.stdin.on('data', chunk => data += chunk);
-process.stdin.on('end', () => {
-  try {
-    const input = JSON.parse(data);
-    const cmd = input.tool_input?.command || '';
+const { debugHook, wrapHookMain } = require('../lib/hook-debug.cjs');
 
-    // Only process gh pr create commands
-    if (/gh pr create/.test(cmd)) {
-      const output = input.tool_response?.output || '';
-      const match = output.match(/https:\/\/github.com\/[^/]+\/[^/]+\/pull\/\d+/);
+wrapHookMain('pr-url-logger', (input) => {
+  const cmd = input.tool_input?.command || '';
 
-      if (match) {
-        const prUrl = match[0];
-        const repoMatch = prUrl.match(/https:\/\/github.com\/([^/]+\/[^/]+)\/pull\/(\d+)/);
-
-        if (repoMatch) {
-          const repo = repoMatch[1];
-          const prNumber = repoMatch[2];
-
-          console.error(`[Hook] PR created: ${prUrl}`);
-          console.error(`[Hook] To review: gh pr review ${prNumber} --repo ${repo}`);
-
-          // Inject PR URL as context for Claude
-          console.log(JSON.stringify({
-            hookSpecificOutput: {
-              hookEventName: 'PostToolUse',
-              additionalContext: `PR created: ${prUrl}. To review: gh pr review ${prNumber} --repo ${repo}`
-            }
-          }));
-          return;
-        }
-      }
-    }
-
-    // Nothing to report — exit cleanly
-    process.exit(0);
-  } catch (error) {
-    console.error(`[PRLogger] Error: ${error.message}`);
+  // Only process gh pr create commands
+  if (!/gh pr create/.test(cmd)) {
+    debugHook('pr-url-logger', 'process', 'Skipping — not a gh pr create command');
     process.exit(0);
   }
+
+  const output = input.tool_response?.output || '';
+  const match = output.match(/https:\/\/github.com\/[^/]+\/[^/]+\/pull\/\d+/);
+
+  if (match) {
+    const prUrl = match[0];
+    const repoMatch = prUrl.match(/https:\/\/github.com\/([^/]+\/[^/]+)\/pull\/(\d+)/);
+
+    if (repoMatch) {
+      const repo = repoMatch[1];
+      const prNumber = repoMatch[2];
+
+      console.error(`[Hook] PR created: ${prUrl}`);
+      console.error(`[Hook] To review: gh pr review ${prNumber} --repo ${repo}`);
+
+      debugHook('pr-url-logger', 'output', 'Writing PR URL context', prUrl);
+      // Inject PR URL as context for Claude
+      console.log(JSON.stringify({
+        hookSpecificOutput: {
+          hookEventName: 'PostToolUse',
+          additionalContext: `PR created: ${prUrl}. To review: gh pr review ${prNumber} --repo ${repo}`
+        }
+      }));
+      return;
+    }
+  }
+
+  debugHook('pr-url-logger', 'exit', 'No PR URL found — clean exit');
+  // Nothing to report — exit cleanly
+  process.exit(0);
 });

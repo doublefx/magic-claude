@@ -10,23 +10,7 @@
  */
 
 const { log } = require('../lib/utils.cjs');
-
-/**
- * Read hook input from stdin (JSON format)
- */
-function readStdin() {
-  return new Promise((resolve) => {
-    let data = '';
-    process.stdin.on('data', chunk => data += chunk);
-    process.stdin.on('end', () => {
-      try {
-        resolve(JSON.parse(data));
-      } catch {
-        resolve({});
-      }
-    });
-  });
-}
+const { debugHook, wrapHookMain } = require('../lib/hook-debug.cjs');
 
 /**
  * Get list of source files modified in current session
@@ -47,15 +31,14 @@ function getModifiedSourceFiles() {
   }
 }
 
-async function main() {
-  const input = await readStdin();
-
+wrapHookMain('post-task-update', (input) => {
   // Check if this was a task completion
   const toolInput = input.tool_input || {};
   const status = toolInput.status;
 
   // Only trigger on task completion
   if (status !== 'completed') {
+    debugHook('post-task-update', 'process', 'Skipping — status is not completed', status);
     process.exit(0);
   }
 
@@ -63,6 +46,7 @@ async function main() {
   const modifiedFiles = getModifiedSourceFiles();
 
   if (modifiedFiles.length === 0) {
+    debugHook('post-task-update', 'process', 'No modified source files');
     process.exit(0);
   }
 
@@ -70,6 +54,7 @@ async function main() {
   log(`[TaskComplete] Task completed with ${modifiedFiles.length} source file(s) modified`);
 
   const fileList = modifiedFiles.slice(0, 5).join(', ') + (modifiedFiles.length > 5 ? '...' : '');
+  debugHook('post-task-update', 'output', 'Writing review recommendation', { fileCount: modifiedFiles.length });
   console.log(JSON.stringify({
     hookSpecificOutput: {
       hookEventName: 'PostToolUse',
@@ -77,10 +62,5 @@ async function main() {
     }
   }));
 
-  process.exit(0);
-}
-
-main().catch(err => {
-  console.error('[TaskComplete] Error:', err.message);
   process.exit(0);
 });

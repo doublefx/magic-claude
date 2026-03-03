@@ -19,6 +19,7 @@ import path from 'path';
 import {
   readHookInput,
   writeHookResult,
+  debugHook,
   getFilePath,
   getToolName,
   detectProjectType,
@@ -291,6 +292,7 @@ async function main() {
 
     // Only run on Node.js/TypeScript projects
     if (!projectTypes.includes('nodejs') && !projectTypes.includes('typescript')) {
+      debugHook('typescript-security', 'process', 'Skipping — not a Node.js/TS project', projectTypes);
       process.exit(0);
     }
 

@@ -20,6 +20,7 @@ import { execSync } from 'child_process';
 import {
   readHookInput,
   writeHookResult,
+  debugHook,
   getFilePath,
   detectProjectType,
   logHook,
@@ -204,15 +205,15 @@ async function main() {
     // Extract file path from context
     const filePath = getFilePath(context);
 
-    // If no file path or not a Java file, pass through
+    // If no file path or not a Java file, exit cleanly
     if (!filePath || !filePath.endsWith('.java')) {
-      // No output needed — exit cleanly
+      debugHook('java-security', 'process', 'Skipping — not a .java file', filePath);
       process.exit(0);
     }
 
     if (!fs.existsSync(filePath)) {
+      debugHook('java-security', 'process', 'File does not exist', filePath);
       logHook(`File does not exist: ${filePath}`, 'WARNING');
-      // No output needed — exit cleanly
       process.exit(0);
     }
 
@@ -221,7 +222,7 @@ async function main() {
 
     // Only run for Maven/Gradle projects
     if (!projectTypes.includes('maven') && !projectTypes.includes('gradle')) {
-      // No output needed — exit cleanly
+      debugHook('java-security', 'process', 'Skipping — not a Maven/Gradle project', projectTypes);
       process.exit(0);
     }
 

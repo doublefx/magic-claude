@@ -2,6 +2,8 @@
  * Hook Utility Functions
  * Shared utilities for Claude Code hook scripts
  * Provides stdin/stdout protocol handling and file filtering
+ *
+ * Debug mode: set MAGIC_CLAUDE_HOOK_DEBUG=1 to enable verbose diagnostics on stderr
  */
 
 import { detectProjectType } from './detect-project-type.js';
@@ -14,11 +16,59 @@ import {
 } from './safe-exec.js';
 import path from 'path';
 
+const HOOK_DEBUG = process.env.MAGIC_CLAUDE_HOOK_DEBUG === '1' || process.env.MAGIC_CLAUDE_HOOK_DEBUG === 'true';
+
+/**
+ * Derive the hook name from the calling script's filename
+ * @returns {string} Hook name (e.g., 'smart-formatter')
+ */
+function getCallerHookName() {
+  try {
+    // Look for the script name in process.argv
+    const scriptPath = process.argv[1] || '';
+    const basename = path.basename(scriptPath, path.extname(scriptPath));
+    return basename || 'unknown-hook';
+  } catch {
+    return 'unknown-hook';
+  }
+}
+
+/**
+ * Log a debug message to stderr (only when MAGIC_CLAUDE_HOOK_DEBUG=1)
+ * @param {string} hookName - Name/identifier of the calling hook
+ * @param {string} phase - Phase: 'input', 'process', 'output', 'error'
+ * @param {string} message - Debug message
+ * @param {*} [data] - Optional data to log (will be JSON-stringified)
+ */
+export function debugHook(hookName, phase, message, data) {
+  if (!HOOK_DEBUG) return;
+  const timestamp = new Date().toISOString();
+  const prefix = `[HookDebug ${timestamp}] [${hookName}] [${phase}]`;
+  if (data !== undefined) {
+    const dataStr = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+    // Truncate very large data
+    const truncated = dataStr.length > 2000 ? dataStr.slice(0, 2000) + '... (truncated)' : dataStr;
+    console.error(`${prefix} ${message}: ${truncated}`);
+  } else {
+    console.error(`${prefix} ${message}`);
+  }
+}
+
+// Monitor stdout writes in debug mode to catch any unexpected output
+if (HOOK_DEBUG) {
+  const _origStdoutWrite = process.stdout.write.bind(process.stdout);
+  process.stdout.write = function(chunk, encoding, callback) {
+    debugHook(getCallerHookName(), 'output', 'stdout write', typeof chunk === 'string' ? chunk : chunk.toString());
+    return _origStdoutWrite(chunk, encoding, callback);
+  };
+}
+
 /**
  * Read tool context from stdin (Claude Code hook protocol)
  * @returns {Promise<object|null>} Parsed tool context or null on error
  */
 export function readHookInput() {
+  const callerHook = getCallerHookName();
   return new Promise((resolve) => {
     let data = '';
     process.stdin.setEncoding('utf8');
@@ -29,15 +79,20 @@ export function readHookInput() {
 
     process.stdin.on('end', () => {
       try {
+        debugHook(callerHook, 'input', 'Raw stdin length', data.length);
         const context = JSON.parse(data);
+        debugHook(callerHook, 'input', 'Parsed tool_name', context?.tool_name);
+        debugHook(callerHook, 'input', 'File path', context?.tool_input?.file_path);
         resolve(context);
       } catch (error) {
+        debugHook(callerHook, 'error', 'Failed to parse stdin', { error: error.message, rawData: data.slice(0, 500) });
         console.error('[Hook] Failed to parse stdin:', error.message);
         resolve(null);
       }
     });
 
     process.stdin.on('error', (error) => {
+      debugHook(callerHook, 'error', 'Stdin error', error.message);
       console.error('[Hook] Error reading stdin:', error.message);
       resolve(null);
     });
@@ -93,10 +148,12 @@ export function readHookInputSync() {
  * @param {string} [options.reason] - Reason shown to Claude when decision is "block"
  */
 export function writeHookResult(hookEventName, options = {}) {
+  const callerHook = getCallerHookName();
   const { additionalContext, decision, reason } = options;
 
   // If nothing to report, don't write anything — just exit 0
   if (!additionalContext && !decision) {
+    debugHook(callerHook, 'output', 'No result to write — clean exit');
     return;
   }
 
@@ -115,8 +172,12 @@ export function writeHookResult(hookEventName, options = {}) {
   }
 
   try {
-    console.log(JSON.stringify(result));
+    const json = JSON.stringify(result);
+    debugHook(callerHook, 'output', 'Writing result JSON', json);
+    // This console.log is intentional — it's the hook protocol output
+    console.log(json); // eslint-disable-line no-console
   } catch (error) {
+    debugHook(callerHook, 'error', 'Failed to write result', error.message);
     console.error('[Hook] Failed to write result:', error.message);
   }
 }

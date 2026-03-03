@@ -19,6 +19,7 @@ import path from 'path';
 import {
   readHookInput,
   writeHookResult,
+  debugHook,
   getFilePath,
   getToolName,
   detectProjectType,
@@ -229,6 +230,7 @@ async function main() {
 
     // Only run on Python projects
     if (!projectTypes.includes('python')) {
+      debugHook('python-security', 'process', 'Skipping — not a Python project', projectTypes);
       process.exit(0);
     }
 
