@@ -179,6 +179,19 @@ All hooks use inline Node.js via `node -e` or reference scripts in `plugin/scrip
 - SessionStart `additionalContext` includes the `using-magic-claude` meta-skill (disposition, governance, learned skills index) - this is re-injected on startup, resume, clear, and compact to survive context loss
 - Other hooks (Stop, PreToolUse) log to stderr - these appear in your context as `[Hook]` prefixed messages - **inform the user** when these contain important recommendations
 
+**Hook Debugging:**
+- Enable: `touch $CLAUDE_CONFIG_DIR/hook-debug.enabled` (Claude Code does NOT propagate custom env vars to hooks)
+- Disable: `rm $CLAUDE_CONFIG_DIR/hook-debug.enabled`
+- Watch: `tail -f $CLAUDE_CONFIG_DIR/hook-debug.log`
+- CJS hooks use `wrapHookMain()` from `hook-debug.cjs` for automatic debug wrapping
+- ESM hooks use `debugHook()` from `hook-utils.js` for manual debug calls
+- See `docs/hooks-protocol.md` "Debugging Hooks" section for full reference
+
+**ESM Hook Compatibility:**
+- Claude Code uses the system Node.js — Node 20 requires `"type": "module"` in a parent `package.json` for `.js` files using `import/export`
+- `plugin/scripts/package.json` provides this — if missing, all ESM hooks fail silently with "PostToolUse hook error"
+- CJS hooks (`.cjs`) are unaffected by the `"type"` field
+
 ### Agent Orchestration
 
 Specialized agents in `plugin/agents/` directory:

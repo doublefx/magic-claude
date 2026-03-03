@@ -120,9 +120,12 @@ magic-claude/
 |   |   |-- hooks.json                # All hooks config (11 event types supported)
 |   |
 |   |-- scripts/          # Cross-platform Node.js scripts
+|   |   |-- package.json             # ESM enablement for Node 20+ ("type": "module")
 |   |   |-- lib/                     # Shared utilities
 |   |   |   |-- utils.cjs            # Cross-platform file/path/system utilities
 |   |   |   |-- package-manager.cjs  # Package manager detection and selection
+|   |   |   |-- hook-debug.cjs       # CJS hook debug logging (marker file activation)
+|   |   |   |-- hook-utils.js        # ESM hook utilities (debug, stdin/stdout protocol)
 |   |   |   |-- deprecation-checker.cjs  # Detect deprecated directory structures
 |   |   |   |-- ecosystems/          # Auto-discoverable ecosystem modules
 |   |   |   |-- status/              # Status report collectors and formatters

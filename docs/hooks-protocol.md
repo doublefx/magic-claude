@@ -313,6 +313,130 @@ Each handler in the `hooks` array supports these fields:
 
 ---
 
+## Debugging Hooks
+
+### The Problem
+
+When hooks fail in Claude Code sessions, you see generic error messages like:
+
+```
+PostToolUse:Bash hook error
+```
+
+This tells you nothing about *which* hook failed or *why*. Claude Code doesn't expose hook stderr in normal mode, and custom environment variables are **not propagated** to hook child processes.
+
+### Debug Infrastructure
+
+The plugin includes a dual-output debug logging system for both CJS and ESM hooks:
+
+| Module | Format | Location |
+|--------|--------|----------|
+| `plugin/scripts/lib/hook-debug.cjs` | CommonJS | CJS hooks via `wrapHookMain()` |
+| `plugin/scripts/lib/hook-utils.js` | ES Module | ESM hooks via `debugHook()` |
+
+Both modules write debug output to:
+1. **Log file**: `$CLAUDE_CONFIG_DIR/hook-debug.log` (persistent, viewable via `tail -f`)
+2. **stderr**: Visible with `claude --debug` or `claude --verbose`
+
+### Enabling Debug Mode
+
+**Important**: Claude Code does **not** propagate custom environment variables to hook processes. The `MAGIC_CLAUDE_HOOK_DEBUG=1` env var only works for manual testing outside of Claude Code. For real sessions, use the marker file method.
+
+```bash
+# Enable debug logging (works in real Claude Code sessions)
+touch $CLAUDE_CONFIG_DIR/hook-debug.enabled
+
+# Disable debug logging
+rm $CLAUDE_CONFIG_DIR/hook-debug.enabled
+
+# Watch debug output in real-time (in a separate terminal)
+tail -f $CLAUDE_CONFIG_DIR/hook-debug.log
+
+# For manual testing only (outside Claude Code):
+MAGIC_CLAUDE_HOOK_DEBUG=1 echo '{"tool_name":"Bash"}' | node plugin/scripts/hooks/pr-url-logger.cjs
+```
+
+`$CLAUDE_CONFIG_DIR` defaults to `~/.claude` if unset. Claude Code sets this to its own config directory (e.g., `~/.claude-work`).
+
+### Debug Log Format
+
+Each log entry includes timestamp, hook name, phase, and message:
+
+```
+[2026-03-03T10:28:48.450Z] [pr-url-logger] [input] Hook starting: { "pid": 1023664, "cwd": "/home/user/project" }
+[2026-03-03T10:28:48.454Z] [pr-url-logger] [input] Raw stdin length: 15824
+[2026-03-03T10:28:48.455Z] [pr-url-logger] [input] Parsed OK: { "tool_name": "Bash", "has_tool_result": false }
+[2026-03-03T10:28:48.455Z] [pr-url-logger] [process] Skipping — not a gh pr create command
+```
+
+**Phases**: `input` (stdin parsing), `process` (hook logic), `output` (stdout writes), `error` (failures), `exit` (cleanup)
+
+### Using Debug in CJS Hooks
+
+The `wrapHookMain()` wrapper provides comprehensive debug logging automatically:
+
+```javascript
+const { debugHook, wrapHookMain } = require('../lib/hook-debug.cjs');
+
+wrapHookMain('my-hook-name', (input) => {
+  // input is already parsed from stdin
+  // All phases are automatically logged: start, stdin parse, errors
+
+  debugHook('my-hook-name', 'process', 'Custom debug message', { someData: 123 });
+
+  // Your hook logic here...
+});
+```
+
+`wrapHookMain()` handles:
+- Stdin reading and JSON parsing with logging
+- Uncaught exception and unhandled rejection monitoring
+- stdout write monitoring (catches accidental output)
+- Empty stdin detection (clean exit)
+
+### Using Debug in ESM Hooks
+
+ESM hooks import `debugHook` from `hook-utils.js`:
+
+```javascript
+import { debugHook, readHookInput, writeHookResult } from '../lib/hook-utils.js';
+
+const context = await readHookInput();  // Automatically logs stdin parsing
+if (!context) process.exit(0);
+
+debugHook('my-hook', 'process', 'Processing file', context.tool_input?.file_path);
+
+// Your hook logic...
+
+writeHookResult('PostToolUse', {
+  additionalContext: 'Some context for Claude'
+});
+```
+
+### Troubleshooting Common Issues
+
+| Symptom | Likely Cause | Debug Action |
+|---------|-------------|--------------|
+| "PostToolUse hook error" for all hooks | ESM hooks failing (missing `package.json` with `"type": "module"`) | Check `plugin/scripts/package.json` exists |
+| Debug log has only CJS hook entries | ESM hooks crash before debug code runs | Check Node.js version (`node --version`) — Node 20 needs `"type": "module"` |
+| No debug entries at all | Marker file in wrong directory | Check `echo $CLAUDE_CONFIG_DIR` and create marker there |
+| Hook works manually but fails in Claude Code | Env var not propagated | Use marker file, not env var |
+| Large data truncated in logs | Intentional — 2000 char limit | Check the actual tool input directly |
+
+### ESM vs CJS Hooks
+
+Claude Code uses the system Node.js (not necessarily the latest). Node.js 20 does **not** auto-detect ESM for `.js` files — they require a parent `package.json` with `"type": "module"`.
+
+The plugin ships `plugin/scripts/package.json` with `{"type": "module"}` specifically for this purpose. If this file is missing from the installed plugin, all 5 ESM hooks will fail silently.
+
+| Extension | Module System | Needs `"type": "module"` |
+|-----------|---------------|--------------------------|
+| `.cjs` | CommonJS (always) | No |
+| `.js` | Depends on `package.json` | Yes (for `import/export` syntax) |
+| `.mjs` | ESM (always) | No |
+
+---
+
 ## Testing Hooks
 
 Use the HookTestHarness to test hook scripts:
