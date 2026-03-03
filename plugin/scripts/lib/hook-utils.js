@@ -22,18 +22,15 @@ const HOOK_DEBUG = process.env.MAGIC_CLAUDE_HOOK_DEBUG === '1' || process.env.MA
 const CLAUDE_CONFIG_DIR = process.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), '.claude');
 const LOG_FILE = process.env.MAGIC_CLAUDE_HOOK_DEBUG_LOG || path.join(CLAUDE_CONFIG_DIR, 'hook-debug.log');
 
-// Canary: always log module load when debug is on, to verify env propagation
-if (HOOK_DEBUG) {
-  try {
-    const script = process.argv[1] || 'unknown';
-    fs.appendFileSync(LOG_FILE, `[${new Date().toISOString()}] [hook-utils.js] MODULE LOADED from ${path.basename(script)}, PID=${process.pid}, CLAUDE_CONFIG_DIR=${CLAUDE_CONFIG_DIR}\n`);
-  } catch { /* ignore */ }
-}
-if (HOOK_DEBUG) {
-  try {
-    fs.appendFileSync('/tmp/magic-claude-hook-canary.log', `[${new Date().toISOString()}] hook-utils.js loaded, PID=${process.pid}, HOOK_DEBUG=${HOOK_DEBUG}, CONFIG_DIR=${CLAUDE_CONFIG_DIR}, LOG_FILE=${LOG_FILE}\n`);
-  } catch { /* ignore */ }
-}
+// UNCONDITIONAL canary — determine if module loads at all during Claude Code hook execution
+try {
+  const script = process.argv[1] || 'unknown';
+  fs.appendFileSync('/tmp/magic-claude-hook-canary.log',
+    `[${new Date().toISOString()}] hook-utils.js LOADED from ${path.basename(script)}, ` +
+    `PID=${process.pid}, HOOK_DEBUG=${HOOK_DEBUG}, ` +
+    `MAGIC_CLAUDE_HOOK_DEBUG=${process.env.MAGIC_CLAUDE_HOOK_DEBUG || 'UNSET'}, ` +
+    `CLAUDE_CONFIG_DIR=${process.env.CLAUDE_CONFIG_DIR || 'UNSET'}\n`);
+} catch { /* ignore */ }
 
 /**
  * Append a log line to the debug log file (sync, fire-and-forget)
