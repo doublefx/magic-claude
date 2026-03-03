@@ -41,13 +41,16 @@ function debugHook(hookName, phase, message, data) {
   if (!HOOK_DEBUG) return;
   const timestamp = new Date().toISOString();
   const prefix = `[${timestamp}] [${hookName}] [${phase}]`;
+  let line;
   if (data !== undefined) {
     const dataStr = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
     const truncated = dataStr.length > 2000 ? dataStr.slice(0, 2000) + '... (truncated)' : dataStr;
-    appendLog(`${prefix} ${message}: ${truncated}`);
+    line = `${prefix} ${message}: ${truncated}`;
   } else {
-    appendLog(`${prefix} ${message}`);
+    line = `${prefix} ${message}`;
   }
+  appendLog(line);
+  console.error(line);
 }
 
 /**
