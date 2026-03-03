@@ -1,9 +1,13 @@
 /**
  * Hook Debug Utility (CJS)
  *
- * Diagnostic logging for Claude Code hooks, activated via MAGIC_CLAUDE_HOOK_DEBUG=1
+ * Diagnostic logging for Claude Code hooks.
  * Logs to $CLAUDE_CONFIG_DIR/hook-debug.log (viewable via `tail -f` on that path)
- * Never interferes with stdout (hook protocol) or stderr (Claude Code verbose mode).
+ * Also outputs to stderr (visible in Claude Code --verbose mode).
+ *
+ * Activation (Claude Code does NOT propagate custom env vars to hooks):
+ *   touch $CLAUDE_CONFIG_DIR/hook-debug.enabled    # enable
+ *   rm $CLAUDE_CONFIG_DIR/hook-debug.enabled       # disable
  *
  * Usage in CJS hooks:
  *   const { debugHook, wrapHookMain } = require('../lib/hook-debug.cjs');
@@ -14,20 +18,23 @@ const fs = require('fs');
 const pathModule = require('path');
 const os = require('os');
 
-const HOOK_DEBUG = process.env.MAGIC_CLAUDE_HOOK_DEBUG === '1' || process.env.MAGIC_CLAUDE_HOOK_DEBUG === 'true';
 const CLAUDE_CONFIG_DIR = process.env.CLAUDE_CONFIG_DIR || pathModule.join(os.homedir(), '.claude');
-const LOG_FILE = process.env.MAGIC_CLAUDE_HOOK_DEBUG_LOG || pathModule.join(CLAUDE_CONFIG_DIR, 'hook-debug.log');
+const HOOK_DEBUG_MARKER = pathModule.join(CLAUDE_CONFIG_DIR, 'hook-debug.enabled');
+const LOG_FILE = pathModule.join(CLAUDE_CONFIG_DIR, 'hook-debug.log');
 
-// UNCONDITIONAL canary — determine if module loads at all during Claude Code hook execution
-try {
-  const script = process.argv[1] || 'unknown';
-  fs.appendFileSync('/tmp/magic-claude-hook-canary.log',
-    `[${new Date().toISOString()}] hook-debug.cjs LOADED from ${pathModule.basename(script)}, ` +
-    `PID=${process.pid}, HOOK_DEBUG=${HOOK_DEBUG}, ` +
-    `MAGIC_CLAUDE_HOOK_DEBUG=${process.env.MAGIC_CLAUDE_HOOK_DEBUG || 'UNSET'}, ` +
-    `CLAUDE_CONFIG_DIR=${process.env.CLAUDE_CONFIG_DIR || 'UNSET'}\n`);
-} catch { /* ignore */
+/**
+ * Check if debug mode is active.
+ * Primary: marker file at $CLAUDE_CONFIG_DIR/hook-debug.enabled
+ * Fallback: MAGIC_CLAUDE_HOOK_DEBUG=1 env var (works for manual testing)
+ */
+function isDebugEnabled() {
+  try {
+    if (fs.existsSync(HOOK_DEBUG_MARKER)) return true;
+  } catch { /* ignore */ }
+  return process.env.MAGIC_CLAUDE_HOOK_DEBUG === '1' || process.env.MAGIC_CLAUDE_HOOK_DEBUG === 'true';
 }
+
+const HOOK_DEBUG = isDebugEnabled();
 
 /**
  * Append a log line to the debug log file (sync, fire-and-forget)
@@ -42,7 +49,7 @@ function appendLog(line) {
 }
 
 /**
- * Log a debug message to file (only when MAGIC_CLAUDE_HOOK_DEBUG=1)
+ * Log a debug message to file + stderr (only when debug is active)
  * @param {string} hookName - Name/identifier of the calling hook
  * @param {string} phase - Phase: 'input', 'process', 'output', 'error', 'exit'
  * @param {string} message - Debug message
