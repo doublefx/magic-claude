@@ -15,8 +15,23 @@ import {
   hasValidExtension
 } from './safe-exec.js';
 import path from 'path';
+import fs from 'fs';
+import os from 'os';
 
 const HOOK_DEBUG = process.env.MAGIC_CLAUDE_HOOK_DEBUG === '1' || process.env.MAGIC_CLAUDE_HOOK_DEBUG === 'true';
+const LOG_FILE = process.env.MAGIC_CLAUDE_HOOK_DEBUG_LOG || path.join(os.homedir(), '.claude', 'hook-debug.log');
+
+/**
+ * Append a log line to the debug log file (sync, fire-and-forget)
+ * @param {string} line - Log line to append
+ */
+function appendLog(line) {
+  try {
+    fs.appendFileSync(LOG_FILE, line + '\n');
+  } catch {
+    // If we can't write the log file, silently ignore — don't break the hook
+  }
+}
 
 /**
  * Derive the hook name from the calling script's filename
@@ -34,7 +49,8 @@ function getCallerHookName() {
 }
 
 /**
- * Log a debug message to stderr (only when MAGIC_CLAUDE_HOOK_DEBUG=1)
+ * Log a debug message to file (only when MAGIC_CLAUDE_HOOK_DEBUG=1)
+ * Logs to ~/.claude/hook-debug.log — viewable via `tail -f ~/.claude/hook-debug.log`
  * @param {string} hookName - Name/identifier of the calling hook
  * @param {string} phase - Phase: 'input', 'process', 'output', 'error'
  * @param {string} message - Debug message
@@ -43,14 +59,14 @@ function getCallerHookName() {
 export function debugHook(hookName, phase, message, data) {
   if (!HOOK_DEBUG) return;
   const timestamp = new Date().toISOString();
-  const prefix = `[HookDebug ${timestamp}] [${hookName}] [${phase}]`;
+  const prefix = `[${timestamp}] [${hookName}] [${phase}]`;
   if (data !== undefined) {
     const dataStr = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
     // Truncate very large data
     const truncated = dataStr.length > 2000 ? dataStr.slice(0, 2000) + '... (truncated)' : dataStr;
-    console.error(`${prefix} ${message}: ${truncated}`);
+    appendLog(`${prefix} ${message}: ${truncated}`);
   } else {
-    console.error(`${prefix} ${message}`);
+    appendLog(`${prefix} ${message}`);
   }
 }
 

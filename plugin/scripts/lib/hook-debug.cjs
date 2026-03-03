@@ -2,17 +2,35 @@
  * Hook Debug Utility (CJS)
  *
  * Diagnostic logging for Claude Code hooks, activated via MAGIC_CLAUDE_HOOK_DEBUG=1
- * All output goes to stderr — never interferes with the hook protocol on stdout.
+ * Logs to ~/.claude/hook-debug.log (viewable via `tail -f ~/.claude/hook-debug.log`)
+ * Never interferes with stdout (hook protocol) or stderr (Claude Code verbose mode).
  *
  * Usage in CJS hooks:
  *   const { debugHook, wrapHookMain } = require('../lib/hook-debug.cjs');
  *   wrapHookMain('my-hook-name', (input) => { ... });
  */
 
+const fs = require('fs');
+const pathModule = require('path');
+const os = require('os');
+
 const HOOK_DEBUG = process.env.MAGIC_CLAUDE_HOOK_DEBUG === '1' || process.env.MAGIC_CLAUDE_HOOK_DEBUG === 'true';
+const LOG_FILE = process.env.MAGIC_CLAUDE_HOOK_DEBUG_LOG || pathModule.join(os.homedir(), '.claude', 'hook-debug.log');
 
 /**
- * Log a debug message to stderr (only when MAGIC_CLAUDE_HOOK_DEBUG=1)
+ * Append a log line to the debug log file (sync, fire-and-forget)
+ * @param {string} line - Log line to append
+ */
+function appendLog(line) {
+  try {
+    fs.appendFileSync(LOG_FILE, line + '\n');
+  } catch {
+    // If we can't write the log file, silently ignore — don't break the hook
+  }
+}
+
+/**
+ * Log a debug message to file (only when MAGIC_CLAUDE_HOOK_DEBUG=1)
  * @param {string} hookName - Name/identifier of the calling hook
  * @param {string} phase - Phase: 'input', 'process', 'output', 'error', 'exit'
  * @param {string} message - Debug message
@@ -21,13 +39,13 @@ const HOOK_DEBUG = process.env.MAGIC_CLAUDE_HOOK_DEBUG === '1' || process.env.MA
 function debugHook(hookName, phase, message, data) {
   if (!HOOK_DEBUG) return;
   const timestamp = new Date().toISOString();
-  const prefix = `[HookDebug ${timestamp}] [${hookName}] [${phase}]`;
+  const prefix = `[${timestamp}] [${hookName}] [${phase}]`;
   if (data !== undefined) {
     const dataStr = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
     const truncated = dataStr.length > 2000 ? dataStr.slice(0, 2000) + '... (truncated)' : dataStr;
-    console.error(`${prefix} ${message}: ${truncated}`);
+    appendLog(`${prefix} ${message}: ${truncated}`);
   } else {
-    console.error(`${prefix} ${message}`);
+    appendLog(`${prefix} ${message}`);
   }
 }
 
