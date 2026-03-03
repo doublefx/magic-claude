@@ -205,7 +205,7 @@ export function getCommand(context) {
  * @returns {string|null} Tool name or null
  */
 export function getToolName(context) {
-  return context?.tool || null;
+  return context?.tool_name || null;
 }
 
 /**

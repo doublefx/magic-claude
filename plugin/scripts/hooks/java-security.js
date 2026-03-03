@@ -206,13 +206,13 @@ async function main() {
 
     // If no file path or not a Java file, pass through
     if (!filePath || !filePath.endsWith('.java')) {
-      writeHookOutput(context);
+      // No output needed — exit cleanly
       process.exit(0);
     }
 
     if (!fs.existsSync(filePath)) {
       logHook(`File does not exist: ${filePath}`, 'WARNING');
-      writeHookOutput(context);
+      // No output needed — exit cleanly
       process.exit(0);
     }
 
@@ -221,7 +221,7 @@ async function main() {
 
     // Only run for Maven/Gradle projects
     if (!projectTypes.includes('maven') && !projectTypes.includes('gradle')) {
-      writeHookOutput(context);
+      // No output needed — exit cleanly
       process.exit(0);
     }
 

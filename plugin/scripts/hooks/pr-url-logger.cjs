@@ -17,7 +17,7 @@ process.stdin.on('end', () => {
 
     // Only process gh pr create commands
     if (/gh pr create/.test(cmd)) {
-      const output = input.tool_output?.output || '';
+      const output = input.tool_response?.output || '';
       const match = output.match(/https:\/\/github.com\/[^/]+\/[^/]+\/pull\/\d+/);
 
       if (match) {
