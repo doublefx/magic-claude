@@ -18,6 +18,20 @@ const HOOK_DEBUG = process.env.MAGIC_CLAUDE_HOOK_DEBUG === '1' || process.env.MA
 const CLAUDE_CONFIG_DIR = process.env.CLAUDE_CONFIG_DIR || pathModule.join(os.homedir(), '.claude');
 const LOG_FILE = process.env.MAGIC_CLAUDE_HOOK_DEBUG_LOG || pathModule.join(CLAUDE_CONFIG_DIR, 'hook-debug.log');
 
+// Canary: always log module load when debug is on, to verify env propagation
+if (HOOK_DEBUG) {
+  try {
+    const script = process.argv[1] || 'unknown';
+    fs.appendFileSync(LOG_FILE, `[${new Date().toISOString()}] [hook-debug.cjs] MODULE LOADED from ${pathModule.basename(script)}, PID=${process.pid}, CLAUDE_CONFIG_DIR=${CLAUDE_CONFIG_DIR}\n`);
+  } catch { /* ignore */ }
+}
+// Also write to /tmp unconditionally when debug is on, in case LOG_FILE path is wrong
+if (HOOK_DEBUG) {
+  try {
+    fs.appendFileSync('/tmp/magic-claude-hook-canary.log', `[${new Date().toISOString()}] hook-debug.cjs loaded, PID=${process.pid}, HOOK_DEBUG=${HOOK_DEBUG}, CONFIG_DIR=${CLAUDE_CONFIG_DIR}, LOG_FILE=${LOG_FILE}\n`);
+  } catch { /* ignore */ }
+}
+
 /**
  * Append a log line to the debug log file (sync, fire-and-forget)
  * @param {string} line - Log line to append
