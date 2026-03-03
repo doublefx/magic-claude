@@ -145,9 +145,10 @@ function isProjectActivated() {
  * @returns {object}
  */
 function getSerenaConfig() {
+  const { getClaudeDir } = require('./utils.cjs');
   const configPaths = [
     path.join(process.cwd(), '.claude', 'serena-config.json'),
-    path.join(process.env.HOME || '', '.claude', 'serena-config.json')
+    path.join(getClaudeDir(), 'serena-config.json')
   ];
 
   for (const configPath of configPaths) {

@@ -19,7 +19,8 @@ import fs from 'fs';
 import os from 'os';
 
 const HOOK_DEBUG = process.env.MAGIC_CLAUDE_HOOK_DEBUG === '1' || process.env.MAGIC_CLAUDE_HOOK_DEBUG === 'true';
-const LOG_FILE = process.env.MAGIC_CLAUDE_HOOK_DEBUG_LOG || path.join(os.homedir(), '.claude', 'hook-debug.log');
+const CLAUDE_CONFIG_DIR = process.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), '.claude');
+const LOG_FILE = process.env.MAGIC_CLAUDE_HOOK_DEBUG_LOG || path.join(CLAUDE_CONFIG_DIR, 'hook-debug.log');
 
 /**
  * Append a log line to the debug log file (sync, fire-and-forget)
@@ -50,7 +51,7 @@ function getCallerHookName() {
 
 /**
  * Log a debug message to file (only when MAGIC_CLAUDE_HOOK_DEBUG=1)
- * Logs to ~/.claude/hook-debug.log — viewable via `tail -f ~/.claude/hook-debug.log`
+ * Logs to $CLAUDE_CONFIG_DIR/hook-debug.log — viewable via `tail -f` on that path
  * @param {string} hookName - Name/identifier of the calling hook
  * @param {string} phase - Phase: 'input', 'process', 'output', 'error'
  * @param {string} message - Debug message

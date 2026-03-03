@@ -2,7 +2,7 @@
  * Hook Debug Utility (CJS)
  *
  * Diagnostic logging for Claude Code hooks, activated via MAGIC_CLAUDE_HOOK_DEBUG=1
- * Logs to ~/.claude/hook-debug.log (viewable via `tail -f ~/.claude/hook-debug.log`)
+ * Logs to $CLAUDE_CONFIG_DIR/hook-debug.log (viewable via `tail -f` on that path)
  * Never interferes with stdout (hook protocol) or stderr (Claude Code verbose mode).
  *
  * Usage in CJS hooks:
@@ -15,7 +15,8 @@ const pathModule = require('path');
 const os = require('os');
 
 const HOOK_DEBUG = process.env.MAGIC_CLAUDE_HOOK_DEBUG === '1' || process.env.MAGIC_CLAUDE_HOOK_DEBUG === 'true';
-const LOG_FILE = process.env.MAGIC_CLAUDE_HOOK_DEBUG_LOG || pathModule.join(os.homedir(), '.claude', 'hook-debug.log');
+const CLAUDE_CONFIG_DIR = process.env.CLAUDE_CONFIG_DIR || pathModule.join(os.homedir(), '.claude');
+const LOG_FILE = process.env.MAGIC_CLAUDE_HOOK_DEBUG_LOG || pathModule.join(CLAUDE_CONFIG_DIR, 'hook-debug.log');
 
 /**
  * Append a log line to the debug log file (sync, fire-and-forget)
