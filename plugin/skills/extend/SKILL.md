@@ -1,6 +1,6 @@
 ---
 name: extend
-description: Use when creating new plugin components (agents, skills, hooks, commands, rules) for the magic-claude plugin or adding ecosystem support.
+description: Generate new magic-claude plugin components following established patterns. Use when adding support for a new language/ecosystem (Go, Rust, Swift, C#, Ruby...), creating a new reviewer agent, patterns skill, hook, command, or rule, or when a new ecosystem is detected in the project. Activate proactively when user says "add Go support", "create an agent for X", "generate a hook for Y", or when a new language file appears (go.mod, Cargo.toml, etc.).
 argument-hint: [ecosystem-or-flags]
 context: fork
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion, WebSearch, WebFetch
@@ -182,7 +182,7 @@ Read the most similar existing component from the installed plugin as a concrete
 
 | Generating | Read as template |
 |-----------|-----------------|
-| `*-patterns` skill | `${CLAUDE_PLUGIN_ROOT}/skills/python-patterns/SKILL.md` |
+| `*-patterns` skill | `${CLAUDE_PLUGIN_ROOT}/skills/python-patterns/SKILL.md` **and** `${CLAUDE_PLUGIN_ROOT}/skills/python-patterns/references/` (the lean index + references structure to replicate) |
 | `*-reviewer` agent | `${CLAUDE_PLUGIN_ROOT}/agents/python-reviewer.md` |
 | `*-build-resolver` agent | `${CLAUDE_PLUGIN_ROOT}/agents/python-build-resolver.md` |
 | formatter hook | `${CLAUDE_PLUGIN_ROOT}/hooks/hooks.json` PostToolUse entries + `${CLAUDE_PLUGIN_ROOT}/scripts/hooks/smart-formatter.js` |
@@ -209,19 +209,34 @@ Create directories as needed (`mkdir -p` equivalent).
 ```yaml
 ---
 name: <ecosystem>-patterns
-description: <Ecosystem> project structure, tooling, patterns, and best practices.
+description: <Ecosystem> project structure, tooling, and idiomatic patterns. Use when setting up a new <ecosystem> project, writing or reviewing <ecosystem> code, configuring the build/test toolchain, or asking about <ecosystem> best practices. Consult before starting any non-trivial <ecosystem> work.
 user-invocable: false
 ---
 ```
 
-**Content sections** (filled with genuine researched knowledge from Step 5):
-- Project structure conventions
-- Package management commands
-- Build and test commands
-- Formatting and linting tool configuration
-- Idiomatic patterns (error handling, naming, concurrency, etc.)
-- Testing patterns and frameworks
-- Common pitfalls and anti-patterns
+**Structure** — follow the progressive disclosure pattern:
+- `SKILL.md`: lean index under 300 lines — "When to Activate", one section per topic with 2-3 bullet points (no code blocks), pointer to `references/<section>.md`
+- `references/` directory: one file per major topic with full code examples
+
+**Reference files to create** (`references/<section>.md`):
+- `project-structure.md` — Directory layout, file naming conventions
+- `package-management.md` — Install, update, lock commands
+- `build-and-test.md` — Build, test, coverage commands
+- `tooling.md` — Formatter, linter, security scanner configuration
+- `idiomatic-patterns.md` — Error handling, naming, concurrency, etc.
+- `testing-patterns.md` — Test frameworks, mocking, assertion libraries
+- `common-pitfalls.md` — Anti-patterns and gotchas
+
+**Content sections in SKILL.md** (bullet points only, no code — code goes in references/):
+- When to Activate
+- Project Structure (→ references/project-structure.md)
+- Package Management (→ references/package-management.md)
+- Build & Test (→ references/build-and-test.md)
+- Tooling (→ references/tooling.md)
+- Idiomatic Patterns (→ references/idiomatic-patterns.md)
+- Testing (→ references/testing-patterns.md)
+- Common Pitfalls (→ references/common-pitfalls.md)
+- Reference Files table
 
 #### 7b. Reviewer Agent (if included)
 
