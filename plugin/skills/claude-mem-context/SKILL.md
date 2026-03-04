@@ -1,6 +1,6 @@
 ---
 name: claude-mem-context
-description: claude-mem MCP cross-session context. Prefer claude-mem for past decisions, architectural history, bug patterns, and session continuity.
+description: Cross-session memory search via claude-mem MCP. Use BEFORE exploring code for architectural understanding, investigating bugs, or planning changes to existing systems — past sessions likely contain decisions, patterns, and resolutions that eliminate redundant exploration. Search component names, error messages, or concepts before spawning Explore agents. Skip entirely if claude-mem tools are unavailable.
 user-invocable: false
 ---
 

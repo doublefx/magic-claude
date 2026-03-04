@@ -1,6 +1,6 @@
 ---
 name: using-git-worktrees
-description: Create isolated git worktrees for feature work. Provides filesystem isolation for parallel development, safe experimentation, and clean branch management. Works standalone or with Agent Teams.
+description: Git worktree isolation for feature branches and parallel work. Use when implementing a feature that should be isolated from the current workspace, when a plan specifies branch-based delivery, when experimenting with an approach that might be discarded, or when Agent Teams need file ownership separation. Activate before starting feature work that touches many files or requires a clean branch.
 user-invocable: false
 context: fork
 ---

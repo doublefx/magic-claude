@@ -17,628 +17,136 @@ This skill provides comprehensive knowledge of modern CI/CD patterns, best pract
 
 ## Pipeline Stages
 
-### Build Stage
-The build stage compiles code, runs static analysis, and prepares artifacts.
+Three standard stages: **Build** (compile, lint, SAST, artifact generation), **Test** (unit, integration, E2E, security, performance), **Deploy** (dev/staging/production with gates and health checks).
 
-**Key Activities**:
-- Compile source code
-- Run linters and formatters
-- Execute static analysis (SAST)
-- Generate build artifacts
+- Fail fast: run linting before compilation, compilation before tests
+- Version artifacts with commit SHA and semantic version tags
+- Require manual approval for production deployments
 
-**Best Practices**:
-- Use build caching to speed up compilation
-- Run quick checks (linting) before expensive operations (compilation)
-- Version artifacts with commit SHA and semantic versions
-- Fail fast on compilation errors
-
-**Example (Node.js)**:
-```yaml
-build:
-  stage: build
-  script:
-    - npm ci
-    - npm run lint
-    - npm run build
-  artifacts:
-    paths:
-      - dist/
-  cache:
-    key:
-      files:
-        - package-lock.json
-    paths:
-      - node_modules/
-```
-
-### Test Stage
-The test stage validates code correctness, quality, and security.
-
-**Types of Tests**:
-- **Unit Tests**: Test individual components in isolation
-- **Integration Tests**: Test interactions between components
-- **End-to-End Tests**: Test complete user workflows
-- **Security Tests**: SAST, DAST, dependency scanning
-- **Performance Tests**: Load testing, stress testing
-
-**Best Practices**:
-- Run tests in parallel to save time
-- Use test matrix for multi-version testing
-- Collect and publish code coverage
-- Fail on coverage threshold violations
-
-**Example (Python)**:
-```yaml
-test:
-  stage: test
-  parallel:
-    matrix:
-      - PYTHON_VERSION: ["3.10", "3.11", "3.12"]
-  script:
-    - pytest --cov=. --cov-report=xml
-  coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
-```
-
-### Deploy Stage
-The deploy stage releases code to target environments.
-
-**Environments**:
-- **Development**: Continuous deployment on every commit
-- **Staging**: Manual or automatic after tests pass
-- **Production**: Manual approval required, tagged releases
-
-**Best Practices**:
-- Use environment-specific configurations
-- Implement health checks before declaring success
-- Support rollback mechanisms
-- Implement deployment gates and approvals
+See [references/pipeline-stages.md](references/pipeline-stages.md)
 
 ## Caching Strategies
 
-### Dependency Caching
-Cache downloaded dependencies to avoid re-downloading on every build.
+Cache dependencies using lockfile hashes as cache keys, and structure Dockerfiles to cache dependency layers separately from source layers.
 
-**Node.js**:
-```yaml
-cache:
-  key:
-    files:
-      - package-lock.json  # npm
-      - yarn.lock          # yarn
-      - pnpm-lock.yaml     # pnpm
-  paths:
-    - node_modules/
-    - .npm/
-```
+- Hash lockfiles (`package-lock.json`, `pom.xml`, `requirements.txt`) for cache invalidation
+- Use `restore-keys` for partial cache hits when lockfile changes
+- Never cache secrets or build outputs that embed environment-specific values
 
-**Python**:
-```yaml
-cache:
-  key:
-    files:
-      - requirements.txt
-      - pyproject.toml
-  paths:
-    - .cache/pip
-    - .venv/
-```
-
-**Java (Maven)**:
-```yaml
-cache:
-  key:
-    files:
-      - pom.xml
-  paths:
-    - .m2/repository
-```
-
-**Java (Gradle)**:
-```yaml
-cache:
-  key:
-    files:
-      - build.gradle
-      - gradle.properties
-  paths:
-    - .gradle/caches
-    - .gradle/wrapper
-```
-
-### Build Cache
-Cache compiled artifacts to avoid re-compilation.
-
-**Gradle Configuration Cache**:
-```bash
-./gradlew build --configuration-cache
-```
-
-**Docker Layer Cache**:
-```dockerfile
-# Good: Dependencies cached separately
-COPY package*.json ./
-RUN npm ci
-COPY . .
-RUN npm run build
-
-# Bad: Changes to any file invalidate all caches
-COPY . .
-RUN npm ci && npm run build
-```
-
-### Cache Invalidation
-Invalidate cache when dependencies change.
-
-**GitHub Actions**:
-```yaml
-- uses: actions/cache@v4
-  with:
-    path: ~/.npm
-    key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-    restore-keys: |
-      ${{ runner.os }}-node-
-```
+See [references/caching-strategies.md](references/caching-strategies.md)
 
 ## Matrix Builds
 
-### Multi-Version Testing
-Test across multiple language versions and operating systems.
+Run jobs across combinations of language versions and operating systems using `strategy.matrix` (GitHub Actions) or `parallel.matrix` (GitLab CI).
 
-**GitHub Actions**:
-```yaml
-strategy:
-  matrix:
-    node-version: [18, 20, 22]
-    os: [ubuntu-latest, windows-latest, macos-latest]
-runs-on: ${{ matrix.os }}
-steps:
-  - uses: actions/setup-node@v4
-    with:
-      node-version: ${{ matrix.node-version }}
-```
+- Use `include` to pin specific version pairings (e.g. node 18 + npm 9)
+- Use `exclude` to drop unsupported combinations
+- Set `fail-fast: false` to let all matrix entries complete even if one fails
 
-**GitLab CI**:
-```yaml
-test:
-  parallel:
-    matrix:
-      - PYTHON_VERSION: ["3.10", "3.11", "3.12"]
-        OS: ["ubuntu-latest", "alpine"]
-  image: python:${PYTHON_VERSION}-${OS}
-```
-
-### Matrix Combinations
-Test specific combinations of variables.
-
-```yaml
-strategy:
-  matrix:
-    include:
-      - node: 18
-        npm: 9
-      - node: 20
-        npm: 10
-      - node: 22
-        npm: 10
-```
+See [references/matrix-builds.md](references/matrix-builds.md)
 
 ## Deployment Strategies
 
-### Rolling Update
-Gradually replace old pods with new pods.
+Three primary strategies with different risk/cost tradeoffs:
 
-**Characteristics**:
-- Zero downtime
-- Gradual rollout
-- Easy rollback
+- **Rolling**: gradual pod replacement, zero downtime, low resource overhead
+- **Blue/Green**: instant traffic switch, instant rollback, requires double resources
+- **Canary**: traffic-weighted progressive rollout, monitoring-driven, best for risk mitigation
 
-**Kubernetes Deployment**:
-```yaml
-strategy:
-  type: RollingUpdate
-  rollingUpdate:
-    maxSurge: 1
-    maxUnavailable: 1
-```
-
-**Process**:
-1. Create new pods (maxSurge)
-2. Wait for new pods to be ready
-3. Terminate old pods (maxUnavailable)
-4. Repeat until all pods are updated
-
-### Blue/Green Deployment
-Run two identical environments (blue and green), switch traffic between them.
-
-**Characteristics**:
-- Instant rollback (switch back to blue)
-- Full environment isolation
-- Requires double resources
-
-**Implementation**:
-```bash
-# Deploy to green environment
-kubectl apply -f deployment-green.yaml
-
-# Test green environment
-curl https://green.example.com/health
-
-# Switch traffic to green
-kubectl patch service myapp -p '{"spec":{"selector":{"version":"green"}}}'
-
-# Keep blue running for rollback
-```
-
-### Canary Deployment
-Route small percentage of traffic to new version, gradually increase.
-
-**Characteristics**:
-- Risk mitigation
-- Progressive rollout
-- Monitoring-driven
-
-**Istio Virtual Service**:
-```yaml
-apiVersion: networking.istio.io/v1beta1
-kind: VirtualService
-metadata:
-  name: myapp
-spec:
-  hosts:
-  - myapp.example.com
-  http:
-  - match:
-    - headers:
-        user-agent:
-          regex: ".*canary.*"
-    route:
-    - destination:
-        host: myapp-v2
-  - route:
-    - destination:
-        host: myapp-v1
-      weight: 90
-    - destination:
-        host: myapp-v2
-      weight: 10
-```
-
-**Process**:
-1. Deploy v2 alongside v1
-2. Route 10% traffic to v2
-3. Monitor metrics (error rate, latency)
-4. If good, increase to 25%, 50%, 75%, 100%
-5. If bad, rollback to 0%
+See [references/deployment-strategies.md](references/deployment-strategies.md)
 
 ## GitOps Patterns
 
-### Pull-Based Deployment
-Cluster pulls desired state from Git repository.
+Use pull-based deployment (ArgoCD, FluxCD) where the cluster reconciles against a Git repository rather than being pushed to by CI.
 
-**ArgoCD**:
-```yaml
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: myapp
-  namespace: argocd
-spec:
-  project: default
-  source:
-    repoURL: https://github.com/myorg/myapp
-    targetRevision: HEAD
-    path: k8s
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: myapp
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
-```
+- Git is the single source of truth; all changes are auditable
+- `selfHeal: true` automatically corrects manual drift
+- Promote environments by updating manifests in environment-specific branches or directories
 
-**FluxCD**:
-```yaml
-apiVersion: source.toolkit.fluxcd.io/v1
-kind: GitRepository
-metadata:
-  name: myapp
-  namespace: flux-system
-spec:
-  interval: 1m
-  url: https://github.com/myorg/myapp
-  ref:
-    branch: main
----
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: myapp
-  namespace: flux-system
-spec:
-  interval: 5m
-  path: ./k8s
-  prune: true
-  sourceRef:
-    kind: GitRepository
-    name: myapp
-```
+See [references/gitops-patterns.md](references/gitops-patterns.md)
 
-### Environment Promotion
-Promote releases through environments using Git.
+## Security Scanning
 
-**Process**:
-1. Developer merges to `main` branch
-2. CI builds and tests
-3. CI updates `dev` environment manifest
-4. ArgoCD deploys to dev cluster
-5. After testing, promote to `staging` branch
-6. ArgoCD deploys to staging cluster
-7. After approval, tag release and promote to `prod`
-8. ArgoCD deploys to production cluster
+Integrate scanning at multiple layers in the correct order: secrets → SAST → dependencies → containers → DAST.
 
-## Security Scanning Integration
+- Block on CRITICAL/HIGH container vulnerabilities (Trivy `--exit-code 1`)
+- Publish SAST results as SARIF artifacts for GitHub Advanced Security
+- Run dependency scanning per ecosystem: `npm audit`, `safety check`, OWASP dependency-check
 
-### Container Scanning (Trivy)
-```yaml
-trivy:
-  stage: security
-  image:
-    name: aquasec/trivy:latest
-    entrypoint: [""]
-  script:
-    - trivy image --exit-code 1 --severity CRITICAL,HIGH myapp:$CI_COMMIT_SHA
-  allow_failure: false
-```
+See [references/security-scanning.md](references/security-scanning.md)
 
-### Secret Scanning (GitLeaks)
-```yaml
-gitleaks:
-  stage: security
-  image:
-    name: zricethezav/gitleaks:latest
-    entrypoint: [""]
-  script:
-    - gitleaks detect --source . --verbose
-```
+## Container Registry
 
-### SAST (Semgrep)
-```yaml
-semgrep:
-  stage: security
-  image: returntocorp/semgrep:latest
-  script:
-    - semgrep --config=p/security-audit --config=p/owasp-top-ten --sarif > semgrep.sarif
-  artifacts:
-    reports:
-      sast: semgrep.sarif
-```
+Tag images with commit SHA for immutability, semantic version for releases, and branch name for review environments.
 
-### Dependency Scanning
-```yaml
-# Node.js
-npm audit:
-  script:
-    - npm audit --audit-level=moderate
+- Never use `latest` in production manifests — always pin to SHA digest
+- Implement lifecycle policies to delete images older than N days or beyond N count
+- Use `docker push --all-tags` to push all tags in one command
 
-# Python
-safety:
-  script:
-    - pip install safety
-    - safety check
-
-# Java
-dependency-check:
-  script:
-    - mvn org.owasp:dependency-check-maven:check
-```
-
-## Container Registry Best Practices
-
-### Image Tagging Strategy
-```bash
-# Multi-tag strategy
-docker tag myapp:build-123 myapp:$COMMIT_SHA
-docker tag myapp:build-123 myapp:$BRANCH_NAME
-docker tag myapp:build-123 myapp:latest
-docker tag myapp:build-123 myapp:v1.2.3
-
-# Push all tags
-docker push --all-tags myapp
-```
-
-### Immutable Tags
-```yaml
-# Use specific SHA tags for production
-deployment:
-  production:
-    image: myapp@sha256:abc123...
-```
-
-### Registry Cleanup
-```bash
-# Delete old images (keep last 10 versions)
-gcloud container images list-tags gcr.io/myproject/myapp \
-  --format="get(digest)" \
-  --sort-by=~timestamp \
-  --limit=999999 \
-  | tail -n +11 \
-  | xargs -I {} gcloud container images delete gcr.io/myproject/myapp@sha256:{} --quiet
-```
+See [references/container-registry.md](references/container-registry.md)
 
 ## Performance Optimization
 
-### Parallel Job Execution
-```yaml
-# GitLab CI DAG
-build:
-  stage: build
-  script: npm run build
+Use DAG job dependencies (`needs:`) to run independent jobs in parallel, and conditional execution (`if:` / `only:`) to skip irrelevant jobs.
 
-test:unit:
-  stage: test
-  needs: [build]  # Only depends on build
-  script: npm test
+- Parallel test jobs (unit + E2E) with a single deploy that waits for both
+- Filter pipelines by file path changes to skip unaffected modules in monorepos
+- Right-size runner resources; use spot instances for non-critical CI workloads
 
-test:e2e:
-  stage: test
-  needs: [build]  # Runs in parallel with test:unit
-  script: npm run test:e2e
-
-deploy:
-  stage: deploy
-  needs: [test:unit, test:e2e]  # Waits for both tests
-  script: ./deploy.sh
-```
-
-### Conditional Execution
-```yaml
-# GitHub Actions: Skip jobs based on conditions
-deploy:
-  if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-  runs-on: ubuntu-latest
-  steps:
-    - name: Deploy
-      run: ./deploy.sh
-
-# GitLab CI: Only run on specific branches
-deploy:
-  only:
-    - main
-    - /^release-.*$/
-  except:
-    - schedules
-```
-
-### Resource Optimization
-```yaml
-# Use resource requests and limits
-resources:
-  requests:
-    memory: "256Mi"
-    cpu: "250m"
-  limits:
-    memory: "512Mi"
-    cpu: "500m"
-```
+See [references/performance-optimization.md](references/performance-optimization.md)
 
 ## Monitoring and Observability
 
-### Metrics Collection
-```yaml
-# Prometheus metrics
-- name: metrics
-  containerPort: 9090
-  protocol: TCP
+Emit structured JSON logs, expose Prometheus metrics, and configure Kubernetes liveness/readiness probes.
 
-# Pod annotations for Prometheus
-annotations:
-  prometheus.io/scrape: "true"
-  prometheus.io/port: "9090"
-  prometheus.io/path: "/metrics"
-```
+- `livenessProbe` restarts the container; `readinessProbe` removes it from traffic
+- Use `startupProbe` for slow-starting applications
+- Always include `requestId`/`traceId` in logs for distributed tracing correlation
 
-### Health Checks
-```yaml
-# Kubernetes health checks
-livenessProbe:
-  httpGet:
-    path: /health
-    port: 8080
-  initialDelaySeconds: 30
-  periodSeconds: 10
-
-readinessProbe:
-  httpGet:
-    path: /ready
-    port: 8080
-  initialDelaySeconds: 15
-  periodSeconds: 5
-```
-
-### Structured Logging
-```javascript
-// JSON structured logging
-console.log(JSON.stringify({
-  level: 'info',
-  message: 'Request processed',
-  requestId: req.id,
-  method: req.method,
-  path: req.path,
-  duration: elapsed,
-  timestamp: new Date().toISOString()
-}));
-```
+See [references/monitoring-observability.md](references/monitoring-observability.md)
 
 ## Best Practices Summary
 
-1. **Pipeline Design**
-   - Keep pipelines simple and maintainable
-   - Use reusable components (actions, includes, pipes)
-   - Implement proper error handling
-   - Document pipeline behavior
+**Pipeline Design**: Keep pipelines simple, use reusable components, implement proper error handling, document environment variables.
 
-2. **Security**
-   - Scan code, dependencies, and containers
-   - Use secret management (never hardcode secrets)
-   - Implement least privilege principle
-   - Regular security audits
+**Security**: Scan code/dependencies/containers, use secret management (never hardcode), apply least privilege, audit regularly.
 
-3. **Performance**
-   - Cache dependencies and build artifacts
-   - Run jobs in parallel when possible
-   - Use matrix builds for multi-version testing
-   - Optimize Docker layer caching
+**Performance**: Cache dependencies and artifacts, run jobs in parallel, use matrix builds, optimize Docker layers.
 
-4. **Reliability**
-   - Implement health checks
-   - Use retry logic for flaky steps
-   - Support rollback mechanisms
-   - Monitor pipeline success rates
+**Reliability**: Implement health checks, use retry logic for flaky steps, support rollback, monitor success rates.
 
-5. **Observability**
-   - Collect metrics and logs
-   - Publish test results and coverage
-   - Track deployment success rates
-   - Alert on pipeline failures
+**Observability**: Collect metrics and logs, publish test/coverage results, track deployment success rates, alert on failures.
 
-## Common Pitfalls to Avoid
+## Common Pitfalls
 
-1. **Caching Issues**
-   - Not using lockfile hashes for cache keys
-   - Caching too much (including build outputs)
-   - Not implementing cache invalidation
-
-2. **Security**
-   - Hardcoding secrets in code or configs
-   - Running containers as root
-   - Not scanning for vulnerabilities
-   - Using `latest` tags in production
-
-3. **Performance**
-   - Sequential execution of independent jobs
-   - Not using caching at all
-   - Rebuilding unchanged layers
-
-4. **Reliability**
-   - No health checks or readiness probes
-   - Missing rollback strategies
-   - No deployment gates or approvals
-   - Flaky tests without retries
-
-5. **Maintainability**
-   - Copy-pasting pipeline configs
-   - Not documenting environment variables
-   - Complex, hard-to-understand pipelines
-   - No versioning of pipeline configs
+| Area | Pitfall |
+|------|---------|
+| Caching | Not hashing lockfiles; caching too much; no invalidation strategy |
+| Security | Hardcoded secrets; running containers as root; using `latest` in production |
+| Performance | Sequential independent jobs; no caching; rebuilding unchanged Docker layers |
+| Reliability | No health checks; no rollback strategy; flaky tests without retries |
+| Maintainability | Copy-pasting pipeline configs; undocumented env vars; no pipeline versioning |
 
 ## Further Learning
 
-- **GitHub Actions**: https://docs.github.com/en/actions
-- **GitLab CI**: https://docs.gitlab.com/ee/ci/
-- **Bitbucket Pipelines**: https://support.atlassian.com/bitbucket-cloud/docs/get-started-with-bitbucket-pipelines/
-- **Kubernetes**: https://kubernetes.io/docs/
-- **Helm**: https://helm.sh/docs/
-- **ArgoCD**: https://argo-cd.readthedocs.io/
-- **Trivy**: https://aquasecurity.github.io/trivy/
-- **Semgrep**: https://semgrep.dev/docs/
+- [GitHub Actions](https://docs.github.com/en/actions)
+- [GitLab CI](https://docs.gitlab.com/ee/ci/)
+- [Bitbucket Pipelines](https://support.atlassian.com/bitbucket-cloud/docs/get-started-with-bitbucket-pipelines/)
+- [Kubernetes](https://kubernetes.io/docs/)
+- [ArgoCD](https://argo-cd.readthedocs.io/)
+- [Trivy](https://aquasecurity.github.io/trivy/)
+- [Semgrep](https://semgrep.dev/docs/)
+
+## Reference Files
+
+| File | Contents |
+|------|----------|
+| [pipeline-stages.md](references/pipeline-stages.md) | Build, Test, Deploy stage examples and best practices |
+| [caching-strategies.md](references/caching-strategies.md) | Dependency, build, and Docker layer caching per ecosystem |
+| [matrix-builds.md](references/matrix-builds.md) | Multi-version and multi-OS matrix configuration |
+| [deployment-strategies.md](references/deployment-strategies.md) | Rolling, Blue/Green, Canary with full YAML examples |
+| [gitops-patterns.md](references/gitops-patterns.md) | ArgoCD and FluxCD pull-based deployment patterns |
+| [security-scanning.md](references/security-scanning.md) | Trivy, GitLeaks, Semgrep, and dependency scanning |
+| [container-registry.md](references/container-registry.md) | Image tagging strategy, immutable tags, registry cleanup |
+| [performance-optimization.md](references/performance-optimization.md) | Parallel jobs, conditional execution, resource sizing |
+| [monitoring-observability.md](references/monitoring-observability.md) | Prometheus metrics, health probes, structured logging |

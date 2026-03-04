@@ -1,6 +1,6 @@
 ---
 name: frontend-patterns
-description: Frontend development patterns for React, Next.js, state management, performance optimization, and UI best practices.
+description: Frontend patterns for React and Next.js development. Use when building components, pages, or hooks, setting up state management, optimizing rendering performance (memoization, lazy loading), implementing forms, handling client/server data fetching, or applying accessibility and UI best practices. Consult before implementing any significant frontend feature.
 user-invocable: false
 context: fork
 agent: architect
@@ -17,625 +17,101 @@ Modern frontend patterns for React, Next.js, and performant user interfaces.
 - Optimizing frontend performance (lazy loading, memoization)
 - Applying accessibility and UI best practices
 
+---
+
 ## Component Patterns
 
-### Composition Over Inheritance
+- Prefer **composition over inheritance**: build small, focused components that assemble together.
+- Use **compound components** (via Context) to share implicit state between a parent and its children without prop-drilling.
+- Use the **render props pattern** to inject rendering logic — useful when a component owns async state that the caller needs to control presentation for.
 
-```typescript
-// ✅ GOOD: Component composition
-interface CardProps {
-  children: React.ReactNode
-  variant?: 'default' | 'outlined'
-}
+See [references/component-patterns.md](references/component-patterns.md)
 
-export function Card({ children, variant = 'default' }: CardProps) {
-  return <div className={`card card-${variant}`}>{children}</div>
-}
+---
 
-export function CardHeader({ children }: { children: React.ReactNode }) {
-  return <div className="card-header">{children}</div>
-}
+## Custom Hooks
 
-export function CardBody({ children }: { children: React.ReactNode }) {
-  return <div className="card-body">{children}</div>
-}
+- `useToggle` — stable boolean toggle with a memoized callback.
+- `useQuery` — lightweight data-fetching with loading/error states, callbacks, and manual `refetch`.
+- `useDebounce` — delays a rapidly-changing value until it stabilizes (e.g., search input, 500ms).
 
-// Usage
-<Card>
-  <CardHeader>Title</CardHeader>
-  <CardBody>Content</CardBody>
-</Card>
-```
+See [references/custom-hooks.md](references/custom-hooks.md)
 
-### Compound Components
+---
 
-```typescript
-interface TabsContextValue {
-  activeTab: string
-  setActiveTab: (tab: string) => void
-}
+## State Management
 
-const TabsContext = createContext<TabsContextValue | undefined>(undefined)
+- Combine `useReducer` with Context for moderately complex shared state.
+- Type actions as a **discriminated union** — no stringly-typed action types.
+- Export a custom hook (`useXxx`) that throws when used outside its provider.
+- For server state (fetching, caching, invalidation) prefer **TanStack Query** over hand-rolled reducers.
 
-export function Tabs({ children, defaultTab }: {
-  children: React.ReactNode
-  defaultTab: string
-}) {
-  const [activeTab, setActiveTab] = useState(defaultTab)
+See [references/state-management.md](references/state-management.md)
 
-  return (
-    <TabsContext.Provider value={{ activeTab, setActiveTab }}>
-      {children}
-    </TabsContext.Provider>
-  )
-}
-
-export function TabList({ children }: { children: React.ReactNode }) {
-  return <div className="tab-list">{children}</div>
-}
-
-export function Tab({ id, children }: { id: string, children: React.ReactNode }) {
-  const context = useContext(TabsContext)
-  if (!context) throw new Error('Tab must be used within Tabs')
-
-  return (
-    <button
-      className={context.activeTab === id ? 'active' : ''}
-      onClick={() => context.setActiveTab(id)}
-    >
-      {children}
-    </button>
-  )
-}
-
-// Usage
-<Tabs defaultTab="overview">
-  <TabList>
-    <Tab id="overview">Overview</Tab>
-    <Tab id="details">Details</Tab>
-  </TabList>
-</Tabs>
-```
-
-### Render Props Pattern
-
-```typescript
-interface DataLoaderProps<T> {
-  url: string
-  children: (data: T | null, loading: boolean, error: Error | null) => React.ReactNode
-}
-
-export function DataLoader<T>({ url, children }: DataLoaderProps<T>) {
-  const [data, setData] = useState<T | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
-
-  useEffect(() => {
-    fetch(url)
-      .then(res => res.json())
-      .then(setData)
-      .catch(setError)
-      .finally(() => setLoading(false))
-  }, [url])
-
-  return <>{children(data, loading, error)}</>
-}
-
-// Usage
-<DataLoader<Market[]> url="/api/markets">
-  {(markets, loading, error) => {
-    if (loading) return <Spinner />
-    if (error) return <Error error={error} />
-    return <MarketList markets={markets!} />
-  }}
-</DataLoader>
-```
-
-## Custom Hooks Patterns
-
-### State Management Hook
-
-```typescript
-export function useToggle(initialValue = false): [boolean, () => void] {
-  const [value, setValue] = useState(initialValue)
-
-  const toggle = useCallback(() => {
-    setValue(v => !v)
-  }, [])
-
-  return [value, toggle]
-}
-
-// Usage
-const [isOpen, toggleOpen] = useToggle()
-```
-
-### Async Data Fetching Hook
-
-```typescript
-interface UseQueryOptions<T> {
-  onSuccess?: (data: T) => void
-  onError?: (error: Error) => void
-  enabled?: boolean
-}
-
-export function useQuery<T>(
-  key: string,
-  fetcher: () => Promise<T>,
-  options?: UseQueryOptions<T>
-) {
-  const [data, setData] = useState<T | null>(null)
-  const [error, setError] = useState<Error | null>(null)
-  const [loading, setLoading] = useState(false)
-
-  const refetch = useCallback(async () => {
-    setLoading(true)
-    setError(null)
-
-    try {
-      const result = await fetcher()
-      setData(result)
-      options?.onSuccess?.(result)
-    } catch (err) {
-      const error = err as Error
-      setError(error)
-      options?.onError?.(error)
-    } finally {
-      setLoading(false)
-    }
-  }, [fetcher, options])
-
-  useEffect(() => {
-    if (options?.enabled !== false) {
-      refetch()
-    }
-  }, [key, refetch, options?.enabled])
-
-  return { data, error, loading, refetch }
-}
-
-// Usage
-const { data: markets, loading, error, refetch } = useQuery(
-  'markets',
-  () => fetch('/api/markets').then(r => r.json()),
-  {
-    onSuccess: data => console.log('Fetched', data.length, 'markets'),
-    onError: err => console.error('Failed:', err)
-  }
-)
-```
-
-### Debounce Hook
-
-```typescript
-export function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value)
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value)
-    }, delay)
-
-    return () => clearTimeout(handler)
-  }, [value, delay])
-
-  return debouncedValue
-}
-
-// Usage
-const [searchQuery, setSearchQuery] = useState('')
-const debouncedQuery = useDebounce(searchQuery, 500)
-
-useEffect(() => {
-  if (debouncedQuery) {
-    performSearch(debouncedQuery)
-  }
-}, [debouncedQuery])
-```
-
-## State Management Patterns
-
-### Context + Reducer Pattern
-
-```typescript
-interface State {
-  markets: Market[]
-  selectedMarket: Market | null
-  loading: boolean
-}
-
-type Action =
-  | { type: 'SET_MARKETS'; payload: Market[] }
-  | { type: 'SELECT_MARKET'; payload: Market }
-  | { type: 'SET_LOADING'; payload: boolean }
-
-function reducer(state: State, action: Action): State {
-  switch (action.type) {
-    case 'SET_MARKETS':
-      return { ...state, markets: action.payload }
-    case 'SELECT_MARKET':
-      return { ...state, selectedMarket: action.payload }
-    case 'SET_LOADING':
-      return { ...state, loading: action.payload }
-    default:
-      return state
-  }
-}
-
-const MarketContext = createContext<{
-  state: State
-  dispatch: Dispatch<Action>
-} | undefined>(undefined)
-
-export function MarketProvider({ children }: { children: React.ReactNode }) {
-  const [state, dispatch] = useReducer(reducer, {
-    markets: [],
-    selectedMarket: null,
-    loading: false
-  })
-
-  return (
-    <MarketContext.Provider value={{ state, dispatch }}>
-      {children}
-    </MarketContext.Provider>
-  )
-}
-
-export function useMarkets() {
-  const context = useContext(MarketContext)
-  if (!context) throw new Error('useMarkets must be used within MarketProvider')
-  return context
-}
-```
+---
 
 ## Performance Optimization
 
-### Memoization
+- `useMemo` for expensive computations; `useCallback` for stable function references passed to memoized children.
+- `React.memo` for pure components that receive the same props frequently — profile before adding.
+- `lazy` + `Suspense` for code-splitting heavy components (use `next/dynamic` in Next.js).
+- `@tanstack/react-virtual` (or `react-window`) for lists with hundreds or thousands of rows.
 
-```typescript
-// ✅ useMemo for expensive computations
-const sortedMarkets = useMemo(() => {
-  return markets.sort((a, b) => b.volume - a.volume)
-}, [markets])
+See [references/performance-optimization.md](references/performance-optimization.md)
 
-// ✅ useCallback for functions passed to children
-const handleSearch = useCallback((query: string) => {
-  setSearchQuery(query)
-}, [])
+---
 
-// ✅ React.memo for pure components
-export const MarketCard = React.memo<MarketCardProps>(({ market }) => {
-  return (
-    <div className="market-card">
-      <h3>{market.name}</h3>
-      <p>{market.description}</p>
-    </div>
-  )
-})
-```
+## Form Handling
 
-### Code Splitting & Lazy Loading
+- Controlled forms work for simple cases: manage state in React, validate on submit, display field-level errors.
+- For complex forms prefer **React Hook Form** (performance) or **Formik** (feature-rich).
+- Pair with **Zod** for type-safe validation schemas shared between frontend and backend.
 
-```typescript
-import { lazy, Suspense } from 'react'
+See [references/form-handling.md](references/form-handling.md)
 
-// ✅ Lazy load heavy components
-const HeavyChart = lazy(() => import('./HeavyChart'))
-const ThreeJsBackground = lazy(() => import('./ThreeJsBackground'))
+---
 
-export function Dashboard() {
-  return (
-    <div>
-      <Suspense fallback={<ChartSkeleton />}>
-        <HeavyChart data={data} />
-      </Suspense>
+## Error Boundaries
 
-      <Suspense fallback={null}>
-        <ThreeJsBackground />
-      </Suspense>
-    </div>
-  )
-}
-```
+- Use class-based `ErrorBoundary` to catch render-time errors in a subtree and show a fallback UI.
+- Place boundaries at route/widget boundaries, not at every leaf component.
+- Always log in `componentDidCatch` (Sentry, Datadog, etc.) and provide a "Try again" reset.
+- In Next.js App Router, use the `error.tsx` file convention instead.
 
-### Virtualization for Long Lists
+See [references/error-boundary.md](references/error-boundary.md)
 
-```typescript
-import { useVirtualizer } from '@tanstack/react-virtual'
-
-export function VirtualMarketList({ markets }: { markets: Market[] }) {
-  const parentRef = useRef<HTMLDivElement>(null)
-
-  const virtualizer = useVirtualizer({
-    count: markets.length,
-    getScrollElement: () => parentRef.current,
-    estimateSize: () => 100,  // Estimated row height
-    overscan: 5  // Extra items to render
-  })
-
-  return (
-    <div ref={parentRef} style={{ height: '600px', overflow: 'auto' }}>
-      <div
-        style={{
-          height: `${virtualizer.getTotalSize()}px`,
-          position: 'relative'
-        }}
-      >
-        {virtualizer.getVirtualItems().map(virtualRow => (
-          <div
-            key={virtualRow.index}
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: `${virtualRow.size}px`,
-              transform: `translateY(${virtualRow.start}px)`
-            }}
-          >
-            <MarketCard market={markets[virtualRow.index]} />
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-```
-
-## Form Handling Patterns
-
-### Controlled Form with Validation
-
-```typescript
-interface FormData {
-  name: string
-  description: string
-  endDate: string
-}
-
-interface FormErrors {
-  name?: string
-  description?: string
-  endDate?: string
-}
-
-export function CreateMarketForm() {
-  const [formData, setFormData] = useState<FormData>({
-    name: '',
-    description: '',
-    endDate: ''
-  })
-
-  const [errors, setErrors] = useState<FormErrors>({})
-
-  const validate = (): boolean => {
-    const newErrors: FormErrors = {}
-
-    if (!formData.name.trim()) {
-      newErrors.name = 'Name is required'
-    } else if (formData.name.length > 200) {
-      newErrors.name = 'Name must be under 200 characters'
-    }
-
-    if (!formData.description.trim()) {
-      newErrors.description = 'Description is required'
-    }
-
-    if (!formData.endDate) {
-      newErrors.endDate = 'End date is required'
-    }
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!validate()) return
-
-    try {
-      await createMarket(formData)
-      // Success handling
-    } catch (error) {
-      // Error handling
-    }
-  }
-
-  return (
-    <form onSubmit={handleSubmit}>
-      <input
-        value={formData.name}
-        onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
-        placeholder="Market name"
-      />
-      {errors.name && <span className="error">{errors.name}</span>}
-
-      {/* Other fields */}
-
-      <button type="submit">Create Market</button>
-    </form>
-  )
-}
-```
-
-## Error Boundary Pattern
-
-```typescript
-interface ErrorBoundaryState {
-  hasError: boolean
-  error: Error | null
-}
-
-export class ErrorBoundary extends React.Component<
-  { children: React.ReactNode },
-  ErrorBoundaryState
-> {
-  state: ErrorBoundaryState = {
-    hasError: false,
-    error: null
-  }
-
-  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-    return { hasError: true, error }
-  }
-
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('Error boundary caught:', error, errorInfo)
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div className="error-fallback">
-          <h2>Something went wrong</h2>
-          <p>{this.state.error?.message}</p>
-          <button onClick={() => this.setState({ hasError: false })}>
-            Try again
-          </button>
-        </div>
-      )
-    }
-
-    return this.props.children
-  }
-}
-
-// Usage
-<ErrorBoundary>
-  <App />
-</ErrorBoundary>
-```
+---
 
 ## Animation Patterns
 
-### Framer Motion Animations
+- Use **Framer Motion** with `AnimatePresence` for mount/unmount transitions (modals, list items).
+- Keep interaction durations under 400ms; respect `prefers-reduced-motion` via `useReducedMotion()`.
+- For simple hover/color transitions, use Tailwind `transition-*` utilities — no JS library needed.
 
-```typescript
-import { motion, AnimatePresence } from 'framer-motion'
+See [references/animation-patterns.md](references/animation-patterns.md)
 
-// ✅ List animations
-export function AnimatedMarketList({ markets }: { markets: Market[] }) {
-  return (
-    <AnimatePresence>
-      {markets.map(market => (
-        <motion.div
-          key={market.id}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.3 }}
-        >
-          <MarketCard market={market} />
-        </motion.div>
-      ))}
-    </AnimatePresence>
-  )
-}
-
-// ✅ Modal animations
-export function Modal({ isOpen, onClose, children }: ModalProps) {
-  return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          <motion.div
-            className="modal-overlay"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-          />
-          <motion.div
-            className="modal-content"
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-          >
-            {children}
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
-  )
-}
-```
+---
 
 ## Accessibility Patterns
 
-### Keyboard Navigation
+- All interactive widgets must be fully keyboard-operable with correct ARIA roles and states.
+- Modals must trap focus while open and restore focus to the trigger on close.
+- Meet WCAG AA color contrast (4.5:1 text, 3:1 UI components); all images need descriptive `alt`.
+- Consider **Radix UI** or **Headless UI** for pre-built accessible primitives.
 
-```typescript
-export function Dropdown({ options, onSelect }: DropdownProps) {
-  const [isOpen, setIsOpen] = useState(false)
-  const [activeIndex, setActiveIndex] = useState(0)
+See [references/accessibility-patterns.md](references/accessibility-patterns.md)
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault()
-        setActiveIndex(i => Math.min(i + 1, options.length - 1))
-        break
-      case 'ArrowUp':
-        e.preventDefault()
-        setActiveIndex(i => Math.max(i - 1, 0))
-        break
-      case 'Enter':
-        e.preventDefault()
-        onSelect(options[activeIndex])
-        setIsOpen(false)
-        break
-      case 'Escape':
-        setIsOpen(false)
-        break
-    }
-  }
+---
 
-  return (
-    <div
-      role="combobox"
-      aria-expanded={isOpen}
-      aria-haspopup="listbox"
-      onKeyDown={handleKeyDown}
-    >
-      {/* Dropdown implementation */}
-    </div>
-  )
-}
-```
+## Reference Files
 
-### Focus Management
-
-```typescript
-export function Modal({ isOpen, onClose, children }: ModalProps) {
-  const modalRef = useRef<HTMLDivElement>(null)
-  const previousFocusRef = useRef<HTMLElement | null>(null)
-
-  useEffect(() => {
-    if (isOpen) {
-      // Save currently focused element
-      previousFocusRef.current = document.activeElement as HTMLElement
-
-      // Focus modal
-      modalRef.current?.focus()
-    } else {
-      // Restore focus when closing
-      previousFocusRef.current?.focus()
-    }
-  }, [isOpen])
-
-  return isOpen ? (
-    <div
-      ref={modalRef}
-      role="dialog"
-      aria-modal="true"
-      tabIndex={-1}
-      onKeyDown={e => e.key === 'Escape' && onClose()}
-    >
-      {children}
-    </div>
-  ) : null
-}
-```
-
-**Remember**: Modern frontend patterns enable maintainable, performant user interfaces. Choose patterns that fit your project complexity.
+| File | Contents |
+|------|----------|
+| [references/component-patterns.md](references/component-patterns.md) | Composition, Compound Components, Render Props |
+| [references/custom-hooks.md](references/custom-hooks.md) | useToggle, useQuery, useDebounce |
+| [references/state-management.md](references/state-management.md) | Context + Reducer pattern and guidelines |
+| [references/performance-optimization.md](references/performance-optimization.md) | Memoization, Code Splitting, Virtualization |
+| [references/form-handling.md](references/form-handling.md) | Controlled forms, React Hook Form + Zod |
+| [references/error-boundary.md](references/error-boundary.md) | ErrorBoundary class, Next.js error.tsx |
+| [references/animation-patterns.md](references/animation-patterns.md) | Framer Motion list and modal animations |
+| [references/accessibility-patterns.md](references/accessibility-patterns.md) | Keyboard nav, focus management, WCAG checklist |
