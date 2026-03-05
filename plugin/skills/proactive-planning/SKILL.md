@@ -1,6 +1,7 @@
 ---
 name: proactive-planning
-description: "Standalone planning ONLY - for architectural discussions, requirement analysis, and design decisions where NO code will be written. If the task involves writing code, DEFER to proactive-orchestration instead. Only fires for pure planning without TDD/review pipeline."
+description: >
+  Use this skill for design-before-build conversations: technology comparisons (Redis vs Memcached, WebSockets vs SSE), architecture decisions, data modeling, API contract design, migration planning, and trade-off analysis — where the goal is reaching a decision or plan, not writing code. Invoke when the user is in "thinking mode": evaluating options, mapping out systems, discussing pros/cons, or planning an approach before implementation begins. Skip when the user wants code written, bugs fixed, or implementation started immediately — use proactive-orchestration instead.
 user-invocable: false
 context: fork
 agent: planner

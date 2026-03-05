@@ -1,6 +1,7 @@
 ---
 name: proactive-tdd
-description: Use when writing new features, fixing bugs, or implementing business logic in isolation (not part of a full orchestration pipeline). Does NOT fire when proactive-orchestration is active.
+description: >
+  Invoke when writing new features, fixing bugs, or implementing business logic outside of a full orchestration pipeline — when the user asks to add a function, implement a service, fix a specific bug, or build a small module. Trigger on: "add a method", "fix this function", "implement this service", "make this test pass", "write a validator", or any concrete implementation request scoped to a single component. Enforces RED → GREEN → REFACTOR: write the failing test first, then implement, then verify coverage. Does NOT fire when proactive-orchestration is already running the full pipeline.
 user-invocable: false
 context: fork
 ---

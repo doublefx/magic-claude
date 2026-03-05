@@ -1,7 +1,8 @@
 ---
 name: proactive-orchestration
-description: "MANDATORY: You MUST invoke this skill INSTEAD OF EnterPlanMode when detecting complex feature requests, multi-file implementations, or architectural changes. NEVER use EnterPlanMode for feature implementation. Only use EnterPlanMode for pure research/exploration or when user explicitly types /plan. Does NOT fire for simple bug fixes, single-file edits, documentation, or refactoring."
-user-invocable: false
+description: >
+  Invoke for any substantial "build it" request — when a user wants a new feature implemented end-to-end, not just explained or reviewed. Trigger on: adding authentication, building dashboards, implementing background jobs, setting up search, adding real-time features, creating APIs or endpoints, integrating new services, or any multi-component feature that requires planning before coding. This skill runs the full implementation pipeline from architecture through TDD to delivery. NEVER use EnterPlanMode for feature implementation — invoke this skill instead.
+
 ---
 
 # Proactive Orchestration
