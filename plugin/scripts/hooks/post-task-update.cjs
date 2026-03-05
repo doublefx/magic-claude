@@ -32,6 +32,8 @@ function getModifiedSourceFiles() {
 }
 
 wrapHookMain('post-task-update', (input) => {
+  // Skip advisory hooks inside subagents — only fire for top-level Claude sessions
+  if (input.agent_id) return;
   // Check if this was a task completion
   const toolInput = input.tool_input || {};
   const status = toolInput.status;

@@ -1,0 +1,3 @@
+# Temporary dirs created by skill-creator run_loop.py during eval
+*-workspace/
+*-skill-*/

@@ -11,6 +11,8 @@
 const { debugHook, wrapHookMain } = require('../lib/hook-debug.cjs');
 
 wrapHookMain('pr-url-logger', (input) => {
+  // Skip advisory hooks inside subagents — only fire for top-level Claude sessions
+  if (input.agent_id) return;
   const cmd = input.tool_input?.command || '';
 
   // Only process gh pr create commands

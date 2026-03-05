@@ -18,10 +18,14 @@ const {
   getTempDir,
   readFile,
   writeFile,
+  readStdinJson,
   log
 } = require('../lib/utils.cjs');
 
-function main() {
+async function main() {
+  // Skip advisory hooks inside subagents — only fire for top-level Claude sessions
+  const hookInput = await readStdinJson().catch(() => ({}));
+  if (hookInput.agent_id) process.exit(0);
   // Track tool call count (increment in a temp file)
   // Use a session-specific counter file based on PID from parent process
   // or session ID from environment

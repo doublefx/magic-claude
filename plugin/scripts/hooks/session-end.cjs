@@ -17,10 +17,14 @@ const {
   ensureDir,
   writeFile,
   replaceInFile,
+  readStdinJson,
   log
 } = require('../lib/utils.cjs');
 
-function main() {
+async function main() {
+  // Skip advisory hooks inside subagents — only fire for top-level Claude sessions
+  const hookInput = await readStdinJson().catch(() => ({}));
+  if (hookInput.agent_id) process.exit(0);
   const sessionsDir = getSessionsDir();
   const today = getDateString();
   const sessionFile = path.join(sessionsDir, `${today}-session.tmp`);

@@ -102,6 +102,9 @@ function detectExtractablePatterns(transcriptPath) {
 async function main() {
   const input = await readStdin();
 
+  // Skip advisory hooks inside subagents — only fire for top-level Claude sessions
+  if (input.agent_id) process.exit(0);
+
   // Get script directory to find config
   const scriptDir = __dirname;
   const configFile = path.join(scriptDir, '..', '..', 'skills', 'continuous-learning', 'config.json');

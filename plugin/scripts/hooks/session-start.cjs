@@ -231,7 +231,10 @@ function detectSetupNeeds() {
 
 async function main() {
   // Read stdin (required for hook protocol, though SessionStart may not have data)
-  await readStdin();
+  const hookInput = await readStdin();
+
+  // Skip advisory hooks inside subagents — only fire for top-level Claude sessions
+  if (hookInput.agent_id) process.exit(0);
   const sessionsDir = getSessionsDir();
   const learnedDir = getProjectLearnedSkillsDir() || getUserLearnedSkillsDir();
 

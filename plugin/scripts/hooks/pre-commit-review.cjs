@@ -64,6 +64,9 @@ function wasReviewRecentlyDone() {
 async function main() {
   const input = await readStdin();
 
+  // Skip advisory hooks inside subagents — only fire for top-level Claude sessions
+  if (input.agent_id) { console.log(JSON.stringify(input)); process.exit(0); }
+
   // Get the command being executed
   const command = input.tool_input?.command || '';
 
