@@ -1,21 +1,6 @@
----
-name: jvm-backend-patterns
-description: JVM backend architecture patterns for Spring Boot, JPA/Hibernate, Spring Security, and REST API design. Covers repository pattern, DTO mapping, transaction management, and enterprise patterns.
-context: fork
-agent: general-purpose
----
+# JVM (Spring Boot / JPA) — Backend Patterns
 
-# JVM Backend Patterns
-
-Backend architecture patterns and best practices for Spring Boot, JPA, and enterprise Java/Kotlin development.
-
-## When to Activate
-
-- Designing Spring Boot REST APIs
-- Working with JPA/Hibernate repositories
-- Implementing service layer patterns
-- Configuring Spring Security
-- Managing database transactions
+**Stack:** Spring Boot 3.x, Spring Data JPA, Spring Security, Hibernate
 
 ## Layered Architecture
 
@@ -25,7 +10,8 @@ Controller → Service → Repository → Database
    DTO      Domain     Entity
 ```
 
-### Controller Layer
+## Controller Layer
+
 ```java
 @RestController
 @RequestMapping("/api/orders")
@@ -52,11 +38,12 @@ public class OrderController {
 }
 ```
 
-### Service Layer
+## Service Layer
+
 ```java
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
+@Transactional(readOnly = true)  // Read-only by default
 public class OrderService {
 
     private final OrderRepository orderRepository;
@@ -65,30 +52,37 @@ public class OrderService {
         return orderRepository.findById(id);
     }
 
-    @Transactional
+    @Transactional  // Override to writable
     public Order create(Order order) {
-        // Business logic here
         return orderRepository.save(order);
     }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void auditLog(AuditEvent event) { ... }
 }
 ```
 
-### Repository Layer (Spring Data JPA)
+## Repository Layer (Spring Data JPA)
+
 ```java
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
     @Query("SELECT o FROM Order o WHERE o.status = :status")
     List<Order> findByStatus(@Param("status") OrderStatus status);
 
+    // JOIN FETCH prevents N+1
     @Query("SELECT o FROM Order o JOIN FETCH o.items WHERE o.id = :id")
     Optional<Order> findByIdWithItems(@Param("id") Long id);
+
+    // Pagination for list endpoints
+    Page<Order> findByUserId(Long userId, Pageable pageable);
 }
 ```
 
-## DTO Pattern
+## DTO Pattern (Records)
 
 ```java
-// Request DTO
+// Request DTO — validates + converts to domain
 public record CreateOrderRequest(
     @NotNull @Size(min = 1) List<OrderItemRequest> items,
     @Size(max = 500) String notes
@@ -98,15 +92,10 @@ public record CreateOrderRequest(
     }
 }
 
-// Response DTO
-public record OrderResponse(
-    Long id, BigDecimal total, String status, List<OrderItemResponse> items
-) {
+// Response DTO — converts from domain
+public record OrderResponse(Long id, BigDecimal total, String status) {
     public static OrderResponse from(Order order) {
-        return new OrderResponse(
-            order.getId(), order.getTotal(), order.getStatus().name(),
-            order.getItems().stream().map(OrderItemResponse::from).toList()
-        );
+        return new OrderResponse(order.getId(), order.getTotal(), order.getStatus().name());
     }
 }
 ```
@@ -135,23 +124,7 @@ public class SecurityConfig {
 }
 ```
 
-## Transaction Management
-
-```java
-// Read-only at class level, writable per method
-@Service
-@Transactional(readOnly = true)
-public class OrderService {
-
-    @Transactional  // Writable for mutations
-    public Order create(Order order) { ... }
-
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void auditLog(AuditEvent event) { ... }
-}
-```
-
-## Error Handling
+## Global Error Handling
 
 ```java
 @RestControllerAdvice
@@ -177,8 +150,8 @@ public class GlobalExceptionHandler {
 ## Key Principles
 
 - Records for DTOs (immutable)
-- `@Transactional(readOnly = true)` by default
-- Bean Validation (`@Valid`) on controller inputs
-- Optional for nullable returns
-- N+1 prevention with `JOIN FETCH`
-- Pagination for list endpoints
+- `@Transactional(readOnly = true)` by default on services
+- `@Valid` on all controller inputs
+- `Optional` for nullable returns — never `null`
+- `JOIN FETCH` to prevent N+1
+- `Pageable` for all list endpoints

@@ -1,20 +1,33 @@
 ---
 name: backend-patterns
-description: Backend architecture and API design patterns for Node.js, Express, and Next.js. Use when designing REST or GraphQL endpoints, implementing middleware or authentication, structuring backend services, optimizing database queries and caching, or building any server-side feature. Consult before designing any new API surface or backend module.
+description: >
+  Backend architecture patterns for Node.js/Next.js, JVM (Spring Boot/JPA), and Python
+  (FastAPI/Django/SQLAlchemy). Use when designing REST endpoints, implementing authentication,
+  structuring services, optimizing queries, or building any server-side feature. Detects
+  ecosystem and loads the matching architecture reference automatically.
 user-invocable: false
 context: fork
-agent: architect
+agent: general-purpose
+allowed-tools: Read
 ---
 
 # Backend Development Patterns
 
-Backend architecture patterns and best practices for scalable server-side applications.
+## Ecosystem Detection
+
+Detect the project ecosystem, then **immediately read the matching reference**:
+
+| Ecosystem | Indicators | Reference to read |
+|-----------|-----------|-------------------|
+| TypeScript / JavaScript | `package.json`, `.ts`, `.tsx`, `.js` | Multiple — see Node.js/Next.js sections below |
+| JVM (Spring Boot) | `build.gradle`, `pom.xml`, `.java`, `.kt` | [references/jvm-patterns.md](references/jvm-patterns.md) |
+| Python (FastAPI/Django) | `pyproject.toml`, `requirements.txt`, `.py` | [references/python-patterns.md](references/python-patterns.md) |
 
 ## When to Activate
 
 - Designing API endpoints (REST, GraphQL)
 - Optimizing database queries and caching
-- Structuring backend services with Node.js, Express, or Next.js
+- Structuring backend services
 - Implementing error handling and authentication patterns
 
 ## API Design Patterns
@@ -82,6 +95,18 @@ See [references/background-jobs.md](references/background-jobs.md)
 
 See [references/logging-monitoring.md](references/logging-monitoring.md)
 
+## JVM (Spring Boot / JPA)
+
+See [references/jvm-patterns.md](references/jvm-patterns.md) for the full JVM reference.
+
+Key topics: Controller→Service→Repository layering, DTO records with `toDomain()`/`from()`, `@Transactional(readOnly=true)` by default, `JOIN FETCH` for N+1, `@RestControllerAdvice`, Spring Security 6.x config.
+
+## Python (FastAPI / Django)
+
+See [references/python-patterns.md](references/python-patterns.md) for the full Python reference.
+
+Key topics: FastAPI routers + `Depends()` DI, Pydantic request/response models, SQLAlchemy 2.0 `Mapped[]` models, async repository pattern, `selectinload` for N+1, JWT auth, exception handlers.
+
 ---
 
 ## Reference Files
@@ -96,5 +121,5 @@ See [references/logging-monitoring.md](references/logging-monitoring.md)
 | [references/rate-limiting.md](references/rate-limiting.md) | In-memory sliding-window rate limiter |
 | [references/background-jobs.md](references/background-jobs.md) | Simple typed job queue |
 | [references/logging-monitoring.md](references/logging-monitoring.md) | Structured JSON logger with context |
-
-**Remember**: Choose patterns that fit your complexity level. Start simple and introduce layers only when they solve a real problem.
+| [references/jvm-patterns.md](references/jvm-patterns.md) | Spring Boot layered arch, JPA, Spring Security, DTOs |
+| [references/python-patterns.md](references/python-patterns.md) | FastAPI, Django/DRF, SQLAlchemy 2.0, Pydantic v2 |
