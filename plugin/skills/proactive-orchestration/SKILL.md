@@ -1,7 +1,7 @@
 ---
 name: proactive-orchestration
 description: >
-  Invoke for any substantial "build it" request — when a user wants a new feature implemented end-to-end, not just explained or reviewed. Trigger on: adding authentication, building dashboards, implementing background jobs, setting up search, adding real-time features, creating APIs or endpoints, integrating new services, or any multi-component feature that requires planning before coding. This skill runs the full implementation pipeline from architecture through TDD to delivery. NEVER use EnterPlanMode for feature implementation — invoke this skill instead.
+  Invoke when a user wants to build something new end-to-end — a feature, system, or capability that spans multiple files and requires planning before code. Trigger on: adding authentication, integrating services (Stripe, OAuth, Elasticsearch), building APIs or real-time systems, dashboards, search, background jobs, or any multi-component "add/build/create/implement" request. This skill runs the full pipeline from architecture through TDD to delivery. NEVER use EnterPlanMode for feature implementation — invoke this skill instead.
 
 ---
 

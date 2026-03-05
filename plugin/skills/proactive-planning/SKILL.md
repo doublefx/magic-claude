@@ -1,7 +1,7 @@
 ---
 name: proactive-planning
 description: >
-  Use this skill for design-before-build conversations: technology comparisons (Redis vs Memcached, WebSockets vs SSE), architecture decisions, data modeling, API contract design, migration planning, and trade-off analysis — where the goal is reaching a decision or plan, not writing code. Invoke when the user is in "thinking mode": evaluating options, mapping out systems, discussing pros/cons, or planning an approach before implementation begins. Skip when the user wants code written, bugs fixed, or implementation started immediately — use proactive-orchestration instead.
+  Use this skill when a user is deciding which technical approach to take. Invoke for: choosing between options (Redis vs Memcached, WebSockets vs SSE, REST vs GraphQL), how to structure or design a system, evaluating trade-offs, and planning major changes (migrations, architectural shifts, data modeling). The user is in discovery mode — weighing pros and cons to make a decision, not asking for code. Skip if they want code written, bugs fixed, or implementation started — use proactive-orchestration instead.
 user-invocable: false
 context: fork
 agent: planner

@@ -1,7 +1,7 @@
 ---
 name: proactive-review
 description: >
-  Invoke whenever code changes are complete and ready for review — before committing, after implementing a feature, or when the user signals they're done. Trigger on: task completion, "review this", "check my code", "is this ready to commit?", "looks good to me", or after any non-trivial implementation session. Reviews for security vulnerabilities (OWASP Top 10), code quality, test coverage gaps, and ecosystem-specific anti-patterns. Does NOT fire when proactive-orchestration is running the full pipeline — it handles review internally at delivery.
+  Use this skill when the user presents code and explicitly asks for your judgment on it. Look for intent signals: "review", "check", "look at this", "does it look good", "anything wrong", "ready to commit", "what do you think" — paired with code or mention of completing work. Reviews for security vulnerabilities (OWASP Top 10), code quality, and test coverage gaps. Does NOT fire when proactive-orchestration is running the full pipeline — it handles review internally at delivery.
 user-invocable: false
 context: fork
 agent: code-reviewer
