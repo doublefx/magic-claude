@@ -1,3 +1,11 @@
+---
+paths:
+  - "**/*.java"
+  - "**/*.kt"
+  - "**/*.groovy"
+  - "**/pom.xml"
+  - "**/build.gradle*"
+---
 # Java Style Guidelines
 
 This document defines Java coding standards based on **Google Java Style Guide** with additional enterprise security practices.

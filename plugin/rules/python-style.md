@@ -1,3 +1,11 @@
+---
+paths:
+  - "**/*.py"
+  - "**/pyproject.toml"
+  - "**/requirements*.txt"
+  - "**/setup.py"
+  - "**/setup.cfg"
+---
 # Python Style Guide (2026)
 
 Modern Python style guide emphasizing readability, type safety, and security.
