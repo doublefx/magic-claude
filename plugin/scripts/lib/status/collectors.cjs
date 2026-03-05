@@ -83,7 +83,7 @@ const SKILL_CATEGORIES = {
   Domain: name => /(-(patterns|standards|workflow))$/.test(name),
   Debugging: name => name === 'systematic-debugging',
   Review: name => name.includes('review') && !name.startsWith('proactive-'),
-  Workflow: name => ['continuous-learning', 'eval-harness', 'verification-loop', 'strategic-compact', 'extend'].includes(name),
+  Workflow: name => ['continuous-learning', 'eval-harness', 'verification-loop', 'extend'].includes(name),
   Branch: name => ['using-git-worktrees', 'finishing-feature'].includes(name),
   Serena: name => name.startsWith('serena-'),
   'UI Design': name => name === 'ui-design',

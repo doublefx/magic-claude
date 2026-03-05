@@ -46,7 +46,7 @@ magic-claude/
 |   |   |-- ci-cd-architect.md      # CI/CD pipeline generation
 |   |   |-- git-sync.md             # Git changes impact analysis (background)
 |   |
-|   |-- skills/           # Workflow definitions and domain knowledge (34 total)
+|   |-- skills/           # Workflow definitions and domain knowledge (33 total)
 |   |   |-- coding-standards/           # Multi-ecosystem coding standards (TS/JS, JVM, Python)
 |   |   |-- backend-patterns/           # Multi-ecosystem backend patterns (Node.js, Spring Boot, FastAPI)
 |   |   |-- frontend-patterns/          # React, Next.js patterns
@@ -58,7 +58,6 @@ magic-claude/
 |   |   |-- proactive-tdd/              # Standalone TDD enforcement
 |   |   |-- proactive-review/           # Standalone code quality review
 |   |   |-- continuous-learning/        # Auto-extract patterns from sessions
-|   |   |-- strategic-compact/          # Manual compaction suggestions
 |   |   |-- eval-harness/               # Verification loop evaluation
 |   |   |-- verification-loop/          # Continuous verification
 |   |   |-- python-patterns/            # Python best practices and idioms
@@ -127,7 +126,6 @@ magic-claude/
 |   |   |   |-- session-start.cjs    # Load context on session start
 |   |   |   |-- session-end.cjs      # Save state on session end
 |   |   |   |-- pre-compact.cjs      # Pre-compaction state saving
-|   |   |   |-- suggest-compact.cjs  # Strategic compaction suggestions
 |   |   |   |-- evaluate-session.cjs # Extract patterns from sessions
 |   |   |   |-- smart-formatter.js   # Universal auto-formatter
 |   |   |   |-- python-security.js   # Python security scanning

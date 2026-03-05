@@ -268,7 +268,6 @@ Skills define reusable workflows and domain knowledge in `plugin/skills/` direct
 
 **Workflow Skills**:
 - **magic-claude:continuous-learning** - Auto-extract patterns from sessions
-- **magic-claude:strategic-compact** - Manual compaction suggestions
 - **magic-claude:eval-harness** - Verification loop evaluation
 - **magic-claude:verification-loop** - Continuous verification
 - **magic-claude:extend** - Generate new plugin components following existing patterns

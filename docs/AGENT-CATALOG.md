@@ -1028,11 +1028,6 @@ Gradle Optimization Report
 **Type**: Skill (branch & isolation)
 **Description**: Structured branch cleanup after feature work — merge locally, push + PR, keep, or discard with test verification
 
-#### strategic-compact
-**Path**: `plugin/skills/strategic-compact/SKILL.md`
-**Type**: Skill (workflow)
-**Description**: Manual compaction suggestions at logical workflow boundaries
-
 ---
 
 ## Usage Examples
@@ -1124,7 +1119,7 @@ pytest
 - 2 review skills (receiving-code-review, agent-coordination)
 - 1 debugging skill (systematic-debugging)
 - 5 coordination/domain skills (agent-teams, claude-mem-context, clickhouse-io, extend, project-guidelines-example)
-- 4 workflow skills (continuous-learning, strategic-compact, eval-harness, verification-loop)
+- 3 workflow skills (continuous-learning, eval-harness, verification-loop)
 
 **Best Practices**:
 - Use language-specific agents for code review

@@ -38,17 +38,6 @@
           }
         ],
         "description": "Suggest code review before git commit (filters for git commit internally)"
-      },
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/suggest-compact.cjs\"",
-            "statusMessage": "Checking context usage..."
-          }
-        ],
-        "description": "Suggest manual compaction at logical intervals"
       }
     ],
     "PreCompact": [

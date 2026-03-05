@@ -33,7 +33,6 @@ Hooks fire automatically during every workflow. They are the connective tissue.
 | Hook | What It Does | Trigger |
 |------|-------------|---------|
 | `pre-commit-review.cjs` | Suggests `code-reviewer` agent before git commit | `git commit` (not amend) |
-| `suggest-compact.cjs` | Suggests `/compact` after 50 tool calls, then every 25 | Every Edit/Write |
 
 ### Lifecycle
 
