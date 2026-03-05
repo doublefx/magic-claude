@@ -3,7 +3,7 @@ name: python-security-reviewer
 description: Python security vulnerability detection and remediation specialist. Use PROACTIVELY after writing Python code that handles user input, authentication, API endpoints, or sensitive data. Uses bandit, pip-audit, semgrep, and framework-specific security patterns for Django and FastAPI.
 tools: Read, Write, Edit, Bash, Grep, Glob
 model: opus
-skills: python-security-review, claude-mem-context, serena-code-navigation
+skills: security-review, claude-mem-context, serena-code-navigation
 hooks:
   Stop:
     - hooks:

@@ -3,7 +3,7 @@ name: jvm-security-reviewer
 description: JVM security vulnerability detection and remediation specialist for Java, Kotlin, and Groovy. Use PROACTIVELY after writing JVM code that handles user input, authentication, API endpoints, or sensitive data. Uses SpotBugs, FindSecurityBugs, OWASP Dependency-Check, and Spring Security patterns.
 tools: Read, Write, Edit, Bash, Grep, Glob
 model: opus
-skills: jvm-security-review, claude-mem-context, serena-code-navigation
+skills: security-review, claude-mem-context, serena-code-navigation
 hooks:
   Stop:
     - hooks:

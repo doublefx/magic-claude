@@ -5,14 +5,15 @@ argument-hint: "[feature description]"
 
 # Plan Command
 
-This command invokes the **magic-claude:planner** agent to create a comprehensive implementation plan before writing any code.
+This command invokes the **magic-claude:planner** agent to create a comprehensive implementation plan before writing any code. The plan goes through adversarial review before user approval.
 
 ## What This Command Does
 
-1. **Restate Requirements** - Clarify what needs to be built
-2. **Identify Risks** - Surface potential issues and blockers
-3. **Create Step Plan** - Break down implementation into phases
+1. **Discover** - Run codebase discovery to ground the plan in verified facts
+2. **Plan** - Create a step-by-step implementation plan
+3. **Critic Review** - Adversarial stress-testing of the plan (auto-loop, max 3 cycles)
 4. **Wait for Confirmation** - MUST receive user approval before proceeding
+5. **Persist** - Save approved plan to `.claude/plans/YYYY-MM-DD-<feature>.md`
 
 ## When to Use
 
@@ -23,83 +24,58 @@ Use `/plan` when:
 - Multiple files/components will be affected
 - Requirements are unclear or ambiguous
 
+**Note:** For full feature implementation (plan + TDD + review + delivery), use `magic-claude:proactive-orchestration` instead — it includes planning as Phase 1 and handles the entire pipeline.
+
 ## How It Works
 
-The planner agent will:
+### Step 1: Discover (Phase 0.5)
 
+Invoke the **magic-claude:discoverer** agent (opus) to ground the plan:
+- Search claude-mem for prior decisions about this feature area
+- Use Serena to explore affected symbols, find similar implementations
+- Produce a Discovery Brief with verified facts (files, patterns, risks)
+
+### Step 2: Plan (Phase 1)
+
+Invoke the **magic-claude:planner** agent (opus) with the Discovery Brief:
 1. **Analyze the request** and restate requirements in clear terms
 2. **Break down into phases** with specific, actionable steps
 3. **Identify dependencies** between components
 4. **Assess risks** and potential blockers
-5. **Estimate complexity** (High/Medium/Low)
-6. **Present the plan** and WAIT for your explicit confirmation
+5. **Present the draft plan** for critic review
 
-## Example Usage
+### Step 3: Plan Critic (Phase 1.1 — auto-loop, max 3 cycles)
 
-```
-User: /plan I need to add real-time notifications when markets resolve
+Invoke the **magic-claude:plan-critic** agent for adversarial review:
+- Reviews for feasibility, completeness, risk, ordering, negative constraints
+- Cross-references against Discovery Brief to catch hallucinated paths/APIs
+- Produces severity-classified findings (CRITICAL/HIGH/MEDIUM/LOW)
+- Auto-loops with planner to resolve CRITICAL/HIGH issues
+- Exits when clean or after 3 cycles
 
-Agent (planner):
-# Implementation Plan: Real-Time Market Resolution Notifications
+### Step 4: Present and Confirm
 
-## Requirements Restatement
-- Send notifications to users when markets they're watching resolve
-- Support multiple notification channels (in-app, email, webhook)
-- Ensure notifications are delivered reliably
-- Include market outcome and user's position result
+Present the refined plan with:
+- Summary of critic auto-loop process
+- Any unresolved CRITICAL/HIGH findings (prominently highlighted)
+- MEDIUM/LOW findings as advisory notes
 
-## Implementation Phases
+**WAIT for explicit user confirmation** before proceeding.
 
-### Phase 1: Database Schema
-- Add notifications table with columns: id, user_id, market_id, type, status, created_at
-- Add user_notification_preferences table for channel preferences
-- Create indexes on user_id and market_id for performance
+### Step 5: Persist
 
-### Phase 2: Notification Service
-- Create notification service in lib/notifications.ts
-- Implement notification queue using BullMQ/Redis
-- Add retry logic for failed deliveries
-- Create notification templates
+Save approved plan to `.claude/plans/YYYY-MM-DD-<feature-name>.md` so it survives session loss, compaction, or exit.
 
-### Phase 3: Integration Points
-- Hook into market resolution logic (when status changes to "resolved")
-- Query all users with positions in market
-- Enqueue notifications for each user
-
-### Phase 4: Frontend Components
-- Create NotificationBell component in header
-- Add NotificationList modal
-- Implement real-time updates via Supabase subscriptions
-- Add notification preferences page
-
-## Dependencies
-- Redis (for queue)
-- Email service (SendGrid/Resend)
-- Supabase real-time subscriptions
-
-## Risks
-- HIGH: Email deliverability (SPF/DKIM required)
-- MEDIUM: Performance with 1000+ users per market
-- MEDIUM: Notification spam if markets resolve frequently
-- LOW: Real-time subscription overhead
-
-## Estimated Complexity: MEDIUM
-- Backend: 4-6 hours
-- Frontend: 3-4 hours
-- Testing: 2-3 hours
-- Total: 9-13 hours
-
-**WAITING FOR CONFIRMATION**: Proceed with this plan? (yes/no/modify)
-```
-
-## Important Notes
-
-**CRITICAL**: The planner agent will **NOT** write any code until you explicitly confirm the plan with "yes" or "proceed" or similar affirmative response.
+## User Response Options
 
 If you want changes, respond with:
 - "modify: [your changes]"
 - "different approach: [alternative]"
 - "skip phase 2 and do phase 3 first"
+
+## Important Notes
+
+**CRITICAL**: The planner agent will **NOT** write any code until you explicitly confirm the plan with "yes" or "proceed" or similar affirmative response.
 
 ## Integration with Other Commands
 
@@ -108,7 +84,9 @@ After planning:
 - Use `magic-claude:build-fix` if build errors occur
 - Use `magic-claude:code-review` to review completed implementation
 
-## Related Agents
+## Related
 
-This command invokes the `magic-claude:planner` agent located at:
-`~/.claude/agents/planner.md`
+- `magic-claude:proactive-orchestration` skill - Full pipeline (includes planning as Phase 1)
+- `magic-claude:planner` agent - Implementation planning
+- `magic-claude:discoverer` agent - Codebase discovery (feeds into planner)
+- `magic-claude:plan-critic` agent - Adversarial plan review

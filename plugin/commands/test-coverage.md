@@ -98,5 +98,5 @@ The TDD agent will:
 | Ecosystem | Agent | Skill |
 |-----------|-------|-------|
 | TypeScript/JavaScript | `magic-claude:ts-tdd-guide` | `magic-claude:tdd-workflow` |
-| JVM (Java/Kotlin/Groovy) | `magic-claude:jvm-tdd-guide` | `magic-claude:jvm-tdd-workflow` |
-| Python | `magic-claude:python-tdd-guide` | `magic-claude:python-tdd-workflow` |
+| JVM (Java/Kotlin/Groovy) | `magic-claude:jvm-tdd-guide` | `magic-claude:tdd-workflow` |
+| Python | `magic-claude:python-tdd-guide` | `magic-claude:tdd-workflow` |
