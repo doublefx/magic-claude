@@ -197,7 +197,7 @@ Verification green?
 |---------|----------------|--------------|
 | Build resolver cannot fix error | Phases 1-3: investigate root cause | Phase 4: TDD agent for failing test |
 | Phase 4 fix implemented | -- | `magic-claude:verify full` for verification |
-| Flaky test detected | Phase 1: reproduce, check pollution | `find-polluter.cjs` for bisection |
+| Flaky test detected | Phase 1: reproduce, check pollution | `node "${CLAUDE_SKILL_DIR}/find-polluter.cjs"` for bisection |
 | Timeout-related flakiness | Reference `condition-based-waiting.md` | TDD agent for rewrite |
 | 3+ hypotheses failed | Escalate to user | `magic-claude:architect` if structural |
 | Bug pattern found elsewhere | Phase 2 scope assessment | Bulk fix across all locations |
@@ -209,7 +209,7 @@ Verification green?
 | `root-cause-tracing.md` | 5-step backward call stack analysis process |
 | `defense-in-depth.md` | 4-layer validation architecture to prevent recurrence |
 | `condition-based-waiting.md` | Replace arbitrary timeouts with condition polling |
-| `find-polluter.cjs` | Cross-platform test pollution bisection script |
+| `find-polluter.cjs` | Cross-platform test pollution bisection — run: `node "${CLAUDE_SKILL_DIR}/find-polluter.cjs"` |
 
 ## Related
 

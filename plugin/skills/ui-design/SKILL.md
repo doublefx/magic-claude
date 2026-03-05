@@ -28,7 +28,7 @@ Plan tasks involve UI work:
 Run `detect-tools.cjs` to scan for available design tools:
 
 ```bash
-node skills/ui-design/detect-tools.cjs --json
+node "${CLAUDE_SKILL_DIR}/detect-tools.cjs" --json
 ```
 
 The script scans:
