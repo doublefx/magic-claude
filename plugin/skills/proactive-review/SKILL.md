@@ -56,6 +56,4 @@ This skill runs with `context: fork` to preserve the main conversation context. 
 - `magic-claude:ts-security-reviewer` agent - TypeScript/JavaScript security specialist
 - `magic-claude:jvm-security-reviewer` agent - JVM security specialist
 - `magic-claude:python-security-reviewer` agent - Python security specialist
-- `magic-claude:security-review` skill - TypeScript/JavaScript security checklist
-- `magic-claude:jvm-security-review` skill - JVM security checklist
-- `magic-claude:python-security-review` skill - Python security checklist
+- `magic-claude:security-review` skill - Security checklist (TypeScript/JavaScript, JVM, Python)
