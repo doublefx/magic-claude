@@ -91,7 +91,7 @@ User: /tdd
 ```
 
 **Agents:** `ts-tdd-guide` | `jvm-tdd-guide` | `python-tdd-guide` (sonnet)
-**Skills consumed:** `tdd-workflow` + `backend-patterns` | `jvm-tdd-workflow` + `jvm-backend-patterns` | `python-tdd-workflow` + `python-backend-patterns`, `claude-mem-context`
+**Skills consumed:** `tdd-workflow` + `backend-patterns`, `claude-mem-context` (all three are multi-ecosystem — auto-load correct references per project)
 **Hooks during:** auto-format, type check, debug detect, security scan (Java/Python/TypeScript)
 **Verification:** Agent self-check only (was TDD cycle followed?). No build/lint/full-test verification.
 **Note:** When invoked via `proactive-orchestration`, verification and review follow automatically as subsequent phases.

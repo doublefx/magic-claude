@@ -46,20 +46,12 @@ magic-claude/
 |   |   |-- ci-cd-architect.md      # CI/CD pipeline generation
 |   |   |-- git-sync.md             # Git changes impact analysis (background)
 |   |
-|   |-- skills/           # Workflow definitions and domain knowledge (42 total)
-|   |   |-- coding-standards/           # TypeScript/JS best practices
-|   |   |-- jvm-coding-standards/       # Java/Kotlin best practices
-|   |   |-- python-coding-standards/    # Python best practices
-|   |   |-- backend-patterns/           # TypeScript/Node.js API patterns
-|   |   |-- jvm-backend-patterns/       # Spring Boot/JPA patterns
-|   |   |-- python-backend-patterns/    # FastAPI/Django/SQLAlchemy patterns
+|   |-- skills/           # Workflow definitions and domain knowledge (34 total)
+|   |   |-- coding-standards/           # Multi-ecosystem coding standards (TS/JS, JVM, Python)
+|   |   |-- backend-patterns/           # Multi-ecosystem backend patterns (Node.js, Spring Boot, FastAPI)
 |   |   |-- frontend-patterns/          # React, Next.js patterns
-|   |   |-- tdd-workflow/               # TypeScript/JS TDD methodology
-|   |   |-- jvm-tdd-workflow/           # JVM TDD methodology
-|   |   |-- python-tdd-workflow/        # Python TDD methodology
-|   |   |-- security-review/            # TypeScript/JS security checklist
-|   |   |-- jvm-security-review/        # JVM security checklist
-|   |   |-- python-security-review/     # Python security checklist
+|   |   |-- tdd-workflow/               # Multi-ecosystem TDD methodology (TS/JS, JVM, Python)
+|   |   |-- security-review/            # Multi-ecosystem security checklist (TS/JS, JVM, Python)
 |   |   |-- ui-design/                   # UI design context gathering (Phase 1.75, conditional)
 |   |   |-- proactive-orchestration/    # Full pipeline orchestrator (PLAN->UI DESIGN->TDD->VERIFY->REVIEW)
 |   |   |-- proactive-planning/         # Standalone planning for complex tasks

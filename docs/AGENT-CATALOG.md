@@ -209,13 +209,13 @@ Trade-offs:
 #### jvm-tdd-guide
 **Command**: `/tdd` (auto-dispatched for JVM projects)
 **Model**: Sonnet
-**Skills**: `jvm-tdd-workflow`, `jvm-backend-patterns`, `claude-mem-context`
+**Skills**: `tdd-workflow`, `backend-patterns`, `claude-mem-context`
 **Description**: JVM TDD with JUnit 5, Mockito, MockK, AssertJ, JaCoCo
 
 #### python-tdd-guide
 **Command**: `/tdd` (auto-dispatched for Python projects)
 **Model**: Sonnet
-**Skills**: `python-tdd-workflow`, `python-backend-patterns`, `claude-mem-context`
+**Skills**: `tdd-workflow`, `backend-patterns`, `claude-mem-context`
 **Description**: Python TDD with pytest, unittest.mock, pytest-cov, hypothesis
 
 **When to Use** (all three):
@@ -275,13 +275,13 @@ Trade-offs:
 #### jvm-build-resolver
 **Command**: `/build-fix` (auto-dispatched)
 **Model**: Sonnet
-**Skills**: `gradle-patterns`, `maven-patterns`, `jvm-backend-patterns`, `serena-code-navigation`
+**Skills**: `gradle-patterns`, `maven-patterns`, `backend-patterns`, `claude-mem-context`, `serena-code-navigation`
 **Description**: JVM build error resolution (Maven/Gradle)
 
 #### python-build-resolver
 **Command**: `/build-fix` (auto-dispatched)
 **Model**: Sonnet
-**Skills**: `python-patterns`, `python-backend-patterns`, `serena-code-navigation`
+**Skills**: `python-patterns`, `backend-patterns`, `claude-mem-context`, `serena-code-navigation`
 **Description**: Python build error resolution (pyright/ruff/pytest)
 
 ---
@@ -1001,42 +1001,7 @@ Gradle Optimization Report
 #### coding-standards
 **Path**: `plugin/skills/coding-standards/SKILL.md`
 **Type**: Skill (domain knowledge, context: fork)
-**Description**: Universal coding standards for TypeScript, JavaScript, React, and Node.js
-
-#### jvm-coding-standards
-**Path**: `plugin/skills/jvm-coding-standards/SKILL.md`
-**Type**: Skill (domain knowledge, context: fork)
-**Description**: Java/Kotlin best practices — Google Java Style, Kotlin idioms, null safety, concurrency
-
-#### python-coding-standards
-**Path**: `plugin/skills/python-coding-standards/SKILL.md`
-**Type**: Skill (domain knowledge, context: fork)
-**Description**: Python best practices — PEP 8, type hints, modern Python 3.12+ patterns
-
-#### jvm-backend-patterns
-**Path**: `plugin/skills/jvm-backend-patterns/SKILL.md`
-**Type**: Skill (domain knowledge, context: fork)
-**Description**: Spring Boot/JPA patterns — repository, DTO mapping, transaction management
-
-#### python-backend-patterns
-**Path**: `plugin/skills/python-backend-patterns/SKILL.md`
-**Type**: Skill (domain knowledge, context: fork)
-**Description**: FastAPI/Django/SQLAlchemy patterns — async, dependency injection, API design
-
-#### jvm-tdd-workflow
-**Path**: `plugin/skills/jvm-tdd-workflow/SKILL.md`
-**Type**: Skill (domain knowledge, context: fork)
-**Description**: JVM TDD methodology — JUnit 5, Mockito, MockK, AssertJ, JaCoCo 80%+ coverage
-
-#### python-tdd-workflow
-**Path**: `plugin/skills/python-tdd-workflow/SKILL.md`
-**Type**: Skill (domain knowledge, context: fork)
-**Description**: Python TDD methodology — pytest, unittest.mock, pytest-cov, hypothesis
-
-#### python-security-review
-**Path**: `plugin/skills/python-security-review/SKILL.md`
-**Type**: Skill (domain knowledge, context: fork)
-**Description**: Python security checklist — bandit, pip-audit, semgrep, Django/FastAPI patterns
+**Description**: Multi-ecosystem coding standards (TypeScript/JavaScript, JVM, Python) — lean entrypoint with ecosystem detection, references/ folder for detailed per-ecosystem standards
 
 #### agent-coordination
 **Path**: `plugin/skills/agent-coordination/SKILL.md`

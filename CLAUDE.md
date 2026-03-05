@@ -250,19 +250,11 @@ Skills define reusable workflows and domain knowledge in `plugin/skills/` direct
 - **magic-claude:proactive-review** - Code quality checks at task completion/pre-commit.
 
 **Domain Knowledge Skills** (Context reference, all with `context: fork`):
-- **magic-claude:coding-standards** - TypeScript/JavaScript best practices
-- **magic-claude:jvm-coding-standards** - Java/Kotlin best practices
-- **magic-claude:python-coding-standards** - Python best practices
-- **magic-claude:backend-patterns** - TypeScript/Node.js API patterns
-- **magic-claude:jvm-backend-patterns** - Spring Boot/JPA patterns
-- **magic-claude:python-backend-patterns** - FastAPI/Django/SQLAlchemy patterns
+- **magic-claude:coding-standards** - Multi-ecosystem coding standards (TypeScript/JavaScript, JVM, Python)
+- **magic-claude:backend-patterns** - Multi-ecosystem backend patterns (Node.js/Next.js, Spring Boot/JPA, FastAPI/Django/SQLAlchemy)
 - **magic-claude:frontend-patterns** - React, Next.js patterns
-- **magic-claude:security-review** - TypeScript/JavaScript security checklist
-- **magic-claude:jvm-security-review** - JVM security checklist
-- **magic-claude:python-security-review** - Python security checklist
-- **magic-claude:tdd-workflow** - TypeScript/JavaScript TDD methodology
-- **magic-claude:jvm-tdd-workflow** - JVM TDD methodology
-- **magic-claude:python-tdd-workflow** - Python TDD methodology
+- **magic-claude:security-review** - Multi-ecosystem security checklist (TypeScript/JavaScript, JVM, Python)
+- **magic-claude:tdd-workflow** - Multi-ecosystem TDD methodology (TypeScript/JavaScript, JVM, Python)
 
 **Debugging Skills** (Context reference, `context: fork`):
 - **magic-claude:systematic-debugging** - 4-phase root-cause investigation for bugs that escape the build/test pipeline (Root Cause Investigation, Pattern Analysis, Hypothesis Testing, Implementation). Includes test pollution bisection tooling (`find-polluter.cjs`).
