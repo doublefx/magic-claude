@@ -1,18 +1,31 @@
 ---
 name: coding-standards
-description: TypeScript/JavaScript coding standards and quality patterns. Use when writing or reviewing TypeScript, JavaScript, React, or Node.js code — applies to naming conventions, error handling, immutability, file organization, and code quality. Consult when setting up a new project's coding conventions, doing code reviews, or when code quality and consistency matter.
+description: >
+  Coding standards for TypeScript/JavaScript, JVM (Java/Kotlin/Groovy), and Python.
+  Use when writing or reviewing code — applies to naming conventions, error handling,
+  immutability, file organization, and code quality. Detects ecosystem and loads the
+  matching standards reference automatically.
 user-invocable: false
 context: fork
-agent: Explore
+agent: general-purpose
+allowed-tools: Read
 ---
 
 # Coding Standards & Best Practices
 
-Universal coding standards applicable across all projects.
+## Ecosystem Detection
+
+Detect the project ecosystem, then **immediately read the matching reference**:
+
+| Ecosystem | Indicators | Reference to read |
+|-----------|-----------|-------------------|
+| TypeScript / JavaScript | `package.json`, `.ts`, `.tsx`, `.js` | Multiple — see TypeScript/JavaScript section below |
+| JVM (Java / Kotlin / Groovy) | `build.gradle`, `pom.xml`, `.java`, `.kt` | [references/jvm-standards.md](references/jvm-standards.md) |
+| Python | `pyproject.toml`, `requirements.txt`, `.py` | [references/python-standards.md](references/python-standards.md) |
 
 ## When to Activate
 
-- Writing new TypeScript, JavaScript, React, or Node.js code
+- Writing new code in any supported ecosystem
 - Reviewing code quality and enforcing consistent style
 - Setting up new projects with coding conventions
 
@@ -105,6 +118,18 @@ See [references/code-smells.md](references/code-smells.md)
 
 ---
 
+## JVM (Java / Kotlin / Groovy)
+
+See [references/jvm-standards.md](references/jvm-standards.md) for the full JVM standards reference.
+
+Key topics: Google Java Style naming, immutable records, `Optional` / null safety, Kotlin idioms, coroutines, SOLID examples, `BigDecimal` for money, JUnit 5 + MockK/Mockito.
+
+## Python
+
+See [references/python-standards.md](references/python-standards.md) for the full Python standards reference.
+
+Key topics: PEP 8 naming, mandatory type hints, frozen dataclasses/Pydantic, structural pattern matching, SOLID via Protocols, `Decimal` for money, Ruff/Pyright config.
+
 ## Reference Files
 
 | File | Contents |
@@ -118,5 +143,5 @@ See [references/code-smells.md](references/code-smells.md)
 | [references/performance.md](references/performance.md) | Memoization, lazy loading, query optimization |
 | [references/testing-standards.md](references/testing-standards.md) | AAA pattern, test naming |
 | [references/code-smells.md](references/code-smells.md) | Long functions, deep nesting, magic numbers |
-
-**Remember**: Code quality is not negotiable. Clear, maintainable code enables rapid development and confident refactoring.
+| [references/jvm-standards.md](references/jvm-standards.md) | Java/Kotlin naming, null safety, immutability, SOLID |
+| [references/python-standards.md](references/python-standards.md) | PEP 8, type hints, dataclasses, Pydantic, Ruff |
