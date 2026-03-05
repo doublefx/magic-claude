@@ -33,12 +33,12 @@ const SKILL_DIR = path.join(REPO_ROOT, 'plugin', 'skills', 'systematic-debugging
 const SKILL_PATH = path.join(SKILL_DIR, 'SKILL.md');
 
 const SUPPORTING_FILES = [
-  'root-cause-tracing.md',
-  'defense-in-depth.md',
-  'condition-based-waiting.md'
+  'references/root-cause-tracing.md',
+  'references/defense-in-depth.md',
+  'references/condition-based-waiting.md'
 ];
 
-const SCRIPT_PATH = path.join(SKILL_DIR, 'find-polluter.cjs');
+const SCRIPT_PATH = path.join(SKILL_DIR, 'references', 'find-polluter.cjs');
 
 // Test suite
 function runTests() {
@@ -155,7 +155,7 @@ function runTests() {
 
   if (test('root-cause-tracing.md has 5-step process', () => {
     const content = fs.readFileSync(
-      path.join(SKILL_DIR, 'root-cause-tracing.md'), 'utf8'
+      path.join(SKILL_DIR, 'references', 'root-cause-tracing.md'), 'utf8'
     );
     assert.ok(/step\s+[1-5]|5.step/i.test(content), 'Should mention steps');
     assert.ok(/trace|backward|call\s+stack/i.test(content), 'Should mention tracing');
@@ -163,7 +163,7 @@ function runTests() {
 
   if (test('defense-in-depth.md has 4 layers', () => {
     const content = fs.readFileSync(
-      path.join(SKILL_DIR, 'defense-in-depth.md'), 'utf8'
+      path.join(SKILL_DIR, 'references', 'defense-in-depth.md'), 'utf8'
     );
     assert.ok(/layer\s+1/i.test(content), 'Should mention Layer 1');
     assert.ok(/layer\s+4/i.test(content), 'Should mention Layer 4');
@@ -171,7 +171,7 @@ function runTests() {
 
   if (test('condition-based-waiting.md has waitFor pattern', () => {
     const content = fs.readFileSync(
-      path.join(SKILL_DIR, 'condition-based-waiting.md'), 'utf8'
+      path.join(SKILL_DIR, 'references', 'condition-based-waiting.md'), 'utf8'
     );
     assert.ok(/waitFor|wait_for/i.test(content), 'Should mention waitFor pattern');
   })) passed++; else failed++;

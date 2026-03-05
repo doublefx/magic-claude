@@ -77,7 +77,7 @@ If any of these are happening, STOP and return to Phase 1:
 3. **Trace backward from the symptom**
    - Start at the crash site (the line that throws/fails)
    - Work backward through the call chain: "Was the value correct here?"
-   - See `root-cause-tracing.md` for the full 5-step process
+   - See `references/root-cause-tracing.md` for the full 5-step process
 
 4. **Identify the divergence point**
    - The transition from correct to incorrect state is the root cause location
@@ -148,11 +148,11 @@ If any of these are happening, STOP and return to Phase 1:
 
 3. **Apply defense-in-depth if warranted**
    - If the bug was caused by missing validation, add validation at multiple layers
-   - See `defense-in-depth.md` for the 4-layer pattern
+   - See `references/defense-in-depth.md` for the 4-layer pattern
 
 4. **If timing-dependent: apply condition-based waiting**
    - Replace arbitrary `sleep`/`setTimeout`/`Thread.sleep` with condition polling
-   - See `condition-based-waiting.md` for the `waitFor` pattern
+   - See `references/condition-based-waiting.md` for the `waitFor` pattern
 
 5. **Verify the fix**
    - Run the new test: it should pass
@@ -197,7 +197,7 @@ Verification green?
 |---------|----------------|--------------|
 | Build resolver cannot fix error | Phases 1-3: investigate root cause | Phase 4: TDD agent for failing test |
 | Phase 4 fix implemented | -- | `magic-claude:verify full` for verification |
-| Flaky test detected | Phase 1: reproduce, check pollution | `node "${CLAUDE_SKILL_DIR}/find-polluter.cjs"` for bisection |
+| Flaky test detected | Phase 1: reproduce, check pollution | `node "${CLAUDE_SKILL_DIR}/references/find-polluter.cjs"` for bisection |
 | Timeout-related flakiness | Reference `condition-based-waiting.md` | TDD agent for rewrite |
 | 3+ hypotheses failed | Escalate to user | `magic-claude:architect` if structural |
 | Bug pattern found elsewhere | Phase 2 scope assessment | Bulk fix across all locations |
@@ -206,10 +206,10 @@ Verification green?
 
 | File | Purpose |
 |------|---------|
-| `root-cause-tracing.md` | 5-step backward call stack analysis process |
-| `defense-in-depth.md` | 4-layer validation architecture to prevent recurrence |
-| `condition-based-waiting.md` | Replace arbitrary timeouts with condition polling |
-| `find-polluter.cjs` | Cross-platform test pollution bisection — run: `node "${CLAUDE_SKILL_DIR}/find-polluter.cjs"` |
+| `references/root-cause-tracing.md` | 5-step backward call stack analysis process |
+| `references/defense-in-depth.md` | 4-layer validation architecture to prevent recurrence |
+| `references/condition-based-waiting.md` | Replace arbitrary timeouts with condition polling |
+| `references/find-polluter.cjs` | Cross-platform test pollution bisection — run: `node "${CLAUDE_SKILL_DIR}/references/find-polluter.cjs"` |
 
 ## Related
 
