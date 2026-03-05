@@ -1,124 +1,69 @@
 ---
 name: tdd-workflow
-description: Use this skill when writing new TypeScript/JavaScript features, fixing bugs, or refactoring code. Enforces test-driven development with 80%+ coverage using Jest, Vitest, and Playwright for unit, integration, and E2E tests.
+description: >
+  TDD methodology for TypeScript/JavaScript, JVM (Java/Kotlin/Groovy), and Python. Use when writing
+  new features, fixing bugs, or refactoring. Detects ecosystem automatically and provides
+  RED → GREEN → REFACTOR workflow with 80%+ coverage enforcement, language-specific tooling
+  (Jest/Vitest, JUnit 5/MockK, pytest/hypothesis), and concrete code patterns per ecosystem.
 context: fork
 agent: general-purpose
-allowed-tools: Read, Write, Edit, Grep, Glob, Bash(npm test *), Bash(npx vitest *), Bash(npx jest *), Bash(node tests/*)
+allowed-tools: Read, Write, Edit, Grep, Glob,
+  Bash(npm test *), Bash(npx vitest *), Bash(npx jest *), Bash(node tests/*),
+  Bash(./gradlew test *), Bash(./mvnw test *), Bash(./gradlew jacocoTestReport *), Bash(./mvnw jacoco:report *), Bash(mvn test *), Bash(gradle test *),
+  Bash(pytest *), Bash(python -m pytest *), Bash(python -m coverage *), Bash(coverage *)
 ---
 
-# TypeScript/JavaScript Test-Driven Development Workflow
+# Test-Driven Development Workflow
 
-This skill ensures all TypeScript/JavaScript code development follows TDD principles with comprehensive test coverage.
+## Shared Principles
 
-## When to Activate
+### Iron Law
+**NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST.**
 
-- Writing new features or functionality
-- Fixing bugs or issues
-- Refactoring existing code
-- Adding API endpoints
-- Creating new components
+### RED → GREEN → REFACTOR
 
-## Core Principles
+1. **SCAFFOLD** — Define the interface/signature (types, method signatures, no implementation)
+2. **RED** — Write a failing test that describes the expected behavior
+3. **Run** — Confirm the test fails (if it passes, the test is wrong)
+4. **GREEN** — Write the minimum code to make the test pass
+5. **Run** — Confirm the test passes
+6. **REFACTOR** — Clean up without changing behavior; keep tests green
+7. **Coverage** — Verify 80%+ with the ecosystem tool
 
-### 1. Tests BEFORE Code
-ALWAYS write tests first, then implement code to make tests pass.
+### Anti-Rationalization
 
-### 2. Coverage Requirements
-- Minimum 80% coverage (unit + integration + E2E)
+| Thought | Reality |
+|---------|---------|
+| "This is too simple for tests" | Simple code is the easiest to test. Write the test. |
+| "I'll add tests after" | That's not TDD. Delete the code and write the test first. |
+| "Just a refactor, no new tests" | Run existing tests. If none cover it, add them before refactoring. |
+| "Let me get the code working first" | Code written without tests tends to stay untested. |
+
+### Coverage Requirements
+- Minimum **80%** (branches, functions, lines, statements)
 - All edge cases covered
 - Error scenarios tested
 - Boundary conditions verified
 
-### 3. Test Types
+---
 
-#### Unit Tests
-- Individual functions and utilities
-- Component logic
-- Pure functions
-- Helpers and utilities
+## Ecosystem: TypeScript / JavaScript
 
-#### Integration Tests
-- API endpoints
-- Database operations
-- Service interactions
-- External API calls
+**Tools:** Jest or Vitest for unit/integration, Playwright for E2E
 
-#### E2E Tests (Playwright)
-- Critical user flows
-- Complete workflows
-- Browser automation
-- UI interactions
+### TDD Cycle
 
-## TDD Workflow Steps
-
-### Step 1: Write User Journeys
-```
-As a [role], I want to [action], so that [benefit]
-
-Example:
-As a user, I want to search for markets semantically,
-so that I can find relevant markets even without exact keywords.
-```
-
-### Step 2: Generate Test Cases
-For each user journey, create comprehensive test cases:
-
-```typescript
-describe('Semantic Search', () => {
-  it('returns relevant markets for query', async () => {
-    // Test implementation
-  })
-
-  it('handles empty query gracefully', async () => {
-    // Test edge case
-  })
-
-  it('falls back to substring search when Redis unavailable', async () => {
-    // Test fallback behavior
-  })
-
-  it('sorts results by similarity score', async () => {
-    // Test sorting logic
-  })
-})
-```
-
-### Step 3: Run Tests (They Should Fail)
 ```bash
+# Run tests
 npm test
-# Tests should fail - we haven't implemented yet
-```
+npx vitest run
 
-### Step 4: Implement Code
-Write minimal code to make tests pass:
+# Watch mode
+npm test -- --watch
 
-```typescript
-// Implementation guided by tests
-export async function searchMarkets(query: string) {
-  // Implementation here
-}
-```
-
-### Step 5: Run Tests Again
-```bash
-npm test
-# Tests should now pass
-```
-
-### Step 6: Refactor
-Improve code quality while keeping tests green:
-- Remove duplication
-- Improve naming
-- Optimize performance
-- Enhance readability
-
-### Step 7: Verify Coverage
-```bash
+# Coverage
 npm run test:coverage
-# Verify 80%+ coverage achieved
 ```
-
-## Testing Patterns
 
 ### Unit Test Pattern (Jest/Vitest)
 ```typescript
@@ -134,15 +79,8 @@ describe('Button Component', () => {
   it('calls onClick when clicked', () => {
     const handleClick = jest.fn()
     render(<Button onClick={handleClick}>Click</Button>)
-
     fireEvent.click(screen.getByRole('button'))
-
     expect(handleClick).toHaveBeenCalledTimes(1)
-  })
-
-  it('is disabled when disabled prop is true', () => {
-    render(<Button disabled>Click</Button>)
-    expect(screen.getByRole('button')).toBeDisabled()
   })
 })
 ```
@@ -152,261 +90,364 @@ describe('Button Component', () => {
 import { NextRequest } from 'next/server'
 import { GET } from './route'
 
-describe('GET /api/markets', () => {
-  it('returns markets successfully', async () => {
-    const request = new NextRequest('http://localhost/api/markets')
+describe('GET /api/orders', () => {
+  it('returns orders successfully', async () => {
+    const request = new NextRequest('http://localhost/api/orders')
     const response = await GET(request)
-    const data = await response.json()
-
     expect(response.status).toBe(200)
-    expect(data.success).toBe(true)
-    expect(Array.isArray(data.data)).toBe(true)
+    expect((await response.json()).success).toBe(true)
   })
 
   it('validates query parameters', async () => {
-    const request = new NextRequest('http://localhost/api/markets?limit=invalid')
-    const response = await GET(request)
-
-    expect(response.status).toBe(400)
-  })
-
-  it('handles database errors gracefully', async () => {
-    // Mock database failure
-    const request = new NextRequest('http://localhost/api/markets')
-    // Test error handling
+    const request = new NextRequest('http://localhost/api/orders?limit=invalid')
+    expect((await GET(request)).status).toBe(400)
   })
 })
+```
+
+### Mocking External Services
+```typescript
+jest.mock('@/lib/database', () => ({
+  db: {
+    query: jest.fn(() => Promise.resolve({ rows: [{ id: 1, name: 'Test' }] }))
+  }
+}))
 ```
 
 ### E2E Test Pattern (Playwright)
 ```typescript
 import { test, expect } from '@playwright/test'
 
-test('user can search and filter markets', async ({ page }) => {
-  // Navigate to markets page
-  await page.goto('/')
-  await page.click('a[href="/markets"]')
-
-  // Verify page loaded
-  await expect(page.locator('h1')).toContainText('Markets')
-
-  // Search for markets
-  await page.fill('input[placeholder="Search markets"]', 'election')
-
-  // Wait for debounce and results
-  await page.waitForTimeout(600)
-
-  // Verify search results displayed
-  const results = page.locator('[data-testid="market-card"]')
-  await expect(results).toHaveCount(5, { timeout: 5000 })
-
-  // Verify results contain search term
-  const firstResult = results.first()
-  await expect(firstResult).toContainText('election', { ignoreCase: true })
-
-  // Filter by status
-  await page.click('button:has-text("Active")')
-
-  // Verify filtered results
-  await expect(results).toHaveCount(3)
-})
-
-test('user can create a new market', async ({ page }) => {
-  // Login first
-  await page.goto('/creator-dashboard')
-
-  // Fill market creation form
-  await page.fill('input[name="name"]', 'Test Market')
-  await page.fill('textarea[name="description"]', 'Test description')
-  await page.fill('input[name="endDate"]', '2025-12-31')
-
-  // Submit form
+test('user completes checkout flow', async ({ page }) => {
+  await page.goto('/cart')
+  await page.click('button:has-text("Checkout")')
+  await page.fill('input[name="email"]', 'user@example.com')
   await page.click('button[type="submit"]')
-
-  // Verify success message
-  await expect(page.locator('text=Market created successfully')).toBeVisible()
-
-  // Verify redirect to market page
-  await expect(page).toHaveURL(/\/markets\/test-market/)
+  await expect(page.locator('text=Order confirmed')).toBeVisible()
 })
 ```
 
-## Test File Organization
-
-```
-src/
-├── components/
-│   ├── Button/
-│   │   ├── Button.tsx
-│   │   ├── Button.test.tsx          # Unit tests
-│   │   └── Button.stories.tsx       # Storybook
-│   └── MarketCard/
-│       ├── MarketCard.tsx
-│       └── MarketCard.test.tsx
-├── app/
-│   └── api/
-│       └── markets/
-│           ├── route.ts
-│           └── route.test.ts         # Integration tests
-└── e2e/
-    ├── markets.spec.ts               # E2E tests
-    ├── trading.spec.ts
-    └── auth.spec.ts
-```
-
-## Mocking External Services
-
-### Supabase Mock
-```typescript
-jest.mock('@/lib/supabase', () => ({
-  supabase: {
-    from: jest.fn(() => ({
-      select: jest.fn(() => ({
-        eq: jest.fn(() => Promise.resolve({
-          data: [{ id: 1, name: 'Test Market' }],
-          error: null
-        }))
-      }))
-    }))
-  }
-}))
-```
-
-### Redis Mock
-```typescript
-jest.mock('@/lib/redis', () => ({
-  searchMarketsByVector: jest.fn(() => Promise.resolve([
-    { slug: 'test-market', similarity_score: 0.95 }
-  ])),
-  checkRedisHealth: jest.fn(() => Promise.resolve({ connected: true }))
-}))
-```
-
-### OpenAI Mock
-```typescript
-jest.mock('@/lib/openai', () => ({
-  generateEmbedding: jest.fn(() => Promise.resolve(
-    new Array(1536).fill(0.1) // Mock 1536-dim embedding
-  ))
-}))
-```
-
-## Test Coverage Verification
-
-### Run Coverage Report
-```bash
-npm run test:coverage
-```
-
-### Coverage Thresholds
+### Coverage Config (Jest)
 ```json
 {
   "jest": {
     "coverageThresholds": {
-      "global": {
-        "branches": 80,
-        "functions": 80,
-        "lines": 80,
-        "statements": 80
-      }
+      "global": { "branches": 80, "functions": 80, "lines": 80, "statements": 80 }
     }
   }
 }
 ```
 
-## Common Testing Mistakes to Avoid
-
-### ❌ WRONG: Testing Implementation Details
-```typescript
-// Don't test internal state
-expect(component.state.count).toBe(5)
+### File Organization
 ```
-
-### ✅ CORRECT: Test User-Visible Behavior
-```typescript
-// Test what users see
-expect(screen.getByText('Count: 5')).toBeInTheDocument()
+src/
+├── components/Button/
+│   ├── Button.tsx
+│   └── Button.test.tsx
+├── app/api/orders/
+│   ├── route.ts
+│   └── route.test.ts
+└── e2e/checkout.spec.ts
 ```
-
-### ❌ WRONG: Brittle Selectors
-```typescript
-// Breaks easily
-await page.click('.css-class-xyz')
-```
-
-### ✅ CORRECT: Semantic Selectors
-```typescript
-// Resilient to changes
-await page.click('button:has-text("Submit")')
-await page.click('[data-testid="submit-button"]')
-```
-
-### ❌ WRONG: No Test Isolation
-```typescript
-// Tests depend on each other
-test('creates user', () => { /* ... */ })
-test('updates same user', () => { /* depends on previous test */ })
-```
-
-### ✅ CORRECT: Independent Tests
-```typescript
-// Each test sets up its own data
-test('creates user', () => {
-  const user = createTestUser()
-  // Test logic
-})
-
-test('updates user', () => {
-  const user = createTestUser()
-  // Update logic
-})
-```
-
-## Continuous Testing
-
-### Watch Mode During Development
-```bash
-npm test -- --watch
-# Tests run automatically on file changes
-```
-
-### Pre-Commit Hook
-```bash
-# Runs before every commit
-npm test && npm run lint
-```
-
-### CI/CD Integration
-```yaml
-# GitHub Actions
-- name: Run Tests
-  run: npm test -- --coverage
-- name: Upload Coverage
-  uses: codecov/codecov-action@v3
-```
-
-## Best Practices
-
-1. **Write Tests First** - Always TDD
-2. **One Assert Per Test** - Focus on single behavior
-3. **Descriptive Test Names** - Explain what's tested
-4. **Arrange-Act-Assert** - Clear test structure
-5. **Mock External Dependencies** - Isolate unit tests
-6. **Test Edge Cases** - Null, undefined, empty, large
-7. **Test Error Paths** - Not just happy paths
-8. **Keep Tests Fast** - Unit tests < 50ms each
-9. **Clean Up After Tests** - No side effects
-10. **Review Coverage Reports** - Identify gaps
-
-## Success Metrics
-
-- 80%+ code coverage achieved
-- All tests passing (green)
-- No skipped or disabled tests
-- Fast test execution (< 30s for unit tests)
-- E2E tests cover critical user flows
-- Tests catch bugs before production
 
 ---
 
-**Remember**: Tests are not optional. They are the safety net that enables confident refactoring, rapid development, and production reliability.
+## Ecosystem: JVM (Java / Kotlin / Groovy)
+
+**Tools:** JUnit 5 + Mockito (Java) or MockK (Kotlin), AssertJ, JaCoCo, TestContainers
+
+### TDD Cycle
+
+```bash
+# Run tests
+./gradlew test --tests "*OrderServiceTest"
+./mvnw test -Dtest=OrderServiceTest
+
+# Coverage
+./gradlew jacocoTestReport
+./mvnw jacoco:report
+```
+
+### Step 1: Define Interface (SCAFFOLD)
+```java
+public interface OrderService {
+    Order placeOrder(List<OrderItem> items);
+    Optional<Order> findById(Long id);
+}
+```
+
+### Unit Test — Mockito (Java)
+```java
+@ExtendWith(MockitoExtension.class)
+class OrderServiceImplTest {
+
+    @Mock private OrderRepository repository;
+    @InjectMocks private OrderServiceImpl service;
+
+    @Test
+    @DisplayName("should calculate total with tax")
+    void shouldCalculateTotalWithTax() {
+        var items = List.of(new OrderItem("Widget", 2, BigDecimal.valueOf(9.99)));
+        var order = service.placeOrder(items);
+        assertThat(order.getTotal()).isEqualByComparingTo("21.58");
+        verify(repository).save(any(Order.class));
+    }
+}
+```
+
+### Unit Test — MockK (Kotlin)
+```kotlin
+class ServiceTest {
+    private val repo = mockk<Repository>()
+    private val service = MyService(repo)
+
+    @Test
+    fun `should process entity correctly`() {
+        every { repo.findById(1L) } returns Optional.of(entity)
+        val result = service.process(1L)
+        assertThat(result).isNotNull
+        verify(exactly = 1) { repo.findById(1L) }
+    }
+}
+```
+
+### Spring Boot Integration Test
+```java
+@SpringBootTest
+@AutoConfigureMockMvc
+class OrderControllerTest {
+    @Autowired MockMvc mockMvc;
+    @MockBean OrderService service;
+
+    @Test
+    void shouldReturnOrder() throws Exception {
+        when(service.findById(1L)).thenReturn(Optional.of(order));
+        mockMvc.perform(get("/api/orders/1"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.total").value(21.58));
+    }
+}
+```
+
+### TestContainers
+```java
+@Testcontainers
+@SpringBootTest
+class RepositoryIntegrationTest {
+    @Container
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16");
+
+    @DynamicPropertySource
+    static void props(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", postgres::getJdbcUrl);
+        registry.add("spring.datasource.username", postgres::getUsername);
+        registry.add("spring.datasource.password", postgres::getPassword);
+    }
+}
+```
+
+### JaCoCo Config (Gradle)
+```kotlin
+tasks.jacocoTestCoverageVerification {
+    violationRules {
+        rule { limit { minimum = "0.80".toBigDecimal() } }
+    }
+}
+```
+
+### JaCoCo Config (Maven)
+```xml
+<plugin>
+    <groupId>org.jacoco</groupId>
+    <artifactId>jacoco-maven-plugin</artifactId>
+    <executions>
+        <execution>
+            <id>check</id>
+            <goals><goal>check</goal></goals>
+            <configuration>
+                <rules>
+                    <rule>
+                        <limits>
+                            <limit>
+                                <counter>LINE</counter>
+                                <value>COVEREDRATIO</value>
+                                <minimum>0.80</minimum>
+                            </limit>
+                        </limits>
+                    </rule>
+                </rules>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+```
+
+### File Organization
+```
+src/
+├── main/java/com/example/
+│   ├── service/OrderService.java
+│   └── controller/OrderController.java
+└── test/java/com/example/
+    ├── service/OrderServiceTest.java
+    ├── repository/OrderRepositoryIT.java
+    └── controller/OrderControllerTest.java
+```
+
+---
+
+## Ecosystem: Python
+
+**Tools:** pytest, unittest.mock, pytest-cov, hypothesis
+
+### TDD Cycle
+
+```bash
+# Run tests
+pytest tests/ -v
+
+# Coverage (enforce 80%)
+pytest --cov=src --cov-report=term-missing --cov-fail-under=80
+```
+
+### Step 1: Define Interface (SCAFFOLD)
+```python
+from dataclasses import dataclass
+from decimal import Decimal
+
+@dataclass(frozen=True)
+class OrderItem:
+    name: str
+    quantity: int
+    price: Decimal
+
+class OrderService:
+    def place_order(self, items: list[OrderItem]) -> Order:
+        raise NotImplementedError
+```
+
+### Unit Test (pytest)
+```python
+class TestPlaceOrder:
+    def test_calculates_total_with_tax(self, order_service):
+        items = [OrderItem("Widget", 2, Decimal("9.99"))]
+        order = order_service.place_order(items)
+        assert order.total == Decimal("21.58")
+
+    def test_rejects_empty_order(self, order_service):
+        with pytest.raises(ValueError, match="at least one item"):
+            order_service.place_order([])
+```
+
+### Fixtures (conftest.py)
+```python
+@pytest.fixture
+def order_service():
+    return OrderService(tax_rate=Decimal("0.08"))
+
+@pytest.fixture(scope="session")
+def db():
+    engine = create_test_engine()
+    Base.metadata.create_all(engine)
+    yield engine
+    Base.metadata.drop_all(engine)
+```
+
+### Mocking
+```python
+from unittest.mock import Mock, patch
+
+def test_sends_welcome_email():
+    repo = Mock(spec=UserRepository)
+    email = Mock(spec=EmailService)
+    repo.save.return_value = User(id=1, name="Alice")
+    service = UserService(repo, email)
+
+    service.create_user("Alice", "alice@example.com")
+
+    email.send_welcome.assert_called_once_with("alice@example.com")
+```
+
+### Parametrized Tests
+```python
+@pytest.mark.parametrize("amount, expected_total", [
+    (Decimal("100"), Decimal("108.00")),
+    (Decimal("0"), Decimal("0.00")),
+    (Decimal("999.99"), Decimal("1079.99")),
+])
+def test_tax_calculation(amount, expected_total):
+    assert calculate_total(amount, Decimal("0.08")) == expected_total
+```
+
+### Property-Based Tests (hypothesis)
+```python
+from hypothesis import given, strategies as st
+
+@given(
+    price=st.decimals(min_value=0, max_value=10000, places=2),
+    quantity=st.integers(min_value=1, max_value=1000),
+)
+def test_total_always_non_negative(price, quantity):
+    item = OrderItem("Test", quantity, price)
+    order = OrderService(tax_rate=Decimal("0.08")).place_order([item])
+    assert order.total >= 0
+```
+
+### FastAPI / Django Integration
+```python
+from fastapi.testclient import TestClient
+from app.main import app
+
+client = TestClient(app)
+
+def test_create_order():
+    response = client.post("/api/orders", json={"items": [{"name": "Widget", "quantity": 1}]})
+    assert response.status_code == 201
+
+# Django
+@pytest.mark.django_db
+def test_list_orders_requires_auth(client):
+    response = client.get("/api/orders/")
+    assert response.status_code == 401
+```
+
+### pyproject.toml Config
+```toml
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --tb=short"
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
+```
+
+### File Organization
+```
+project/
+├── src/services/order_service.py
+└── tests/
+    ├── conftest.py
+    ├── unit/test_order_service.py
+    ├── integration/test_order_api.py
+    └── property/test_order_properties.py
+```
+
+---
+
+## Common Mistakes
+
+| Wrong | Correct |
+|-------|---------|
+| Write code first, add tests later | Write the failing test first |
+| Test implementation details (internal state) | Test observable behavior |
+| Brittle CSS selectors in E2E | Semantic selectors (`button:has-text(...)`, `data-testid`) |
+| Tests that depend on each other | Each test sets up its own data |
+| `@Disabled` / `skip` | Fix or delete the test |
+
+## Related
+
+- `magic-claude:proactive-tdd` skill — Auto-invoked TDD for discrete implementations
+- `magic-claude:ts-tdd-guide` agent — TypeScript/JavaScript TDD specialist
+- `magic-claude:jvm-tdd-guide` agent — JVM TDD specialist
+- `magic-claude:python-tdd-guide` agent — Python TDD specialist

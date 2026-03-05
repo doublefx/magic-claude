@@ -57,7 +57,7 @@ When triggered, follow the same workflow as the `magic-claude:tdd` command:
 3. **Execute TDD cycle**: RED (failing test) -> GREEN (minimal implementation) -> REFACTOR -> REPEAT
 4. **Verify 80%+ coverage** using ecosystem-appropriate coverage tool
 
-See the `magic-claude:tdd` command for the full ecosystem detection table, dispatch matrix, coverage requirements, and best practices.
+See `magic-claude:tdd-workflow` for the full ecosystem-specific methodology, tooling reference, and code patterns (TypeScript/JavaScript, JVM, Python).
 
 ## Proactive Triggers
 
@@ -71,11 +71,9 @@ Claude should automatically enforce TDD when:
 
 ## Related
 
-- `magic-claude:tdd` command - Explicit user-invoked TDD session (single source of truth for TDD workflow)
+- `magic-claude:tdd` command - Explicit user-invoked TDD session
+- `magic-claude:tdd-workflow` skill - Full methodology reference (TypeScript/JavaScript, JVM, Python)
 - `magic-claude:proactive-orchestration` skill - Full pipeline orchestration (includes TDD as a phase)
 - `magic-claude:ts-tdd-guide` agent - TypeScript/JavaScript TDD specialist
 - `magic-claude:jvm-tdd-guide` agent - JVM (Java/Kotlin/Groovy) TDD specialist
 - `magic-claude:python-tdd-guide` agent - Python TDD specialist
-- `magic-claude:tdd-workflow` skill - TypeScript/JavaScript TDD methodology reference
-- `magic-claude:jvm-tdd-workflow` skill - JVM TDD methodology reference
-- `magic-claude:python-tdd-workflow` skill - Python TDD methodology reference
