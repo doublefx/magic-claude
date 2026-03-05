@@ -1,6 +1,7 @@
 ---
 name: receiving-code-review
-description: "How to handle code review feedback: verify before implementing, push back when wrong, no performative agreement, YAGNI check on suggestions. Activates when receiving review output from code-reviewer agent or external reviewers."
+description: >
+  Use this skill when deciding how to respond to code review feedback. You've received comments and need to figure out: which ones are actually correct, whether to implement or push back, how to prioritize, and how to communicate your response. Covers evaluating suggestions for your codebase, clarifying vague feedback, pushing back on incorrect suggestions with technical reasoning, and responding without performative agreement. Activates when receiving output from the code-reviewer agent or external reviewers.
 user-invocable: false
 ---
 

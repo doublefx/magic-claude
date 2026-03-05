@@ -1,35 +1,7 @@
 ---
 name: strategic-compact
-description: Use when context window exceeds 70% usage at a logical phase boundary (after completing a task, before starting a new phase).
-disable-model-invocation: true
----
-
-# Strategic Compact Skill
-
-Suggests manual `/compact` at strategic points in your workflow rather than relying on arbitrary auto-compaction.
-
-## When to Activate
-
-- After completing an exploration phase before starting implementation
-- After finishing a milestone or significant task
-- Before switching to a different area of the codebase
-- When tool call count approaches compaction threshold
-
-## Why Strategic Compaction?
-
-Auto-compaction triggers at arbitrary points:
-- Often mid-task, losing important context
-- No awareness of logical task boundaries
-- Can interrupt complex multi-step operations
-
-Strategic compaction at logical boundaries:
-- **After exploration, before execution** - Compact research context, keep implementation plan
-- **After completing a milestone** - Fresh start for next phase
-- **Before major context shifts** - Clear exploration context before different task
-
-## How It Works
-
-The `suggest-compact.sh` script runs on PreToolUse (Edit/Write) and:
+description: >
+  Use this skill when you want to compress conversation history to free up context space. Invoke proactively when the conversation is getting long, context usage is climbing, or you're approaching the limit — especially at natural transition points: after finishing a task, completing a planning phase, or before moving to a new area of work. Gives you control over when compaction happens, so it occurs at logical breakpoints instead of interrupting your flow.sh` script runs on PreToolUse (Edit/Write) and:
 
 1. **Tracks tool calls** - Counts tool invocations in session
 2. **Threshold detection** - Suggests at configurable threshold (default: 50 calls)

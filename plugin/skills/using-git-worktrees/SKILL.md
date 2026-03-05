@@ -1,6 +1,7 @@
 ---
 name: using-git-worktrees
-description: Git worktree isolation for feature branches and parallel work. Use when implementing a feature that should be isolated from the current workspace, when a plan specifies branch-based delivery, when experimenting with an approach that might be discarded, or when Agent Teams need file ownership separation. Activate before starting feature work that touches many files or requires a clean branch.
+description: >
+  Use this skill when you need to work on multiple things simultaneously in the same repo without interrupting current work. Activate when: working on a feature branch while keeping another untouched, testing a risky change in isolation, running a large refactoring in parallel, or handling a hotfix without losing your place. Creates separate working directories so you can switch branches instantly without stashing or merge conflicts. Perfect for any scenario requiring clean isolation between concurrent work streams. Activate before starting feature work that touches many files or requires a clean branch.
 user-invocable: false
 context: fork
 ---

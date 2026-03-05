@@ -1,6 +1,7 @@
 ---
 name: finishing-feature
-description: Structured branch cleanup after feature work completes. Verifies tests, presents delivery options, executes the chosen workflow, and cleans up worktrees.
+description: >
+  Use this skill when you're ready to finalize a feature — you've finished coding and testing, and now need to decide the next step. Whether you want to merge directly, open a pull request, save the work for later, or discard it entirely, this skill handles the complete handoff. Confirms tests pass, guides you through your options, executes your choice, and cleans up any temporary worktrees or branches. Perfect for "I'm done, what now?" moments.
 user-invocable: false
 context: fork
 ---

@@ -1,6 +1,7 @@
 ---
 name: eval-harness
-description: Use when defining evals before implementation, running continuous verification, or when user requests eval-driven development.
+description: >
+  Use this skill when you want to establish what success looks like before building — creating test cases, assertions, and success metrics upfront. Invoke for eval-driven development, defining acceptance criteria first, setting up continuous quality checks, or building a measurement harness to track whether code works as intended. This is about defining the finish line before you start coding.
 ---
 
 # Eval Harness Skill

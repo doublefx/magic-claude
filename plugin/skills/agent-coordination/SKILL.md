@@ -1,6 +1,7 @@
 ---
 name: agent-coordination
-description: Guide for traditional (single-orchestrator) agent delegation. Covers agent catalog, model tier cost awareness, delegation decision framework, parallel vs sequential patterns, and output composition. Use when deciding which agent to invoke or how to structure multi-agent work.
+description: >
+  Use this skill when making decisions about distributing work across multiple agents or model types. Covers: choosing which agent to delegate to, picking the right model tier (Haiku/Sonnet/Opus) based on task complexity and cost, deciding whether tasks run in parallel or sequentially, and combining outputs from multiple sources. Consult for agent selection, cost optimization, parallel vs serial execution strategy, and multi-agent task decomposition.
 user-invocable: false
 ---
 
