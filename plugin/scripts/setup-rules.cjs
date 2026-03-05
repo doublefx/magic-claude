@@ -190,6 +190,45 @@ function uninstallRules() {
   return { removed, kept };
 }
 
+/**
+ * Update a single key in ~/.claude/settings.json
+ * @param {string} key
+ * @param {*} value
+ * @returns {boolean} true if the file was changed
+ */
+function updateUserSetting(key, value) {
+  const settingsPath = path.join(getClaudeDir(), 'settings.json');
+  let settings = {};
+  try {
+    settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+  } catch {
+    // File doesn't exist or invalid JSON - start fresh
+  }
+  if (settings[key] === value) return false;
+  settings[key] = value;
+  fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + '\n', 'utf8');
+  return true;
+}
+
+/**
+ * Remove a single key from ~/.claude/settings.json
+ * @param {string} key
+ * @returns {boolean} true if the key was present and removed
+ */
+function removeUserSetting(key) {
+  const settingsPath = path.join(getClaudeDir(), 'settings.json');
+  let settings = {};
+  try {
+    settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+  } catch {
+    return false;
+  }
+  if (!(key in settings)) return false;
+  delete settings[key];
+  fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + '\n', 'utf8');
+  return true;
+}
+
 // --- CLI ---
 
 function showHelp() {
@@ -253,9 +292,22 @@ function runCheck() {
     status.userOwned.forEach(f => console.log(`  ● ${f}`));
   }
 
-  const actionNeeded = status.missing.length + status.modified.length;
+  // Show includeGitInstructions setting status
+  const settingsPath = path.join(getClaudeDir(), 'settings.json');
+  let currentSetting;
+  try {
+    const s = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+    currentSetting = s.includeGitInstructions;
+  } catch {
+    currentSetting = undefined;
+  }
+  const gitSettingOk = currentSetting === false;
+  console.log(`\nSettings:`);
+  console.log(`  ${gitSettingOk ? '✓' : '○'} includeGitInstructions: ${gitSettingOk ? 'false (correct)' : `${currentSetting ?? 'true (default)'} → should be false`}`);
+
+  const actionNeeded = status.missing.length + status.modified.length + (gitSettingOk ? 0 : 1);
   if (actionNeeded > 0) {
-    console.log(`\n→ ${actionNeeded} rule(s) need attention. Run with --install to update.`);
+    console.log(`\n→ ${actionNeeded} item(s) need attention. Run with --install to update.`);
   } else if (pluginRules.length > 0) {
     console.log('\n✓ All plugin rules are installed and up to date.');
   }
@@ -290,6 +342,13 @@ function runInstall(force = false) {
     console.log('\n✓ All rules already up to date.');
   }
 
+  // Disable built-in git instructions since the plugin provides its own git-workflow rule
+  const settingChanged = updateUserSetting('includeGitInstructions', false);
+  if (settingChanged) {
+    console.log('✓ Set includeGitInstructions: false in ~/.claude/settings.json');
+    console.log('  (built-in git instructions disabled - plugin git-workflow rule takes over)');
+  }
+
   console.log('');
 }
 
@@ -314,6 +373,12 @@ function runUninstall() {
     console.log('✓ No managed rules found to remove.');
   }
 
+  // Restore built-in git instructions when uninstalling the plugin rules
+  const settingRemoved = removeUserSetting('includeGitInstructions');
+  if (settingRemoved) {
+    console.log('✓ Restored includeGitInstructions to default (true) in ~/.claude/settings.json');
+  }
+
   console.log('');
 }
 
@@ -326,7 +391,9 @@ module.exports = {
   isPluginManaged,
   checkRules,
   installRules,
-  uninstallRules
+  uninstallRules,
+  updateUserSetting,
+  removeUserSetting
 };
 
 // CLI - only run when executed directly
