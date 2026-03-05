@@ -17,8 +17,8 @@ When claude-mem is available, use it for historical and cross-session context:
 | Find past decisions/rationale | `search(query)` | Before making architectural choices |
 | Understand why something was done | `search(query about decision)` | When encountering unfamiliar patterns |
 | Check if bug was seen before | `search(error/symptom)` | When debugging recurring issues |
-| Get architectural context | `search(component/area)` | When planning changes to existing systems |
-| Explore timeline around an event | `timeline(anchor=ID)` | After search returns interesting results |
+| Get architectural context | `search(query about component/area)` | When planning changes to existing systems |
+| Explore timeline around an event | `timeline(anchor=ID)` | Understanding cause-effect sequences |
 | Get full observation details | `get_observations([IDs])` | When search summaries aren't sufficient |
 
 ### Keep Using Native Tools For
@@ -33,18 +33,43 @@ When claude-mem is available, use it for historical and cross-session context:
 claude-mem uses a progressive retrieval pattern to minimize token usage:
 
 ### Layer 1: Search (cheap — ~50-100 tokens per result)
-Call `mcp__plugin_claude-mem_mcp-search__search` with `{"query": "authentication architecture decision"}`.
-Returns an index with observation IDs, titles, types, and timestamps. Scan this to identify relevant results.
+Call `search` with a query. Returns an index with observation IDs, titles, types, and timestamps. Scan this to identify relevant results.
+
+**Useful parameters beyond `query`:**
+- `orderBy: "recency"` — recent work first (default is relevance)
+- `type: "change"` — only what was modified (vs discovered or decided)
+- `topics: ["refactoring", "hooks"]` — filter by topic tags
+- `entity: "component-name"` — filter by named entity
+- `dateStart / dateEnd` — restrict to a time range
+- `limit` — control result count (default varies)
 
 ### Layer 2: Timeline (moderate — context around results)
-Call `mcp__plugin_claude-mem_mcp-search__timeline` with `{"anchor": "observation-id"}`.
-Shows observations around a specific result chronologically. Useful for understanding the sequence of events.
+Call `timeline` with `anchor: observation-id`. Shows observations around a specific result chronologically.
+
+**When to use timeline:**
+- Debugging — understand the sequence of events leading to a bug
+- Cause-effect analysis — what happened before and after a decision
+- Understanding multi-step operations — tracing a refactoring across steps
+
+**When to skip timeline and go straight to Layer 3:**
+- You already know which specific observation IDs you need
+- You're doing an audit or quality check on specific results
+- The search index titles are sufficient to filter
 
 ### Layer 3: Full Details (expensive — full observation content)
-Call `mcp__plugin_claude-mem_mcp-search__get_observations` with `{"ids": ["id1", "id2"]}`.
-Fetches complete observation content. Only use for the specific IDs you've filtered down to.
+Call `get_observations` with `ids: [id1, id2]`. Fetches complete observation content. Only use for the specific IDs you've filtered down to.
 
 **Always start at Layer 1.** Only go deeper when the index isn't sufficient.
+
+## Trust But Verify
+
+claude-mem observations are **generally reliable but not authoritative**. Known limitations:
+
+- **Intermediate states**: An observation may capture a moment mid-operation (e.g., "file deleted but config not yet updated") that was resolved seconds later
+- **Minor factual errors**: Tool names, hook types, or counts may be slightly wrong in narratives
+- **Stale information**: An observation from a previous session may describe code that has since been refactored or deleted
+
+**Rule**: For any critical detail from claude-mem (file paths, architectural claims, tool configurations), verify against the current codebase before acting on it. A quick `Read` or `Grep` costs less than debugging a wrong assumption.
 
 ## Decision Tree
 
