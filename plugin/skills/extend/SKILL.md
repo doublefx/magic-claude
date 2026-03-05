@@ -1,8 +1,9 @@
 ---
 name: extend
-description: >
-  Use this skill to expand the magic-claude plugin with new language, framework, or infrastructure support. Invoke when you want to: add a new ecosystem (Go, Rust, Swift, PHP, Ruby, Terraform, Kubernetes...), create individual components (reviewer agent, patterns skill, formatter hook, setup command, style rule, build fixer), or generate production-ready plugin infrastructure. Discovers existing components to prevent conflicts and creates cross-linked documentation, agents, hooks, and commands following established patterns. Do NOT copy blindly — replace all language-specific content with researched domain knowledge from Step 5.
-
+description: "Expand the magic-claude plugin with new language, framework, or infrastructure support. Invoke when you want to: add a new ecosystem (Go, Rust, Swift, PHP, Ruby, Terraform, Kubernetes...), create individual components (reviewer agent, patterns skill, formatter hook, setup command, style rule, build fixer), or generate production-ready plugin infrastructure. Discovers existing components to prevent conflicts and creates cross-linked documentation, agents, hooks, and commands following established patterns. Do NOT copy blindly — replace all language-specific content with researched domain knowledge from Step 5."
+context: fork
+agent: general-purpose
+allowed-tools: Read, Grep, Glob, Write, Edit, Bash
 ---
 
 # Plugin Extension Workflow
