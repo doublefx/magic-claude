@@ -2,7 +2,6 @@
 name: continuous-learning
 description: >
   Use this skill to record facts about this codebase that future sessions will need: required setup steps, hard constraints (always use X, never use Y), behavioral quirks, project-specific conventions not obvious from the code. Trigger when you learn something through trial, error, or user correction that a developer would need on day one. Also triggered by [ContinuousLearning] hook signal. Skip generic programming advice, one-time debugging, or anything clearly in the README.
-allowed-tools: Read, Write, Glob
 ---
 
 # Continuous Learning

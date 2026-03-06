@@ -4,7 +4,6 @@ description: >
   Use this skill when you're actively debugging a problem that isn't going away — a concrete failing test, broken behavior, or persistent error where fix attempts aren't working. Covers: intermittent failures (flaky tests, race conditions), environment-specific bugs (works locally but not in production), misleading error messages, and bugs you've already tried to fix multiple times. Forces systematic root-cause tracing before another fix attempt — because guessing just creates more problems.
 user-invocable: false
 context: fork
-allowed-tools: Read, Grep, Glob, Bash(node *), Bash(npm *), Bash(npx *), Bash(pnpm *), Bash(yarn *), Bash(./gradlew *), Bash(./mvnw *), Bash(pytest *), Bash(python -m *), Bash(git *)
 ---
 
 # Systematic Debugging

@@ -6,10 +6,6 @@ description: >
   Detects ecosystem and loads the matching patterns reference automatically.
 context: fork
 agent: general-purpose
-allowed-tools: Read, Write, Edit, Grep, Glob,
-  Bash(npm test *), Bash(npx vitest *), Bash(npx jest *), Bash(node tests/*),
-  Bash(./gradlew test *), Bash(./mvnw test *), Bash(./gradlew jacocoTestReport *), Bash(./mvnw jacoco:report *), Bash(mvn test *), Bash(gradle test *),
-  Bash(pytest *), Bash(python -m pytest *), Bash(python -m coverage *), Bash(coverage *)
 ---
 
 # Test-Driven Development Workflow

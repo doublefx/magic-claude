@@ -2,7 +2,6 @@
 name: verification-loop
 description: >
   Use this skill to run all checks at once — build, tests, lint, type-check — and get a full pass/fail verdict. Invoke before a PR, after completing a feature, before merging, or anytime you need to confirm the codebase is in a good state. One command, full green or a clear list of what's broken.
-allowed-tools: Read, Grep, Glob, Bash(npm run *), Bash(npx *), Bash(node tests/*), Bash(pnpm run *), Bash(yarn run *), Bash(./gradlew *), Bash(./mvnw *), Bash(pytest *), Bash(python -m *), Bash(pyright *), Bash(ruff *)
 ---
 
 # Verification Loop Skill

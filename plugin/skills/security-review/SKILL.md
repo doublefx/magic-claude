@@ -7,10 +7,6 @@ description: >
   security checklist automatically.
 context: fork
 agent: general-purpose
-allowed-tools: Read, Grep, Glob,
-  Bash(npm audit*), Bash(semgrep*),
-  Bash(./gradlew spotbugsMain*), Bash(./gradlew dependencyCheckAnalyze*), Bash(./mvnw org.owasp:dependency-check-maven:check*),
-  Bash(bandit*), Bash(pip-audit*)
 ---
 
 # Security Review
