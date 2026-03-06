@@ -3,7 +3,7 @@ name: jvm-refactor-cleaner
 description: JVM dead code cleanup and consolidation specialist for Java, Kotlin, and Groovy. Use PROACTIVELY for removing unused JVM code, duplicates, and refactoring. Uses jdeps, mvn dependency:analyze, and SpotBugs unused code rules to identify dead code and safely removes it.
 tools: Read, Write, Edit, Bash, Grep, Glob
 model: haiku
-skills: claude-mem-context, serena-code-navigation
+skills: backend-patterns, gradle-patterns, maven-patterns, claude-mem-context, serena-code-navigation
 permissionMode: acceptEdits
 hooks:
   Stop:

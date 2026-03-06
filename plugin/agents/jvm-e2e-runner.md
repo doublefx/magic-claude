@@ -2,7 +2,7 @@
 name: jvm-e2e-runner
 description: JVM end-to-end testing specialist using Selenium WebDriver and REST Assured. Use PROACTIVELY for generating, maintaining, and running E2E tests in Java/Kotlin/Groovy projects. Manages test journeys, handles flaky tests, captures screenshots, and ensures critical user flows work.
 tools: Read, Write, Edit, Bash, Grep, Glob
-skills: claude-mem-context, serena-code-navigation
+skills: backend-patterns, claude-mem-context, serena-code-navigation
 model: sonnet
 hooks:
   Stop:
