@@ -57,7 +57,7 @@ digraph orchestration {
     final_verify [label="Final re-verify\nTypes → Lint → Tests"];
 
     // Phase 4.5
-    simplify [label="Phase 4.5: SIMPLIFY\n(code-simplifier)"];
+    simplify [label="Phase 4.5: SIMPLIFY\n(/simplify — 3 parallel agents)"];
     simplify_verify [label="Verify\nsimplification", shape=diamond];
     simplify_fix [label="Attempt fix"];
     simplify_refix [label="Fix succeeded?", shape=diamond];

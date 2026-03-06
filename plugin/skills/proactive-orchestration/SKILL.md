@@ -403,12 +403,16 @@ Process review feedback using the **`magic-claude:receiving-code-review`** skill
 
 ### Phase 4.5: SIMPLIFY
 
-After hardening, run code simplification on the changed files to improve clarity and maintainability.
+After hardening, run a structured simplification audit on the changed files across 3 dimensions: reuse, quality, and efficiency.
 
 1. **Update state →** Set `Phase: SIMPLIFY`
 2. **Identify changed files** — Use `git diff --name-only BASE_SHA..HEAD` to get the list of files modified during this orchestration
-3. **Invoke code-simplifier** — Run `code-simplifier:code-simplifier` agent via Task tool, passing the list of changed files and instructing it to simplify for clarity, consistency, and maintainability while preserving all functionality
-4. **Verify simplification** — Run types → lint → tests. Simplification **must not** break anything.
+3. **Invoke `/simplify`** — Run the built-in simplify skill, which launches 3 parallel agents on the diff:
+   - **Reuse agent** — Detects code that duplicates existing utilities or helpers in the codebase
+   - **Quality agent** — Finds redundant state, parameter sprawl, copy-paste variations, leaky abstractions, stringly-typed code
+   - **Efficiency agent** — Identifies redundant computation, missing concurrency, hot-path bloat, TOCTOU anti-patterns, memory leaks
+4. **Triage findings** — Review each finding and decide: fix (genuine improvement) or skip (acceptable tradeoff). Not every finding requires action.
+5. **Verify simplification** — Run types → lint → tests. Simplification **must not** break anything.
    - If verification passes → proceed to next phase
    - If verification fails → **attempt to fix** the issues (invoke appropriate build-resolver agent or fix manually). Re-verify after fixes.
    - If fix succeeds → proceed to next phase
@@ -485,7 +489,7 @@ When `magic-claude:proactive-orchestration` fires, it subsumes all three phases 
 - `magic-claude:*-build-resolver` agents - Ecosystem-specific build error resolution
 - `magic-claude:*-security-reviewer` agents - Ecosystem-specific security analysis
 - `magic-claude:eval` command - Eval-driven development (opt-in via `--with-evals`)
-- `code-simplifier:code-simplifier` agent - Code clarity and maintainability simplification (Phase 4.5)
+- `/simplify` skill (built-in) - 3-agent parallel audit: reuse, quality, efficiency (Phase 4.5)
 - `spec-reviewer-prompt.md` - Adversarial spec compliance review template (Phase 2, per-task)
 - `magic-claude:ui-design` skill - UI design context gathering (Phase 1.75, conditional)
 - `frontend-design:frontend-design` plugin skill - Design thinking framework (invoked by ui-design)
