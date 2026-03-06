@@ -3,7 +3,7 @@
 **Version**: 3.2.0
 **Last Updated**: 2026-02-28
 **Total Agents**: 30
-**Total Skills**: 42
+**Total Skills**: 30
 
 ---
 
@@ -1091,13 +1091,13 @@ pytest
 - 2 utility agents (doc-updater, setup-agent)
 - 1 background agent (git-sync)
 
-**42 Skills**:
+**30 Skills**:
 - 1 meta-skill (using-magic-claude)
-- 4 proactive skills (orchestration, planning, review, TDD)
-- 3 coding standards skills (TS/JS, JVM, Python)
-- 3 backend pattern skills (TS/JS, JVM, Python)
-- 3 TDD workflow skills (TS/JS, JVM, Python)
-- 3 security review skills (TS/JS, JVM, Python)
+- 1 quality pipeline (craft — absorbs former orchestration, planning, TDD, review)
+- 1 coding standards (multi-ecosystem: TS/JS, JVM, Python)
+- 1 backend patterns (multi-ecosystem: Node.js/Next.js, Spring Boot, FastAPI/Django)
+- 1 TDD workflow (multi-ecosystem: TS/JS, JVM, Python)
+- 1 security review (multi-ecosystem: TS/JS, JVM, Python)
 - 5 language/build tool skills (python, kotlin, maven, gradle, ci-cd)
 - 2 frontend skills (frontend-patterns, ui-design)
 - 4 Serena integration skills (setup, status, cleanup, code-navigation)
