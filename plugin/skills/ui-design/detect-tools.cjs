@@ -450,15 +450,15 @@ Options:
 
 Tool Discovery:
   Scans MCP config from three levels:
-    1. ~/.claude/settings.json (global)
+    1. $CLAUDE_CONFIG_DIR/settings.json (global)
     2. .claude/project.json (project)
     3. .claude/settings.json (project settings)
 
   Checks for disabled servers in disabledMcpServers arrays.
-  Reads ~/.claude/plugins/installed_plugins.json for frontend-design plugin.
+  Reads $CLAUDE_CONFIG_DIR/plugins/installed_plugins.json for frontend-design plugin.
   Discovers tool reference files at three levels:
     1. <plugin>/skills/ui-design/tools/ (plugin)
-    2. ~/.claude/skills/ui-design/tools/ (user)
+    2. $CLAUDE_CONFIG_DIR/skills/ui-design/tools/ (user)
     3. .claude/skills/ui-design/tools/ (project, highest priority)
 
 Examples:

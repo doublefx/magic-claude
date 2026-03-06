@@ -40,7 +40,7 @@ That's what belongs in a skill.
 
 **Project-level** (`.claude/skills/<name>/SKILL.md`): patterns specific to this codebase, this team's conventions, this environment.
 
-**User-level** (`~/.claude/skills/<name>/SKILL.md`): patterns that transfer across projects — debugging techniques, tool quirks, general workarounds.
+**User-level** (`$CLAUDE_CONFIG_DIR/skills/<name>/SKILL.md`): patterns that transfer across projects — debugging techniques, tool quirks, general workarounds. The config directory is available as the `CLAUDE_CONFIG_DIR` environment variable (defaults to `~/.claude` but may differ, e.g., `~/.claude-work`). **Always resolve the actual path** — do not hardcode `~/.claude/`.
 
 When in doubt, use project-level. It's easier to promote later than to clean up polluted user-level skills.
 

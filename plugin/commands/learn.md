@@ -36,7 +36,7 @@ The skill handles: scanning, filtering, drafting the skill template (with trigge
 | Scope | Path | Use When |
 |-------|------|----------|
 | **Project-level** | `{PROJECT_ROOT}/.claude/skills/<name>/SKILL.md` | Pattern is specific to THIS project |
-| **User-level** | `~/.claude/skills/<name>/SKILL.md` | Pattern is reusable across ALL projects |
+| **User-level** | `$CLAUDE_CONFIG_DIR/skills/<name>/SKILL.md` | Pattern is reusable across ALL projects |
 
 **Default: Project-level.** Most learned patterns are project-specific.
 

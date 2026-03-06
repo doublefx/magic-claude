@@ -152,7 +152,7 @@ This is not just for the orchestration pipeline. It applies to:
 Learned skills capture project-specific patterns, error resolutions, and workarounds from past sessions. They follow the standard skill directory pattern (`<name>/SKILL.md`) and are registered in the Skill tool:
 
 - **Project-level:** `.claude/skills/<name>/SKILL.md`
-- **User-level:** `~/.claude/skills/<name>/SKILL.md`
+- **User-level:** `$CLAUDE_CONFIG_DIR/skills/<name>/SKILL.md` (resolve via `CLAUDE_CONFIG_DIR` env var; defaults to `~/.claude`)
 
 When the SessionStart injection lists learned skills below, **check if any apply to your current task**. Invoke relevant ones via the `Skill` tool -- never use Read on skill files.
 
