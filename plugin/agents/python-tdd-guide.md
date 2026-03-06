@@ -3,7 +3,7 @@ name: python-tdd-guide
 description: Python Test-Driven Development specialist enforcing write-tests-first methodology. Use PROACTIVELY when writing new Python features, fixing bugs, or refactoring code. Ensures 80%+ coverage using pytest, unittest.mock, pytest-cov, and hypothesis.
 tools: Read, Write, Edit, Bash, Grep
 model: sonnet
-skills: tdd-workflow, backend-patterns, claude-mem-context
+skills: tdd-workflow, backend-patterns, claude-mem-context, serena-code-navigation
 hooks:
   Stop:
     - hooks:

@@ -2,6 +2,7 @@
 name: ts-e2e-runner
 description: TypeScript/JavaScript end-to-end testing specialist using Playwright. Use PROACTIVELY for generating, maintaining, and running E2E tests in TS/JS projects. Manages test journeys, quarantines flaky tests, uploads artifacts (screenshots, videos, traces), and ensures critical user flows work.
 tools: Read, Write, Edit, Bash, Grep, Glob
+skills: claude-mem-context, serena-code-navigation
 model: sonnet
 hooks:
   Stop:
