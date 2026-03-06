@@ -167,9 +167,9 @@ git worktree list
 ## Integration
 
 **Called by:**
-- `magic-claude:proactive-orchestration` Phase 4.7 (DELIVER)
+- `magic-claude:craft` Phase 4.7 (DELIVER)
 - Manual invocation after any feature branch work
 
 **Pairs with:**
 - `magic-claude:using-git-worktrees` — worktree creation and management
-- `magic-claude:proactive-orchestration` — full pipeline orchestrator
+- `magic-claude:craft` — full pipeline orchestrator

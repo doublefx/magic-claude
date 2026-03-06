@@ -373,13 +373,13 @@ docker run -v $(pwd):/workspace -it dev-env
 
 ## Part 5: Multi-Agent Orchestration (5 minutes)
 
-### Use the Orchestrate Command
+### Use the Craft Command
 
 **Scenario**: Implement a complex feature with multiple steps.
 
 **Ask Claude**:
 ```
-/orchestrate "Implement user authentication with JWT, including registration, login, logout, and password reset"
+/craft "Implement user authentication with JWT, including registration, login, logout, and password reset"
 ```
 
 **Claude will**:
@@ -524,7 +524,7 @@ You've learned:
    - Use Docker for consistent tooling
 
 4. **Multi-Agent**:
-   - Use `/orchestrate` for complex features
+   - Use `/craft` for complex features
    - Let Claude coordinate agents
    - Review agent outputs collectively
 

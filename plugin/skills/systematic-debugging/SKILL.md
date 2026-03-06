@@ -24,7 +24,7 @@ Structured root-cause investigation for bugs that escape the build/test pipeline
 
 - Build/type/lint errors with known patterns -> use `magic-claude:*-build-resolver`
 - Missing imports, type mismatches, config errors -> use build resolvers
-- New feature implementation -> use `magic-claude:proactive-orchestration`
+- New feature implementation -> use `magic-claude:craft`
 - Code quality issues -> use `magic-claude:code-reviewer`
 
 ## The Iron Law
@@ -216,5 +216,5 @@ Verification green?
 - `magic-claude:*-build-resolver` agents -- Known error pattern resolution (upstream of this skill)
 - `magic-claude:*-tdd-guide` agents -- Test-first discipline (used in Phase 4)
 - `magic-claude:verification-loop` skill -- Quality gate (downstream of Phase 4)
-- `magic-claude:proactive-orchestration` skill -- Feature pipeline (this skill handles bugs, not features)
+- `magic-claude:craft` skill -- Quality pipeline (this skill handles bugs, not features)
 - `magic-claude:architect` agent -- Structural analysis (escalation target from Phase 3)

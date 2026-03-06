@@ -231,10 +231,10 @@ This is why agents have specific tools listed in their frontmatter — `Read, Gr
 ### Orchestration Commands
 
 ```bash
-/orchestrate   # Sequential multi-agent workflow with structured handoffs
+/craft         # Unified development pipeline (plan, TDD, review, deliver)
 ```
 
-The orchestration skill chains agents together:
+The craft skill chains agents together:
 1. Planner designs the approach
 2. TDD agent writes tests
 3. Implementation agent writes code
@@ -243,18 +243,18 @@ The orchestration skill chains agents together:
 
 Each handoff passes structured context to the next agent.
 
-### Proactive Agent Selection
+### Automatic Skill Triggering
 
-Claude automatically selects agents based on context:
+Claude automatically selects the appropriate workflow based on context:
 
-- **Complex feature request?** → `proactive-orchestration` fires, coordinating the full pipeline: codebase discovery (discoverer agent), planning (planner agent), iterative adversarial plan review (plan-critic auto-loop, max 3 cycles), UI design (conditional, for frontend features), TDD (ecosystem TDD agent), verification, and code review
+- **Complex feature request?** → `craft` fires, coordinating the full pipeline: codebase discovery (discoverer agent), planning (planner agent), iterative adversarial plan review (plan-critic auto-loop, max 3 cycles), UI design (conditional, for frontend features), TDD (ecosystem TDD agent), verification, and code review
 - **Editing Python?** → `python-reviewer` for quality checks
 - **Build failing?** → `python-build-resolver` or `jvm-build-resolver`
-- **Standalone planning needed?** → `proactive-planning` for architectural discussions
-- **Adding tests to existing code?** → `proactive-tdd` for isolated TDD
-- **Before commit?** → `proactive-review` runs quality checks
+- **Standalone planning needed?** → `craft` handles architectural discussions
+- **Adding tests to existing code?** → `craft` for TDD workflow
+- **Before commit?** → `craft` runs quality checks
 
-You don't have to explicitly invoke agents — the skills and hooks trigger them. For complex feature work, `proactive-orchestration` is the top-level orchestrator. Individual proactive skills handle focused single-phase work.
+You don't have to explicitly invoke agents — the skills and hooks trigger them. The `craft` skill is the unified pipeline that handles the full development lifecycle, from planning through review and delivery.
 
 ---
 

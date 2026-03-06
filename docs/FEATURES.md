@@ -825,7 +825,7 @@ Agent Teams coordinate multiple Claude Code instances working in parallel with a
 | Scenario | Use | Why |
 |----------|-----|-----|
 | Focused task, result only | **Subagent** (Task tool) | Lower tokens, no coordination overhead |
-| Sequential pipeline | **`/orchestrate`** | Structured handoffs, proven workflow |
+| Sequential pipeline | **`/craft`** | Structured handoffs, proven workflow |
 | Parallel exploration, agents need to talk | **Agent Teams** | Inter-agent messaging, shared task list |
 | Quick delegation | **Subagent** (Task tool) | Fast, disposable, minimal context |
 

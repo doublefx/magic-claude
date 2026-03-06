@@ -33,7 +33,7 @@ const SKILL_DIR = path.join(REPO_ROOT, 'plugin', 'skills', 'ui-design');
 const SKILL_PATH = path.join(SKILL_DIR, 'SKILL.md');
 const SCRIPT_PATH = path.join(SKILL_DIR, 'detect-tools.cjs');
 const TOOLS_DIR = path.join(SKILL_DIR, 'tools');
-const ORCHESTRATOR_PATH = path.join(REPO_ROOT, 'plugin', 'skills', 'proactive-orchestration', 'SKILL.md');
+const ORCHESTRATOR_PATH = path.join(REPO_ROOT, 'plugin', 'skills', 'craft', 'SKILL.md');
 
 const TOOL_REFERENCE_FILES = [
   'figma.md',
@@ -136,7 +136,7 @@ function runTests() {
 
   const integrationRefs = [
     { name: 'frontend-design', pattern: /frontend-design/i },
-    { name: 'proactive-orchestration', pattern: /proactive-orchestration/i },
+    { name: 'craft', pattern: /craft/i },
     { name: 'frontend-patterns', pattern: /frontend-patterns/i }
   ];
 
@@ -298,7 +298,7 @@ function runTests() {
 
   let orchestratorContent = null;
 
-  if (test('proactive-orchestration/SKILL.md exists', () => {
+  if (test('craft/SKILL.md exists', () => {
     assert.ok(fs.existsSync(ORCHESTRATOR_PATH), 'Orchestrator SKILL.md should exist');
     orchestratorContent = fs.readFileSync(ORCHESTRATOR_PATH, 'utf8');
   })) passed++; else failed++;

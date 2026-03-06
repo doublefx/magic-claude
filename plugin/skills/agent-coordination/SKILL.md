@@ -105,7 +105,7 @@ Wait for one agent before launching the next when outputs feed forward:
 # Step 3: code-reviewer reviews the implementation (needs the code)
 ```
 
-The orchestration pipeline (proactive-orchestration) handles this automatically for feature work.
+The craft pipeline handles this automatically for feature work.
 
 ### Mixed
 

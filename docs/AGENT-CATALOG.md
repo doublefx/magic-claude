@@ -851,9 +851,9 @@ Gradle Optimization Report
 
 ---
 
-#### proactive-orchestration
-**Path**: `plugin/skills/proactive-orchestration/SKILL.md`
-**Description**: Top-level pipeline orchestrator for complex feature work
+#### craft
+**Path**: `plugin/skills/craft/SKILL.md`
+**Description**: Default quality pipeline for ALL code changes with LITE/FULL modes
 
 **Phases**: DISCOVER -> PLAN ↔ PLAN CRITIC (auto-loop, max 3 cycles) -> [UI DESIGN] -> TDD -> VERIFY -> REVIEW -> REPORT
 
@@ -866,13 +866,13 @@ Gradle Optimization Report
 
 **Agents Used**: discoverer, planner, plan-critic, [ecosystem]-tdd-guide, [ecosystem]-build-resolver (if needed), code-reviewer, [ecosystem]-security-reviewer, language reviewers
 
-**Relationship to other proactive skills**: Subsumes `proactive-planning`, `proactive-tdd`, and `proactive-review` for complex feature work. Individual skills fire only for standalone single-phase work.
+**Relationship to other proactive skills**: Absorbs the former standalone `proactive-planning`, `proactive-tdd`, and `proactive-review` skills into a single unified pipeline.
 
 ---
 
 #### ui-design
 **Path**: `plugin/skills/ui-design/SKILL.md`
-**Description**: Conditional UI design context gathering (Phase 1.75 of proactive-orchestration)
+**Description**: Conditional UI design context gathering (Phase 1.75 of craft)
 
 **Gate**: Advisory with user opt-out — triggered when plan tasks touch frontend files (`.tsx`, `.jsx`, `.vue`, `.svelte`, `.html`, `.css`) or mention UI components/layouts.
 
@@ -983,20 +983,6 @@ Gradle Optimization Report
 **Type**: Meta-skill (injected via SessionStart hook on every startup/resume/compact/clear)
 **Description**: Disposition override (quality over speed), skill governance flowchart, EnterPlanMode intercept, anti-rationalization table, learned skills reminder
 
-#### proactive-planning
-**Path**: `plugin/skills/proactive-planning/SKILL.md`
-**Type**: Skill (proactive)
-**Description**: Standalone planning for architectural discussions where NO code will be written
-
-#### proactive-tdd
-**Path**: `plugin/skills/proactive-tdd/SKILL.md`
-**Type**: Skill (proactive)
-**Description**: Ecosystem-aware TDD enforcement for isolated TDD needs (not part of orchestration)
-
-#### proactive-review
-**Path**: `plugin/skills/proactive-review/SKILL.md`
-**Type**: Skill (proactive)
-**Description**: Code quality checks at task completion and pre-commit
 
 #### coding-standards
 **Path**: `plugin/skills/coding-standards/SKILL.md`

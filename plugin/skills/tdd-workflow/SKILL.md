@@ -58,7 +58,7 @@ implementation and start over. No exceptions.
 
 ## Related
 
-- `magic-claude:proactive-tdd` skill — Auto-invoked for discrete implementations
+- `magic-claude:craft` skill — Quality pipeline (LITE mode for discrete implementations, FULL mode for complex features)
 - `magic-claude:ts-tdd-guide` agent — TypeScript/JavaScript TDD specialist
 - `magic-claude:jvm-tdd-guide` agent — JVM TDD specialist
 - `magic-claude:python-tdd-guide` agent — Python TDD specialist

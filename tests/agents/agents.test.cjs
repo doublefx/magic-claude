@@ -32,8 +32,8 @@ const AGENTS_DIR = path.join(REPO_ROOT, 'plugin', 'agents');
 const DISCOVERER_PATH = path.join(AGENTS_DIR, 'discoverer.md');
 const PLAN_CRITIC_PATH = path.join(AGENTS_DIR, 'plan-critic.md');
 const PLANNER_PATH = path.join(AGENTS_DIR, 'planner.md');
-const ORCHESTRATOR_PATH = path.join(REPO_ROOT, 'plugin', 'skills', 'proactive-orchestration', 'SKILL.md');
-const PLAN_CRITIC_PROMPT_PATH = path.join(REPO_ROOT, 'plugin', 'skills', 'proactive-orchestration', 'plan-critic-prompt.md');
+const ORCHESTRATOR_PATH = path.join(REPO_ROOT, 'plugin', 'skills', 'craft', 'SKILL.md');
+const PLAN_CRITIC_PROMPT_PATH = path.join(REPO_ROOT, 'plugin', 'skills', 'craft', 'plan-critic-prompt.md');
 
 // Test suite
 function runTests() {

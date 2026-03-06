@@ -19,7 +19,7 @@ Context, quality, and process over speed. The user will thank you.
 digraph skill_flow {
     "User message received" [shape=doublecircle];
     "Feature/architecture?" [shape=diamond];
-    "Invoke magic-claude:proactive-orchestration" [shape=box];
+    "Invoke magic-claude:craft" [shape=box];
     "Exploration/research/debugging?" [shape=diamond];
     "Search claude-mem first" [shape=box];
     "Might any skill apply?" [shape=diamond];
@@ -29,12 +29,12 @@ digraph skill_flow {
     "Respond" [shape=doublecircle];
 
     "User message received" -> "Feature/architecture?";
-    "Feature/architecture?" -> "Invoke magic-claude:proactive-orchestration" [label="yes"];
+    "Feature/architecture?" -> "Invoke magic-claude:craft" [label="yes"];
     "Feature/architecture?" -> "Exploration/research/debugging?" [label="no"];
     "Exploration/research/debugging?" -> "Search claude-mem first" [label="yes"];
     "Exploration/research/debugging?" -> "Might any skill apply?" [label="no"];
     "Search claude-mem first" -> "Might any skill apply?";
-    "Invoke magic-claude:proactive-orchestration" -> "Follow skill exactly";
+    "Invoke magic-claude:craft" -> "Follow skill exactly";
     "Might any skill apply?" -> "Invoke Skill tool" [label="yes"];
     "Might any skill apply?" -> "Respond" [label="definitely not"];
     "Invoke Skill tool" -> "Announce: 'Using [skill] for [purpose]'";
@@ -62,7 +62,7 @@ When claude-mem is installed, **MUST search claude-mem BEFORE** using Explore ag
 
 For feature requests that involve writing code:
 
-1. **NEVER** use EnterPlanMode -- invoke `magic-claude:proactive-orchestration` instead
+1. **NEVER** use EnterPlanMode -- invoke `magic-claude:craft` instead
 2. The orchestrator coordinates: DISCOVER -> PLAN <-> PLAN CRITIC (auto-loop, max 3 cycles) -> [UI DESIGN] -> TDD (per-task with spec review) -> VERIFY -> REVIEW -> DELIVER
 3. Each plan task gets an adversarial spec review before moving to the next -- fail fast, fix early
 4. EnterPlanMode is ONLY for pure research/exploration or explicit `magic-claude:plan` commands
@@ -78,7 +78,7 @@ This meta-skill survives compaction and `/clear` because SessionStart re-injects
 2. If YES: read it. It contains the feature name, current phase, plan path, and key decisions.
 3. Read the plan from the path recorded in the state file (e.g., `.claude/plans/YYYY-MM-DD-feature.md`).
 4. **Determine recovery mode:**
-   - **Auto-resume (compaction):** If your compressed context mentions the same feature or orchestration work — you were just working on this. **Do NOT ask the user.** Re-read the orchestration skill (`magic-claude:proactive-orchestration`), restore phase context from the state file, and **continue from the recorded phase immediately.** The user expects you to keep going.
+   - **Auto-resume (compaction):** If your compressed context mentions the same feature or orchestration work — you were just working on this. **Do NOT ask the user.** Re-read the craft skill (`magic-claude:craft`), restore phase context from the state file, and **continue from the recorded phase immediately.** The user expects you to keep going.
    - **Ask user (new session or /clear):** If your context has NO memory of this feature — this is a crash or fresh start. Ask: *"Found incomplete orchestration for **<feature>** at Phase <N>. Resume or start fresh?"*
 
 **If NO state file exists:** no recovery needed, proceed normally.

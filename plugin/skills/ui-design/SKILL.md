@@ -6,7 +6,7 @@ user-invocable: false
 
 # UI Design Phase
 
-Conditional phase (Phase 1.75) in the proactive-orchestration pipeline. Gathers design context for UI features before TDD begins, ensuring intentional design decisions instead of generic implementations.
+Conditional phase (Phase 1.75) in the craft pipeline. Gathers design context for UI features before TDD begins, ensuring intentional design decisions instead of generic implementations.
 
 ## When to Activate
 
@@ -216,7 +216,7 @@ The design spec becomes input context for Phase 2:
 
 ## Related
 
-- `magic-claude:proactive-orchestration` — Parent pipeline (Phase 1.75)
+- `magic-claude:craft` — Parent pipeline (Phase 1.75)
 - `frontend-design:frontend-design` — Anthropic design thinking skill (Layer 4 baseline)
 - `magic-claude:frontend-patterns` — React/Next.js implementation patterns
 - `magic-claude:coding-standards` — TypeScript/JavaScript coding standards

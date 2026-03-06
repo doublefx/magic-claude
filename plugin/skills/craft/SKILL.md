@@ -1,41 +1,68 @@
 ---
-name: proactive-orchestration
+name: craft
 description: >
-  Invoke when a user wants to build something new end-to-end — a feature, system, or capability that spans multiple files and requires planning before code. Trigger on: adding authentication, integrating services (Stripe, OAuth, Elasticsearch), building APIs or real-time systems, dashboards, search, background jobs, or any multi-component "add/build/create/implement" request. This skill runs the full pipeline from architecture through TDD to delivery. NEVER use EnterPlanMode for feature implementation — invoke this skill instead.
+  The default pipeline for ALL code changes — features, bug fixes, TDD, and any implementation work. Invoke whenever code will be written or modified, regardless of perceived complexity. Even "simple" fixes cause regressions, type errors, lint issues, and missed code reuse without the full quality tail. Two modes: LITE (≤2 files, ≤20 lines — TDD → VERIFY → REVIEW) and FULL (multi-file — DISCOVER → PLAN → CRITIC → TDD → VERIFY → REVIEW+HARDEN → SIMPLIFY → DELIVER). NEVER use EnterPlanMode for code work — invoke this skill instead. Also triggers for: adding authentication, integrating services, building APIs, dashboards, background jobs, or any "add/build/create/implement/fix" request.
 
 ---
 
-# Proactive Orchestration
+# Craft
 
-## CRITICAL: Overrides EnterPlanMode for Feature Work
+## CRITICAL: The Default Pipeline for All Code
 
-This skill **REPLACES** EnterPlanMode for all feature implementation tasks.
+This skill is the **single entry point** for all code changes. Even small fixes need verification, type checking, and review — experience shows that skipping these causes regressions.
 
-- **WRONG**: Using EnterPlanMode when user asks to implement a feature
-- **WRONG**: Using EnterPlanMode when user asks to add new functionality
-- **WRONG**: Planning without follow-through to TDD, verification, and review
+- **WRONG**: Writing code without invoking this skill
+- **WRONG**: Using EnterPlanMode when code will be written
+- **WRONG**: Using `/tdd` alone without verification and review
+- **WRONG**: Assuming a "simple" fix doesn't need the quality tail
 
-- **CORRECT**: Invoke this skill for any non-trivial feature implementation
-- **CORRECT**: Only use EnterPlanMode for pure research/exploration or explicit `magic-claude:plan`
+- **CORRECT**: Invoke this skill for ANY code change
+- **CORRECT**: Only use EnterPlanMode for pure research/exploration (no code)
+- **CORRECT**: Use `/code-review` standalone only for reviewing code you didn't write
 
-## When Claude MUST Invoke This Skill
+## Mode Selection (Lightweight Gate)
 
-**MUST trigger when detecting:**
-- Complex feature requests involving multiple components or files
-- Architectural changes (new endpoints, new services, new modules)
-- "Add", "implement", "build", "create" combined with non-trivial scope indicators
-- Multi-step feature descriptions requiring planning before coding
-- Any request where you would normally use EnterPlanMode AND the task involves writing code
+At the start, assess the scope to select the right mode:
 
-**MUST NOT trigger on:**
-- Simple bug fixes ("fix this null pointer", "handle the null case")
-- Single-file edits ("update this function", "rename this variable")
-- Documentation tasks ("update the README", "add JSDoc")
+```
+┌─────────────────────────────────────────────────┐
+│  Will the change touch ≤2 files AND ≤20 lines?  │
+│                                                  │
+│  YES → LITE mode:                                │
+│    TDD → VERIFY → REVIEW (single pass) → done   │
+│                                                  │
+│  NO → FULL mode:                                 │
+│    DISCOVER → PLAN ↔ CRITIC → [UI DESIGN] →      │
+│    TDD → VERIFY → REVIEW+HARDEN → SIMPLIFY →    │
+│    DELIVER → REPORT                              │
+│                                                  │
+│  USER OVERRIDE:                                  │
+│    /craft --full → force full pipeline           │
+│    /craft --lite → force lite pipeline           │
+│    /tdd → LITE mode (skip planning)              │
+│    /eval → LITE mode + eval define/check         │
+└─────────────────────────────────────────────────┘
+```
+
+**LITE mode phases:** TDD (Phase 2) → VERIFY (Phase 3) → REVIEW single pass (Phase 4, no harden loop) → done. No plan, no discovery, no simplify. But verification and review are **never skipped**.
+
+**FULL mode phases:** All phases below apply.
+
+**When in doubt, use FULL.** The cost of over-processing is low; the cost of a missed regression is high.
+
+## TDD Discipline
+
+> See [references/tdd-discipline.md](references/tdd-discipline.md) for the Iron Law, Anti-Rationalization table, and proactive triggers.
+
+## Planning Process
+
+> See [references/planning-process.md](references/planning-process.md) for requirements refinement, approach exploration, risk assessment, and the plan template.
+
+## MUST NOT trigger on
+
+- Documentation-only tasks ("update the README", "add JSDoc")
 - Configuration changes ("update tsconfig", "add dependency")
-- Refactoring (has its own workflow via `magic-claude:refactor-clean`)
-- Explicit single-command requests ("run `magic-claude:tdd`", "run `magic-claude:code-review`")
 - Pure research or exploration (use EnterPlanMode or Explore agent)
-- When user explicitly types `magic-claude:plan` (respect the explicit command)
 
 ## Anti-Rationalization
 
@@ -43,19 +70,20 @@ If you catch yourself thinking any of these, STOP — you're rationalizing:
 
 | Thought | Reality |
 |---------|---------|
-| "This is a simple feature, no pipeline needed" | If it touches multiple files, it needs the pipeline. |
-| "I'll just write the code and add tests after" | That's not TDD. Use the pipeline. |
-| "Let me explore the codebase first" | Phase 0/1 handles exploration. Invoke the skill first. |
-| "I already know how to implement this" | The plan still needs user approval. Follow the phases. |
-| "This doesn't need architecture review" | Phase 0 is conditional — it self-gates. Let it decide. |
+| "This is too simple for the pipeline" | Simple code causes regressions too. At minimum, use LITE mode. |
+| "I'll just write the code and add tests after" | That's not TDD. Write the test first. |
+| "Let me explore the codebase first" | DISCOVER phase handles exploration. Invoke the skill first. |
+| "I already know how to implement this" | In FULL mode, the plan still needs user approval. |
+| "This doesn't need review" | Every code change needs at minimum VERIFY + REVIEW. No exceptions. |
 | "I'll use EnterPlanMode instead" | EnterPlanMode is for research ONLY. This skill replaces it for code. |
+| "I'll skip verification, the code looks right" | "Looks right" is not evidence. Run the checks. |
 
 **Violating the letter of the rules is violating the spirit of the rules.**
 
 <HARD-GATE>
-Do NOT write any implementation code, scaffold any files, or invoke any TDD
-agent until a plan has been presented to the user AND the user has approved it.
-This applies to EVERY feature regardless of perceived simplicity.
+FULL mode: Do NOT write any implementation code until a plan has been
+presented to the user AND the user has approved it.
+LITE mode: Do NOT skip VERIFY or REVIEW after TDD. The quality tail is mandatory.
 </HARD-GATE>
 
 ## Why No Context Fork
@@ -460,23 +488,24 @@ After producing the report, archive the state file alongside the plan:
 2. This serves as an audit trail (critic cycles, harden rounds, coverage, timing)
 3. If verdict is NEEDS WORK or BLOCKED, keep the active state file as-is (pipeline is not complete)
 
-## Relationship to Other Proactive Skills
+## Standalone Commands (Not Part of Craft)
 
-This skill is the **top-level orchestrator** for complex feature work. The individual proactive skills handle focused single-phase work:
+These commands operate independently — they don't invoke the craft pipeline:
 
-| Skill | When it fires independently |
-|-------|---------------------------|
-| `magic-claude:proactive-planning` | Architectural discussions, requirement analysis (no TDD/review needed) |
-| `magic-claude:proactive-tdd` | Adding tests to existing code, bug fix with reproduction test |
-| `magic-claude:proactive-review` | Pre-commit review, reviewing someone else's code |
-
-When `magic-claude:proactive-orchestration` fires, it subsumes all three phases -- the individual skills should not also fire.
+| Command | Use Case |
+|---------|----------|
+| `/code-review` | Review code you didn't write (PRs, external code) |
+| `/verify` | Quick verification check without review loop |
+| `/build-fix` | Fix a specific build error |
+| `/refactor-clean` | Dead code removal |
+| `/plan` | Pure architectural discussion (no code) |
 
 ## Related
 
-- `magic-claude:orchestrate` command - Explicit user-invoked orchestration with workflow type variants
-- `magic-claude:tdd` command - Standalone TDD workflow
-- `magic-claude:code-review` command - Standalone code review
+- `magic-claude:craft` command - Explicit user-invoked pipeline with `--full`/`--lite` override
+- `magic-claude:tdd` command - Entry point to craft LITE mode (skip planning)
+- `magic-claude:eval` command - Entry point to craft with eval define/check
+- `magic-claude:code-review` command - Standalone code review (not part of craft)
 - `magic-claude:verify` command - Standalone verification
 - `magic-claude:build-fix` command - Build error resolution
 - `magic-claude:architect` agent - System design decisions (Phase 0, conditional)
@@ -488,8 +517,9 @@ When `magic-claude:proactive-orchestration` fires, it subsumes all three phases 
 - `magic-claude:*-tdd-guide` agents - Ecosystem-specific TDD specialists
 - `magic-claude:*-build-resolver` agents - Ecosystem-specific build error resolution
 - `magic-claude:*-security-reviewer` agents - Ecosystem-specific security analysis
-- `magic-claude:eval` command - Eval-driven development (opt-in via `--with-evals`)
 - `/simplify` skill (built-in) - 3-agent parallel audit: reuse, quality, efficiency (Phase 4.5)
 - `spec-reviewer-prompt.md` - Adversarial spec compliance review template (Phase 2, per-task)
 - `magic-claude:ui-design` skill - UI design context gathering (Phase 1.75, conditional)
 - `frontend-design:frontend-design` plugin skill - Design thinking framework (invoked by ui-design)
+- [references/tdd-discipline.md](references/tdd-discipline.md) - TDD Iron Law and anti-rationalization
+- [references/planning-process.md](references/planning-process.md) - Requirements refinement and plan template

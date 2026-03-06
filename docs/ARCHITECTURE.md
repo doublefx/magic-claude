@@ -53,10 +53,7 @@ magic-claude/
 |   |   |-- tdd-workflow/               # Multi-ecosystem TDD methodology (TS/JS, JVM, Python)
 |   |   |-- security-review/            # Multi-ecosystem security checklist (TS/JS, JVM, Python)
 |   |   |-- ui-design/                   # UI design context gathering (Phase 1.75, conditional)
-|   |   |-- proactive-orchestration/    # Full pipeline orchestrator (PLAN->UI DESIGN->TDD->VERIFY->REVIEW)
-|   |   |-- proactive-planning/         # Standalone planning for complex tasks
-|   |   |-- proactive-tdd/              # Standalone TDD enforcement
-|   |   |-- proactive-review/           # Standalone code quality review
+|   |   |-- craft/                      # Unified workflow skill (DISCOVER->PLAN->TDD->VERIFY->REVIEW->DELIVER)
 |   |   |-- continuous-learning/        # Auto-extract patterns from sessions
 |   |   |-- eval-harness/               # Verification loop evaluation
 |   |   |-- verification-loop/          # Continuous verification
@@ -88,7 +85,7 @@ magic-claude/
 |   |   |-- setup-pm.md         # /setup-pm - Configure package manager
 |   |   |-- setup-rules.md      # /setup-rules - Install plugin rules
 |   |   |-- eval.md             # /eval - Run evaluation harness
-|   |   |-- orchestrate.md      # /orchestrate - Multi-agent orchestration
+|   |   |-- craft.md             # /craft - Unified development workflow
 |   |   |-- test-coverage.md    # /test-coverage - Coverage reporting
 |   |   |-- update-docs.md      # /update-docs - Sync documentation
 |   |

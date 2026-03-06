@@ -1,97 +1,48 @@
 ---
-description: Enforce test-driven development - tests first, then implement (80%+)
+description: Test-driven development with verification and review — craft LITE mode
+argument-hint: "[task description]"
 ---
 
-# TDD Command
+# /tdd — TDD with Quality Tail
 
-Polyglot test-driven development -- detects the project ecosystem and dispatches to the right TDD specialist agent.
+Invoke the `magic-claude:craft` skill in **LITE mode** — skips planning phases but always includes verification and review.
 
-## Step 1: Detect Ecosystem
+## Usage
 
-Check for project markers to determine the ecosystem:
+```bash
+# TDD a specific feature
+/tdd "add email validation to signup form"
 
-**TypeScript/JavaScript** (any of):
-- `tsconfig.json`, `package.json`, `next.config.*`, `vite.config.*`
-- Lock files: `package-lock.json`, `pnpm-lock.yaml`, `yarn.lock`, `bun.lockb`
-
-**JVM (Java/Kotlin/Groovy)** (any of):
-- `pom.xml`, `build.gradle`, `build.gradle.kts`, `settings.gradle`, `settings.gradle.kts`
-- Wrappers: `mvnw`, `gradlew`
-
-**Python** (any of):
-- `pyproject.toml`, `setup.py`, `setup.cfg`, `requirements.txt`
-- Lock files: `uv.lock`, `poetry.lock`, `Pipfile.lock`
-
-If multiple ecosystems detected, ask which one to target.
-
-## Step 2: Dispatch to Specialist Agent
-
-| Ecosystem | Agent | Test Command | Coverage Tool |
-|-----------|-------|--------------|---------------|
-| TypeScript/JavaScript | **magic-claude:ts-tdd-guide** | `npm test` or `npx vitest` | Jest/Vitest `--coverage` |
-| JVM (Gradle) | **magic-claude:jvm-tdd-guide** | `./gradlew test` | JaCoCo `./gradlew jacocoTestReport` |
-| JVM (Maven) | **magic-claude:jvm-tdd-guide** | `./mvnw test` | JaCoCo `./mvnw jacoco:report` |
-| Python | **magic-claude:python-tdd-guide** | `pytest` | pytest-cov `pytest --cov` |
-
-## Step 3: TDD Cycle
-
-The specialist agent follows this cycle:
-
-```
-RED → GREEN → REFACTOR → REPEAT
-
-RED:      Write a failing test FIRST
-GREEN:    Write minimal code to make it pass
-REFACTOR: Improve code while keeping tests green
-REPEAT:   Next feature/scenario
+# TDD a bug fix (write reproducing test first)
+/tdd "fix null pointer in UserService.findById"
 ```
 
-### What Each Agent Does
+## What Happens
 
-1. **Scaffold interfaces** for inputs/outputs
-2. **Write tests that will FAIL** (because code doesn't exist yet)
-3. **Run tests** and verify they fail for the right reason
-4. **Write minimal implementation** to make tests pass
-5. **Run tests** and verify they pass
-6. **Refactor** code while keeping tests green
-7. **Check coverage** and add more tests if below 80%
+1. **TDD** — Detect ecosystem, dispatch to specialist agent (RED → GREEN → REFACTOR)
+2. **VERIFY** — Build, type check, lint, test suite with coverage
+3. **REVIEW** — Single-pass code review (no harden loop)
+
+This is equivalent to `/craft --lite`. For the full pipeline with planning, discovery, and harden loop, use `/craft --full` or just `/craft` (auto-detects).
+
+## Ecosystem Detection
+
+| Markers | Ecosystem | Agent |
+|---------|-----------|-------|
+| `package.json`, `tsconfig.json` | TypeScript/JavaScript | `magic-claude:ts-tdd-guide` |
+| `pom.xml`, `build.gradle*` | JVM | `magic-claude:jvm-tdd-guide` |
+| `pyproject.toml`, `setup.py` | Python | `magic-claude:python-tdd-guide` |
+
+## TDD Discipline
+
+> See `magic-claude:craft` → [references/tdd-discipline.md](../skills/craft/references/tdd-discipline.md) for the Iron Law, anti-rationalization table, and proactive triggers.
 
 ## Coverage Requirements
 
 - **80% minimum** for all code
-- **100% required** for:
-  - Financial calculations
-  - Authentication logic
-  - Security-critical code
-  - Core business logic
+- **100% required** for: financial calculations, authentication, security-critical, core business logic
 
-## TDD Best Practices
+## Related
 
-**DO:**
-- Write the test FIRST, before any implementation
-- Run tests and verify they FAIL before implementing
-- Write minimal code to make tests pass
-- Refactor only after tests are green
-- Add edge cases and error scenarios
-
-**DON'T:**
-- Write implementation before tests
-- Skip running tests after each change
-- Write too much code at once
-- Test implementation details (test behavior)
-
-## Integration with Other Commands
-
-- Use `magic-claude:plan` first to understand what to build
-- Use `magic-claude:tdd` to implement with tests
-- Use `magic-claude:build-fix` if build errors occur
-- Use `magic-claude:code-review` to review implementation
-- Use `magic-claude:test-coverage` to verify coverage
-
-## Related Agents
-
-| Ecosystem | Agent | Skill |
-|-----------|-------|-------|
-| TypeScript/JavaScript | `magic-claude:ts-tdd-guide` | `magic-claude:tdd-workflow` |
-| JVM (Java/Kotlin/Groovy) | `magic-claude:jvm-tdd-guide` | `magic-claude:tdd-workflow` |
-| Python | `magic-claude:python-tdd-guide` | `magic-claude:tdd-workflow` |
+- `magic-claude:craft` skill — Full pipeline (LITE and FULL modes)
+- `magic-claude:tdd-workflow` skill — Ecosystem-specific TDD methodology reference

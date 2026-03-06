@@ -1,23 +1,39 @@
 ---
-description: Eval-driven development - define evals before coding, verify after
+description: Eval-driven development with quality pipeline — craft mode with eval phases
 argument-hint: "[define|check|report|list] [feature-name]"
 ---
 
-# Eval Command
+# /eval — Eval-Driven Development
 
-Manage eval-driven development workflow.
+Invoke the `magic-claude:craft` skill with **eval define/check phases** integrated into the quality pipeline.
 
 ## Usage
 
-`/eval [define|check|report|list] [feature-name]`
+```bash
+# Define evals for a feature, then implement with full pipeline
+/eval define feature-name
 
-## Define Evals
+# Check evals after implementation
+/eval check feature-name
 
-`/eval define feature-name`
+# Generate comprehensive eval report
+/eval report feature-name
 
-Create a new eval definition:
+# List all eval definitions
+/eval list
+```
 
-1. Create `.claude/evals/feature-name.md` with template:
+## What Happens
+
+1. **EVAL DEFINE** — Create eval criteria in `.claude/evals/feature-name.md` (capability + regression evals)
+2. **TDD** — Implement using the craft pipeline (RED → GREEN → REFACTOR)
+3. **VERIFY** — Build, type check, lint, test suite with coverage
+4. **EVAL CHECK** — Run evals against implementation, record PASS/FAIL
+5. **REVIEW** — Code review with harden loop (FULL mode)
+
+This integrates the `magic-claude:eval-harness` skill into the craft pipeline. For TDD without evals, use `/tdd`. For the full pipeline without evals, use `/craft`.
+
+## Eval Structure
 
 ```markdown
 ## EVAL: feature-name
@@ -36,90 +52,19 @@ Created: $(date)
 - pass^3 = 100% for regression evals
 ```
 
-2. Prompt user to fill in specific criteria
+## Subcommands
 
-## Check Evals
+| Subcommand | What it does |
+|------------|-------------|
+| `define <name>` | Create new eval definition |
+| `check <name>` | Run and check evals |
+| `report <name>` | Generate full report |
+| `list` | Show all evals |
+| `clean` | Remove old eval logs (keeps last 10 runs) |
 
-`/eval check feature-name`
+## Related
 
-Run evals for a feature:
-
-1. Read eval definition from `.claude/evals/feature-name.md`
-2. For each capability eval:
-   - Attempt to verify criterion
-   - Record PASS/FAIL
-   - Log attempt in `.claude/evals/feature-name.log`
-3. For each regression eval:
-   - Run relevant tests
-   - Compare against baseline
-   - Record PASS/FAIL
-4. Report current status:
-
-```
-EVAL CHECK: feature-name
-========================
-Capability: X/Y passing
-Regression: X/Y passing
-Status: IN PROGRESS / READY
-```
-
-## Report Evals
-
-`/eval report feature-name`
-
-Generate comprehensive eval report:
-
-```
-EVAL REPORT: feature-name
-=========================
-Generated: $(date)
-
-CAPABILITY EVALS
-----------------
-[eval-1]: PASS (pass@1)
-[eval-2]: PASS (pass@2) - required retry
-[eval-3]: FAIL - see notes
-
-REGRESSION EVALS
-----------------
-[test-1]: PASS
-[test-2]: PASS
-[test-3]: PASS
-
-METRICS
--------
-Capability pass@1: 67%
-Capability pass@3: 100%
-Regression pass^3: 100%
-
-NOTES
------
-[Any issues, edge cases, or observations]
-
-RECOMMENDATION
---------------
-[SHIP / NEEDS WORK / BLOCKED]
-```
-
-## List Evals
-
-`/eval list`
-
-Show all eval definitions:
-
-```
-EVAL DEFINITIONS
-================
-feature-auth      [3/5 passing] IN PROGRESS
-feature-search    [5/5 passing] READY
-feature-export    [0/4 passing] NOT STARTED
-```
-
-## Arguments
-
-$ARGUMENTS:
-- `define <name>` - Create new eval definition
-- `check <name>` - Run and check evals
-- `report <name>` - Generate full report
-- `list` - Show all evals
-- `clean` - Remove old eval logs (keeps last 10 runs)
+- `magic-claude:craft` skill — Full quality pipeline
+- `magic-claude:eval-harness` skill — Eval definition and checking methodology
+- `/craft` — Quality pipeline without eval phases
+- `/tdd` — Lightweight TDD (craft LITE mode)

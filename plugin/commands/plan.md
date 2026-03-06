@@ -24,7 +24,7 @@ Use `/plan` when:
 - Multiple files/components will be affected
 - Requirements are unclear or ambiguous
 
-**Note:** For full feature implementation (plan + TDD + review + delivery), use `magic-claude:proactive-orchestration` instead — it includes planning as Phase 1 and handles the entire pipeline.
+**Note:** For full feature implementation (plan + TDD + review + delivery), use `magic-claude:craft` instead — it includes planning as Phase 1 and handles the entire pipeline.
 
 ## How It Works
 
@@ -86,7 +86,7 @@ After planning:
 
 ## Related
 
-- `magic-claude:proactive-orchestration` skill - Full pipeline (includes planning as Phase 1)
+- `magic-claude:craft` skill - Full pipeline (includes planning as Phase 1)
 - `magic-claude:planner` agent - Implementation planning
 - `magic-claude:discoverer` agent - Codebase discovery (feeds into planner)
 - `magic-claude:plan-critic` agent - Adversarial plan review

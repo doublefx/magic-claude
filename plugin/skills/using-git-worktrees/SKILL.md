@@ -176,7 +176,7 @@ The `magic-claude:finishing-feature` skill handles structured cleanup with user 
 ## Integration
 
 **Called by:**
-- `magic-claude:proactive-orchestration` Phase 4.7 (DELIVER) when delivery strategy is `feature-branch-merge` or `feature-branch-pr`
+- `magic-claude:craft` Phase 4.7 (DELIVER) when delivery strategy is `feature-branch-merge` or `feature-branch-pr`
 - `magic-claude:agent-teams` when agents need file ownership isolation
 - Any workflow requiring an isolated workspace
 

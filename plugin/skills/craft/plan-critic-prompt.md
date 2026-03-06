@@ -88,7 +88,7 @@ Include confidence levels so the user can distinguish verified issues from possi
 
 ## Integration
 
-**Called by:** proactive-orchestration Phase 1.1 (after planner output)
+**Called by:** craft Phase 1.1 (after planner output)
 
 **Follows:** Phase 1 (PLAN) draft completion
 

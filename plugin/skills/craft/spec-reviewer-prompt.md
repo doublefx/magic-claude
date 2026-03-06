@@ -88,7 +88,7 @@ Verify by reading code, not by trusting the report.
 
 ## Integration
 
-**Called by:** proactive-orchestration Phase 2 (per-task loop)
+**Called by:** craft Phase 2 (per-task loop)
 
 **Follows:** TDD agent completion for each plan task
 

@@ -93,7 +93,7 @@ User: /tdd
 **Skills consumed:** `tdd-workflow` + `backend-patterns`, `claude-mem-context` (all three are multi-ecosystem — auto-load correct references per project)
 **Hooks during:** auto-format, type check, debug detect, security scan (Java/Python/TypeScript)
 **Verification:** Agent self-check only (was TDD cycle followed?). No build/lint/full-test verification.
-**Note:** When invoked via `proactive-orchestration`, verification and review follow automatically as subsequent phases.
+**Note:** When invoked via `craft`, verification and review follow automatically as subsequent phases.
 
 ---
 
@@ -196,10 +196,10 @@ User: /verify [quick|full|pre-commit|pre-pr]
 
 ---
 
-### `/orchestrate` -- Multi-Agent Workflow
+### `/craft` -- Multi-Agent Workflow
 
 ```
-User: /orchestrate feature [description]
+User: /craft feature [description]
   -> planner (opus)                    # Plan the feature
   -> [ecosystem]-tdd-guide (sonnet)    # Implement with TDD
   -> code-reviewer (opus)              # Review quality
@@ -209,7 +209,7 @@ User: /orchestrate feature [description]
 
 **Variants:** `bugfix`, `refactor`, `security`, `custom`
 **Agents:** Multiple in sequence with structured handoff documents.
-**Feature workflow** now shares phases with `proactive-orchestration` (DISCOVER, PLAN ↔ PLAN CRITIC auto-loop, [UI DESIGN], TDD, VERIFY, REVIEW, REPORT).
+**Feature workflow** now shares phases with the `craft` skill (DISCOVER, PLAN ↔ PLAN CRITIC auto-loop, [UI DESIGN], TDD, VERIFY, REVIEW, REPORT).
 **Bugfix workflow** uses `Explore` (built-in codebase investigation) instead of a custom explorer agent.
 **Remediation:** Includes remediation suggestions in final report (maps issues to commands).
 
@@ -236,7 +236,7 @@ User: /test-coverage
 |---------|---------|--------|-----|
 | `/learn` | Extract patterns from session | None | `evaluate-session.cjs` emits `ACTION REQUIRED`; `continuous-learning` rule instructs Claude to run `/learn` proactively |
 | `/checkpoint` | Save verification state | None | Uses `/verify quick` internally. Does not integrate with `/eval`. |
-| `/eval` | Eval-driven development | None | Standalone. Not used by `/orchestrate` or `/checkpoint`. |
+| `/eval` | Eval-driven development | None | Standalone. Not used by `/craft` or `/checkpoint`. |
 | `/update-docs` | Sync docs from source | `doc-updater` (haiku) | Minimal gaps. |
 | `/setup` | Project setup | `setup-agent` (sonnet) | Orchestrates `/setup-pm` and `/setup-ecosystem` well. |
 | `/ci-cd` | Pipeline generation | `ci-cd-architect` (opus) | Standalone. |
@@ -245,34 +245,20 @@ User: /test-coverage
 
 ## Proactive Skills
 
-These trigger automatically when Claude detects the right signals. A hierarchy governs which skill fires:
+These trigger automatically when Claude detects the right signals.
 
-### `proactive-orchestration` (Top-Level Orchestrator)
+### `craft` (Unified Orchestrator)
 
-**Triggers on:** Complex feature requests (multiple components/files), architectural changes (new endpoints, services, modules), "add/implement/build/create" + non-trivial scope.
+**Triggers on:** Complex feature requests (multiple components/files), architectural changes (new endpoints, services, modules), "add/implement/build/create" + non-trivial scope. Also handles standalone planning, TDD, and review scenarios that were previously served by separate proactive skills.
 **Does NOT trigger on:** Simple bug fixes, single-file edits, documentation, configuration, refactoring.
 **Phases:** DISCOVER (discoverer agent) -> PLAN ↔ PLAN CRITIC (auto-loop, max 3 cycles) -> [UI DESIGN] (conditional, for frontend features) -> TDD (ecosystem TDD agent) -> VERIFY (build/types/lint/tests) -> REVIEW (code-reviewer + security reviewers) -> REPORT (SHIP/NEEDS WORK/BLOCKED).
 **Runs in main context** (no `context: fork`) to allow user confirmation gates between phases.
 
-When `proactive-orchestration` fires, it subsumes the three individual proactive skills below.
-
-### `proactive-planning` (Standalone Planning)
-
-**Triggers on:** Architectural discussions, requirement analysis, design decisions -- when planning is needed without the full TDD/review pipeline.
-**Dispatches to:** `planner` (opus) via `context: fork`.
-**Note:** For complex multi-file features, `proactive-orchestration` handles planning as Phase 1.
-
-### `proactive-tdd` (Standalone TDD)
-
-**Triggers on:** Adding tests to existing code, bug fix with reproduction test, isolated TDD needs.
-**Dispatches to:** `ts-tdd-guide` | `jvm-tdd-guide` | `python-tdd-guide` (sonnet) via `context: fork`.
-**Note:** For complex features, `proactive-orchestration` coordinates TDD as Phase 2.
-
-### `proactive-review` (Standalone Review)
-
-**Triggers on:** Pre-commit review, reviewing existing code, task completion for non-orchestrated work.
-**Dispatches to:** `code-reviewer` (opus) via `context: fork`.
-**Note:** For complex features, `proactive-orchestration` includes review as Phase 4.
+The `craft` skill unifies what were previously four separate proactive skills (`proactive-orchestration`, `proactive-planning`, `proactive-tdd`, `proactive-review`) into a single skill that adapts its phases to the detected intent:
+- **Architectural discussions** (formerly `proactive-planning`): Runs PLAN phase only, dispatches to `planner` (opus).
+- **Isolated TDD needs** (formerly `proactive-tdd`): Runs TDD phase, dispatches to ecosystem TDD agent (sonnet).
+- **Pre-commit / task-completion review** (formerly `proactive-review`): Runs REVIEW phase, dispatches to `code-reviewer` (opus).
+- **Complex features** (formerly `proactive-orchestration`): Runs the full DISCOVER -> PLAN -> TDD -> VERIFY -> REVIEW -> REPORT pipeline.
 
 ---
 
@@ -291,11 +277,11 @@ User: "Add a health check endpoint to the API"
   7. User sees: "Ready to commit" or "Needs work: [specific actions]"
 ```
 
-### What now happens (with proactive-orchestration)
+### What now happens (with craft)
 
 ```
 User: "Add a health check endpoint to the API"
-  1. proactive-orchestration fires (detects complex feature request)
+  1. craft fires (detects complex feature request)
   2. Phase 1: planner agent designs approach, waits for user confirmation
   3. Phase 2: Ecosystem TDD agent implements with backend patterns in context
   4. Phase 3: Verification runs (build + types + lint + tests + debug audit)
@@ -305,17 +291,17 @@ User: "Add a health check endpoint to the API"
   6. Phase 5: SHIP / NEEDS WORK / BLOCKED verdict
 ```
 
-### What previously happened (before orchestration)
+### What previously happened (before craft)
 
 ```
 User: "Add a health check endpoint to the API"
-  1. proactive-planning MAY trigger (depends on complexity signals)
+  1. Standalone planning skill MAY trigger (depends on complexity signals)
   2. User confirms the plan
-  3. proactive-tdd MAY trigger (depends on detection signals)
-     -- OR proactive-planning and proactive-tdd both try to trigger (no precedence)
+  3. Standalone TDD skill MAY trigger (depends on detection signals)
+     -- OR planning and TDD both try to trigger (no precedence)
   4. Implementation happens (possibly without TDD if signals missed)
   5. Hooks auto-format, type-check, detect debug statements (per-file, not comprehensive)
-  6. proactive-review does NOT trigger (no task completion signal)
+  6. Standalone review does NOT trigger (no task completion signal)
   7. User must manually run /code-review and /verify
 ```
 
@@ -327,21 +313,21 @@ User: "Add a health check endpoint to the API"
 
 | Gap | Resolution |
 |-----|-----------|
-| **Plan -> TDD handoff** | `proactive-orchestration` coordinates Discover -> Plan -> Plan Critic -> [UI Design] -> TDD -> Verify -> Review as sequential phases |
-| **TDD -> Verify** | `proactive-orchestration` Phase 3 runs verification after TDD completes |
-| **TDD -> Review** | `proactive-orchestration` Phase 4 runs code review; task lifecycle managed via TaskCreate/TaskUpdate |
+| **Plan -> TDD handoff** | `craft` coordinates Discover -> Plan -> Plan Critic -> [UI Design] -> TDD -> Verify -> Review as sequential phases |
+| **TDD -> Verify** | `craft` Phase 3 runs verification after TDD completes |
+| **TDD -> Review** | `craft` Phase 4 runs code review; task lifecycle managed via TaskCreate/TaskUpdate |
 | **Review -> Fix** | `/code-review` now includes remediation suggestions mapping issues to specific commands |
 | **Verify -> Fix** | `/verify` now includes remediation suggestions mapping failures to specific commands |
-| **Orchestrate -> Verify** | `/orchestrate feature` now includes verification phase between TDD and Review |
-| **Proactive precedence** | `proactive-orchestration` is the top-level orchestrator; individual proactive skills fire only for standalone work |
+| **Orchestrate -> Verify** | `/craft feature` now includes verification phase between TDD and Review |
+| **Proactive precedence** | `craft` is the unified orchestrator; adapts phases to detected intent (full pipeline, standalone planning, TDD, or review) |
 | **TS/JS security hook** | `typescript-security.js` PostToolUse hook created (Semgrep + npm audit + pattern checks) |
 | **Remediation suggestions** | Both `/verify` and `/code-review` now suggest next commands based on failure type |
-| **`/tdd` vs `proactive-tdd`** | Unified: `proactive-tdd` delegates to `/tdd` command workflow (single implementation) |
+| **`/tdd` vs proactive TDD** | Unified: `craft` delegates TDD phase to `/tdd` command workflow (single implementation) |
 | **`/verify` vs `verification-loop`** | Unified: `verification-loop` delegates to `/verify full` process (single implementation) |
-| **`/code-review` vs `proactive-review`** | Unified: `proactive-review` delegates to `/code-review` workflow (single implementation) |
+| **`/code-review` vs proactive review** | Unified: `craft` delegates review phase to `/code-review` workflow (single implementation) |
 | **Backend patterns in TDD** | TDD agents now include `*-backend-patterns` skills in frontmatter |
 | **Backend patterns in build-resolvers** | Build-resolver agents now include `*-backend-patterns` skills in frontmatter |
-| **Phantom `explorer` agent** | Replaced with `Explore` (built-in Claude Code subagent) in `/orchestrate` bugfix workflow |
+| **Phantom `explorer` agent** | Replaced with `Explore` (built-in Claude Code subagent) in `/craft` bugfix workflow |
 
 ### Resolved (v2.1.1)
 
@@ -354,7 +340,7 @@ User: "Add a health check endpoint to the API"
 
 | Gap | Resolution |
 |-----|-----------|
-| **Orchestrate -> Eval** | Opt-in `--with-evals <name>` flag on `/orchestrate feature` and `proactive-orchestration`. Phase 1.5 runs `/eval define`, Phase 4.5 runs `/eval check`. Results included in REPORT verdict. |
+| **Orchestrate -> Eval** | Opt-in `--with-evals <name>` flag on `/craft feature` and the `craft` skill. Phase 1.5 runs `/eval define`, Phase 4.5 runs `/eval check`. Results included in REPORT verdict. |
 
 ### Resolved (v2.5.0)
 
@@ -394,15 +380,15 @@ The user should never need to memorize command names. The only commands a user n
 
 Everything else should be proactive. Commands remain as escape hatches for explicit control, but the default path is: **describe what you want, the system does the rest.**
 
-### Why the Current Architecture Falls Short
+### Why the Previous Architecture Fell Short
 
-The plugin has the right components but the wrong wiring. Three independent proactive skills (`proactive-planning`, `proactive-tdd`, `proactive-review`) each decide independently whether to fire. They don't coordinate, share state, or enforce ordering. Meanwhile `/orchestrate` -- which *does* coordinate agents in sequence -- is user-invoked only. The full pipeline exists but requires the user to know to type `/orchestrate feature`.
+The plugin had the right components but the wrong wiring. Three independent proactive skills (`proactive-planning`, `proactive-tdd`, `proactive-review`) each decided independently whether to fire. They didn't coordinate, share state, or enforce ordering. The unified `craft` skill resolved this by consolidating all proactive orchestration into a single skill that adapts its phases to the detected intent -- no user invocation required.
 
 ### Skills vs Commands: The Key Insight
 
 Per the plugin spec (see official docs: `magic-claude-docs:docs skills`), skills and commands are merged in Claude Code. Both create slash commands. Skills add: `context: fork`, `user-invocable: false`, `disable-model-invocation`, and **auto-loading by Claude based on description**. Skills with `user-invocable: false` let Claude load them automatically when context matches -- the user never invokes them explicitly.
 
-This means the fix is architectural, not additive. Instead of adding more proactive skills, unify the orchestration.
+This insight drove the consolidation into `craft` -- a single unified skill that replaces multiple independent proactive skills.
 
 ---
 
@@ -410,10 +396,10 @@ This means the fix is architectural, not additive. Instead of adding more proact
 
 All items from the original proposed redesign have been implemented:
 
-1. **Unified Proactive Orchestration** -- `proactive-orchestration` skill coordinates DISCOVER -> PLAN ↔ PLAN CRITIC (auto-loop) -> [UI DESIGN] -> TDD -> VERIFY -> REVIEW -> REPORT
-2. **Unified Implementations** -- `proactive-tdd`, `proactive-review`, `verification-loop` delegate to their command counterparts
+1. **Unified Proactive Orchestration** -- `craft` skill coordinates DISCOVER -> PLAN ↔ PLAN CRITIC (auto-loop) -> [UI DESIGN] -> TDD -> VERIFY -> REVIEW -> REPORT
+2. **Unified Implementations** -- `craft` absorbs planning, TDD, and review phases; `verification-loop` delegates to `/verify full` process
 3. **Pattern Skills in Agent Context** -- Option A implemented: `*-backend-patterns` added to TDD agents and build-resolvers
-4. **Task Lifecycle Automation** -- `proactive-orchestration` manages TaskCreate/TaskUpdate across phases
+4. **Task Lifecycle Automation** -- `craft` manages TaskCreate/TaskUpdate across phases
 5. **Remediation Suggestions** -- `/verify` and `/code-review` map failures to specific commands
 6. **TypeScript/JavaScript Security Hook** -- `typescript-security.js` mirrors Java and Python security hooks
 
@@ -422,10 +408,10 @@ All items from the original proposed redesign have been implemented:
 **Before (user must know):**
 ```
 "Add a health check endpoint"
-  -> User must run /plan (or hope proactive-planning fires)
-  -> User must run /tdd (or hope proactive-tdd fires)
+  -> User must run /plan (or hope standalone planning fires)
+  -> User must run /tdd (or hope standalone TDD fires)
   -> User must run /verify
-  -> User must run /code-review (or hope proactive-review fires)
+  -> User must run /code-review (or hope standalone review fires)
   -> User must know /build-fix if build breaks
   -> User must know /test-coverage if coverage is low
 ```
@@ -433,7 +419,7 @@ All items from the original proposed redesign have been implemented:
 **After (system orchestrates):**
 ```
 "Add a health check endpoint"
-  -> proactive-orchestration fires (detects complex feature request)
+  -> craft fires (detects complex feature request)
   -> Phase 1: planner designs approach, waits for user confirmation
   -> Phase 2: TDD agent implements with ecosystem-appropriate patterns
   -> Phase 3: verification checks build/types/lint/tests

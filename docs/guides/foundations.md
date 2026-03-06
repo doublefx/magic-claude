@@ -36,13 +36,13 @@ They overlap but serve different purposes:
 |--------|--------|----------|
 | Invoked by | Claude (proactive) or user | User only (via `/command`) |
 | Context | Can fork (isolated subagent) | Runs in main conversation |
-| Examples | `proactive-orchestration`, `tdd-workflow` | `/code-review`, `/tdd`, `/build-fix` |
+| Examples | `craft`, `tdd-workflow` | `/code-review`, `/tdd`, `/build-fix` |
 
 **Key skills to know:**
-- `proactive-orchestration` — Claude automatically orchestrates the full pipeline (DISCOVER -> PLAN ↔ PLAN CRITIC auto-loop -> [UI DESIGN] -> TDD -> VERIFY -> REVIEW) for complex feature requests
-- `proactive-planning` — Claude plans before complex changes (standalone planning, outside full pipeline)
-- `proactive-tdd` — Claude enforces test-driven development when implementing features (standalone TDD)
-- `proactive-review` — Claude automatically reviews code at task completion (standalone review)
+- `craft` — Claude's unified proactive skill for all development work. Operates in two modes:
+  - **FULL mode** — Full pipeline orchestration (DISCOVER -> PLAN ↔ PLAN CRITIC auto-loop -> [UI DESIGN] -> TDD -> VERIFY -> REVIEW) for complex feature requests
+  - **LITE mode** — Lightweight planning, standalone TDD, or code review at task completion, depending on context
+  - Absorbs the former `proactive-orchestration`, `proactive-planning`, `proactive-tdd`, and `proactive-review` skills into a single entry point
 
 **Key commands:**
 - `/setup` — Complete project setup (package manager, workspace, tools)
