@@ -8,17 +8,33 @@ user-invocable: false
 
 > **Guard clause**: This skill only applies when claude-mem MCP is available (tools from `plugin_claude-mem_mcp-search`). If claude-mem is not installed, ignore this entire skill and use codebase exploration normally.
 
+## Project Scope (MANDATORY)
+
+**Always pass `cwd` when calling `search` or `timeline`.** Without it, the server rejects the call with a scope error.
+
+```
+search(query="...", cwd="/absolute/path/to/project/root")
+timeline(anchor="obs-id", cwd="/absolute/path/to/project/root")
+```
+
+**How to get the project root:** use the directory Claude Code was launched from (the git root / workspace root).
+
+**Alternatives if `cwd` is unavailable:**
+- `project`: exact project name string (e.g., `"my-project"`)
+- `uuid`: the `"id"` field from `.claude-mem.json` at the project root
+- `cross_project: true`: opt-in to search across all projects (only when intentionally multi-project)
+
 ## Tool Mapping
 
 When claude-mem is available, use it for historical and cross-session context:
 
 | Need | Tool | When to Use |
 |------|------|-------------|
-| Find past decisions/rationale | `search(query)` | Before making architectural choices |
-| Understand why something was done | `search(query about decision)` | When encountering unfamiliar patterns |
-| Check if bug was seen before | `search(error/symptom)` | When debugging recurring issues |
-| Get architectural context | `search(query about component/area)` | When planning changes to existing systems |
-| Explore timeline around an event | `timeline(anchor=ID)` | Understanding cause-effect sequences |
+| Find past decisions/rationale | `search(query, cwd=...)` | Before making architectural choices |
+| Understand why something was done | `search(query about decision, cwd=...)` | When encountering unfamiliar patterns |
+| Check if bug was seen before | `search(error/symptom, cwd=...)` | When debugging recurring issues |
+| Get architectural context | `search(query about component/area, cwd=...)` | When planning changes to existing systems |
+| Explore timeline around an event | `timeline(anchor=ID, cwd=...)` | Understanding cause-effect sequences |
 | Get full observation details | `get_observations([IDs])` | When search summaries aren't sufficient |
 
 ### Keep Using Native Tools For
@@ -35,7 +51,8 @@ claude-mem uses a progressive retrieval pattern to minimize token usage:
 ### Layer 1: Search (cheap — ~50-100 tokens per result)
 Call `search` with a query. Returns an index with observation IDs, titles, types, and timestamps. Scan this to identify relevant results.
 
-**Useful parameters beyond `query`:**
+**Parameters:**
+- `cwd: "/path/to/project"` — project root (**required** — see Project Scope above)
 - `orderBy: "recency"` — recent work first (default is relevance)
 - `type: "change"` — only what was modified (vs discovered or decided)
 - `topics: ["refactoring", "hooks"]` — filter by topic tags
