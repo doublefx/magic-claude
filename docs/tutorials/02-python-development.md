@@ -174,14 +174,16 @@ ruff check --fix .
 
 ## Step 4: Python Code Review (5 minutes)
 
-### Use the Python Reviewer Agent
+### Use the Code Review Command
 
 **Ask Claude**:
 ```
-/python-reviewer
+/code-review
 ```
 
-**The agent will check**:
+The `/code-review` command auto-detects Python files and dispatches to the **magic-claude:python-reviewer** agent for ecosystem-specific review, plus the **magic-claude:code-reviewer** for general quality analysis.
+
+**The agents will check**:
 - PEP 8 compliance
 - Type hints present
 - Security issues (SQL injection, XSS)
@@ -441,7 +443,7 @@ jobs:
 # (Auto-formatting happens automatically via hook)
 
 # 2. Review code
-/python-reviewer
+/code-review
 
 # 3. Apply patterns
 # Ask: "Apply python-patterns"

@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the capabilities and limitations of Claude Code's hook matcher system, based on research conducted for the Enterprise Stack Extension project (PRD v2.1).
+This document describes the capabilities and limitations of Claude Code's hook matcher system, based on research conducted for the magic-claude plugin project.
 
 **Key Finding**: Hook matchers support only basic string/regex patterns. Complex conditional logic must be implemented via runtime filtering in hook scripts.
 
@@ -95,7 +95,7 @@ Since matchers cannot evaluate complex conditions, **hook scripts perform runtim
   "hooks": [
     {
       "type": "command",
-      "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/smart-formatter.cjs\""
+      "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/smart-formatter.js\""
     }
   ],
   "description": "Auto-format files based on project type"
@@ -104,7 +104,7 @@ Since matchers cannot evaluate complex conditions, **hook scripts perform runtim
 
 **Hook Script** (Runtime Filtering):
 ```javascript
-// plugin/scripts/hooks/smart-formatter.cjs
+// plugin/scripts/hooks/smart-formatter.js
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');

@@ -46,17 +46,19 @@ magic-claude/
 |   |   |-- ci-cd-architect.md      # CI/CD pipeline generation
 |   |   |-- git-sync.md             # Git changes impact analysis (background)
 |   |
-|   |-- skills/           # Workflow definitions and domain knowledge (33 total)
+|   |-- skills/           # Workflow definitions and domain knowledge (30 total)
+|   |   |-- using-magic-claude/        # Meta-skill (injected via SessionStart on every startup/resume/compact/clear)
+|   |   |-- craft/                      # Unified workflow skill (DISCOVER->PLAN->TDD->VERIFY->REVIEW->DELIVER)
 |   |   |-- coding-standards/           # Multi-ecosystem coding standards (TS/JS, JVM, Python)
 |   |   |-- backend-patterns/           # Multi-ecosystem backend patterns (Node.js, Spring Boot, FastAPI)
 |   |   |-- frontend-patterns/          # React, Next.js patterns
 |   |   |-- tdd-workflow/               # Multi-ecosystem TDD methodology (TS/JS, JVM, Python)
 |   |   |-- security-review/            # Multi-ecosystem security checklist (TS/JS, JVM, Python)
-|   |   |-- ui-design/                   # UI design context gathering (Phase 1.75, conditional)
-|   |   |-- craft/                      # Unified workflow skill (DISCOVER->PLAN->TDD->VERIFY->REVIEW->DELIVER)
+|   |   |-- ui-design/                  # UI design context gathering (Phase 1.75, conditional)
 |   |   |-- continuous-learning/        # Auto-extract patterns from sessions
 |   |   |-- eval-harness/               # Verification loop evaluation
 |   |   |-- verification-loop/          # Continuous verification
+|   |   |-- systematic-debugging/       # 4-phase root-cause investigation
 |   |   |-- python-patterns/            # Python best practices and idioms
 |   |   |-- kotlin-patterns/            # Kotlin modern patterns
 |   |   |-- maven-patterns/             # Maven project management
@@ -66,28 +68,35 @@ magic-claude/
 |   |   |-- claude-mem-context/         # Cross-session historical context
 |   |   |-- extend/                     # Generate new plugin components
 |   |   |-- project-guidelines-example/ # Template for project-specific guidelines
+|   |   |-- agent-coordination/         # Agent delegation and model tier guide
 |   |   |-- agent-teams/                # Agent Teams coordination guide (experimental)
+|   |   |-- receiving-code-review/      # How to handle review feedback
+|   |   |-- using-git-worktrees/        # Isolated git worktrees for feature work
+|   |   |-- finishing-feature/          # Structured branch cleanup after feature work
 |   |   |-- serena-setup/               # Serena MCP setup workflow
 |   |   |-- serena-status/              # Serena configuration diagnostics
 |   |   |-- serena-cleanup/             # Safe Serena cleanup and removal
 |   |   |-- serena-code-navigation/     # Serena code navigation tool mapping
 |   |
-|   |-- commands/         # Slash commands for quick execution (19 total)
+|   |-- commands/         # Slash commands for quick execution (18 total)
+|   |   |-- setup.md            # /setup - Complete automated setup
+|   |   |-- setup-pm.md         # /setup-pm - Configure package manager
+|   |   |-- setup-ecosystem.md  # /setup-ecosystem - Workspace & tools
+|   |   |-- setup-rules.md      # /setup-rules - Install plugin rules
 |   |   |-- tdd.md              # /tdd - Test-driven development
 |   |   |-- plan.md             # /plan - Implementation planning
-|   |   |-- e2e.md              # /e2e - E2E test generation
 |   |   |-- code-review.md      # /code-review - Quality review
 |   |   |-- build-fix.md        # /build-fix - Fix build errors
+|   |   |-- e2e.md              # /e2e - E2E test generation
 |   |   |-- refactor-clean.md   # /refactor-clean - Dead code removal
-|   |   |-- learn.md            # /learn - Extract patterns mid-session
-|   |   |-- checkpoint.md       # /checkpoint - Save verification state
-|   |   |-- verify.md           # /verify - Run verification loop
-|   |   |-- setup-pm.md         # /setup-pm - Configure package manager
-|   |   |-- setup-rules.md      # /setup-rules - Install plugin rules
-|   |   |-- eval.md             # /eval - Run evaluation harness
-|   |   |-- craft.md             # /craft - Unified development workflow
+|   |   |-- craft.md            # /craft - Unified development workflow
 |   |   |-- test-coverage.md    # /test-coverage - Coverage reporting
+|   |   |-- verify.md           # /verify - Run verification loop
+|   |   |-- checkpoint.md       # /checkpoint - Save verification state
+|   |   |-- eval.md             # /eval - Run evaluation harness
+|   |   |-- learn.md            # /learn - Extract patterns mid-session
 |   |   |-- update-docs.md      # /update-docs - Sync documentation
+|   |   |-- status.md           # /status - Plugin installation status
 |   |
 |   |-- rules/            # Always-follow guidelines (13 total, copy to ~/.claude/rules/)
 |   |   |-- security.md         # Mandatory security checks
@@ -119,7 +128,7 @@ magic-claude/
 |   |   |   |-- status/              # Status report collectors and formatters
 |   |   |   |   |-- collectors.cjs   # Data collection (agents, skills, integrations)
 |   |   |   |   |-- formatter.cjs    # Report formatting and display
-|   |   |-- hooks/                   # Hook implementations (17 total)
+|   |   |-- hooks/                   # Hook implementations (21 total)
 |   |   |   |-- session-start.cjs    # Load context on session start
 |   |   |   |-- session-end.cjs      # Save state on session end
 |   |   |   |-- pre-compact.cjs      # Pre-compaction state saving
@@ -140,6 +149,7 @@ magic-claude/
 |   |   |   |-- pyright-checker.cjs        # Python type checking
 |   |   |   |-- task-completed.cjs         # TaskCompleted quality gate
 |   |   |   |-- notify.cjs                 # Desktop notifications
+|   |   |   |-- config-change.cjs          # Configuration change detection
 |   |   |-- setup-complete.cjs       # Full setup orchestrator (includes optional integrations)
 |   |   |-- setup-package-manager.cjs # Interactive PM setup
 |   |   |-- setup-ecosystem.cjs     # Ecosystem tool detection and setup
@@ -167,8 +177,12 @@ magic-claude/
 |   |-- mcp-configs/      # MCP server configurations
 |       |-- mcp-servers.json    # GitHub, Supabase, Vercel, Railway, etc.
 |
-|-- tests/            # Test suite (388 tests)
+|-- tests/            # Test suite (393 tests)
 |   |-- unit/                    # Unit tests
+|   |-- lib/                     # Library/utility tests
+|   |-- hooks/                   # Hook tests
+|   |-- agents/                  # Agent tests
+|   |-- skills/                  # Skill tests
 |   |-- integration/             # Integration tests
 |   |-- e2e/                     # End-to-end tests
 |   |-- harnesses/               # Test harnesses

@@ -567,8 +567,8 @@ deploy:
 
 ### Skills and Agents
 
-- **CI/CD Patterns Skill**: `/use ci-cd-patterns` - Learn CI/CD best practices
-- **CI/CD Architect Agent**: `/agent ci-cd-architect` - Get expert pipeline design advice
+- **CI/CD Patterns Skill**: `magic-claude:ci-cd-patterns` - CI/CD best practices (invoked automatically when context suggests)
+- **CI/CD Architect Agent**: `magic-claude:ci-cd-architect` - Expert pipeline design advice (delegated via Task tool)
 
 ## Examples
 
@@ -619,11 +619,11 @@ If you encounter issues or have questions:
 
 1. Check this documentation
 2. Review the generated pipeline comments
-3. Consult the CI/CD Patterns skill: `/use ci-cd-patterns`
-4. Ask the CI/CD Architect agent: `/agent ci-cd-architect`
+3. Consult the CI/CD Patterns skill: `magic-claude:ci-cd-patterns`
+4. Ask the CI/CD Architect agent: `magic-claude:ci-cd-architect`
 5. Review platform-specific documentation
 
 ---
 
-**Last Updated**: 2026-01-25
-**Version**: 1.0.0
+**Last Updated**: 2026-03-06
+**Version**: 2.26.0

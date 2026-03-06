@@ -1,7 +1,7 @@
 # Agent & Skill Catalog
 
 **Version**: 3.2.0
-**Last Updated**: 2026-02-28
+**Last Updated**: 2026-03-06
 **Total Agents**: 30
 **Total Skills**: 30
 
@@ -326,7 +326,7 @@ Trade-offs:
 
 #### doc-updater
 **Command**: `/doc-updater`
-**Model**: Sonnet
+**Model**: Haiku
 **Description**: Documentation synchronization and updates
 
 **When to Use**:
@@ -523,7 +523,7 @@ data class User(
 
 #### maven-expert
 **Command**: `/maven-expert`
-**Model**: Opus
+**Model**: Sonnet
 **Description**: Maven build optimization and best practices
 
 **When to Use**:
@@ -586,7 +586,7 @@ Maven Optimization Report
 
 #### gradle-expert
 **Command**: `/gradle-expert`
-**Model**: Opus
+**Model**: Sonnet
 **Description**: Gradle build optimization and best practices
 
 **When to Use**:
@@ -1117,4 +1117,4 @@ pytest
 
 ---
 
-*Agent & Skill Catalog Version: 3.2 | Last Updated: 2026-03-01*
+*Agent & Skill Catalog Version: 3.2 | Last Updated: 2026-03-06*

@@ -1,7 +1,7 @@
 # Performance Benchmarks
 
-**Version**: 2.0.0
-**Last Updated**: 2026-01-25
+**Version**: 2.26.0
+**Last Updated**: 2026-03-06
 **Test Environment**: Linux x86_64, 16GB RAM, Node.js v20
 
 ---
@@ -169,7 +169,7 @@ Edit file.py
 # Actual test run output
 $ npm test
 
-> magic-claude@2.0.0 test
+> magic-claude@2.26.0 test
 > vitest
 
  DEV  v1.6.1 /home/doublefx/projects/magic-claude
@@ -465,4 +465,4 @@ time semgrep --config auto .
 
 ---
 
-*Performance Benchmarks Version: 1.0 | Last Updated: 2026-01-25*
+*Performance Benchmarks Version: 2.0 | Last Updated: 2026-03-06*

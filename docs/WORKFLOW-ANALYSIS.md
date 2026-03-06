@@ -365,9 +365,9 @@ User: "Add a health check endpoint to the API"
 
 | Model | Agents | Rationale |
 |-------|--------|-----------|
-| **opus** | planner, architect, code-reviewer, java-reviewer, kotlin-reviewer, groovy-reviewer, python-reviewer, ts-security-reviewer, jvm-security-reviewer, python-security-reviewer, ci-cd-architect | Deep reasoning: architecture, security, quality |
+| **opus** | discoverer, plan-critic, planner, architect, code-reviewer, java-reviewer, kotlin-reviewer, groovy-reviewer, python-reviewer, ts-security-reviewer, jvm-security-reviewer, python-security-reviewer, ci-cd-architect | Deep reasoning: architecture, security, quality |
 | **sonnet** | ts-tdd-guide, jvm-tdd-guide, python-tdd-guide, ts-build-resolver, jvm-build-resolver, python-build-resolver, ts-e2e-runner, jvm-e2e-runner, python-e2e-runner, setup-agent, gradle-expert, maven-expert | Speed + quality balance: implementation tasks |
-| **haiku** | ts-refactor-cleaner, jvm-refactor-cleaner, python-refactor-cleaner, doc-updater | Speed: bounded, mechanical tasks |
+| **haiku** | ts-refactor-cleaner, jvm-refactor-cleaner, python-refactor-cleaner, doc-updater, git-sync | Speed: bounded, mechanical tasks |
 
 ---
 

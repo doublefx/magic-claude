@@ -383,18 +383,18 @@ docker run -v $(pwd):/workspace -it dev-env
 ```
 
 **Claude will**:
-1. Use `/planner` to create task breakdown
-2. Spawn `/architect` for system design
-3. Spawn `/tdd-guide` for test creation
-4. Spawn `/security-reviewer` for security analysis
-5. Spawn language-specific reviewers as needed
-6. Coordinate all agents to complete the feature
+1. DISCOVER: Run `discoverer` agent to explore the codebase
+2. PLAN: Run `planner` agent to create task breakdown, then `plan-critic` to stress-test it (auto-loop, max 3 cycles)
+3. TDD: Dispatch to ecosystem TDD agent (`ts-tdd-guide`, `jvm-tdd-guide`, or `python-tdd-guide`)
+4. VERIFY: Run build, type check, lint, tests, and debug statement audit
+5. REVIEW: Run `code-reviewer` and ecosystem security reviewers
+6. REPORT: Produce a SHIP / NEEDS WORK / BLOCKED verdict
 
 **Benefits**:
-- Comprehensive feature implementation
-- Multiple expert perspectives
-- Parallel agent execution
-- Coordinated deliverables
+- End-to-end feature implementation with structured handoffs
+- Multiple expert perspectives (planning, security, quality)
+- Verification between implementation and review
+- Actionable remediation suggestions on failure
 
 ---
 

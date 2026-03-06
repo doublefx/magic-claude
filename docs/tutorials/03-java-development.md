@@ -134,8 +134,10 @@ public class HealthController {
 Start Claude Code and ask:
 
 ```
-/maven-expert
+"Optimize my Maven configuration"
 ```
+
+Claude will delegate to the **magic-claude:maven-expert** agent.
 
 **Output**:
 ```
@@ -166,8 +168,10 @@ Maven Optimization Report
 Ask Claude:
 
 ```
-/java-reviewer
+/code-review
 ```
+
+The `/code-review` command auto-detects Java files and dispatches to the **magic-claude:java-reviewer** agent for ecosystem-specific review, plus the **magic-claude:code-reviewer** for general quality analysis.
 
 **Output**:
 ```
@@ -281,8 +285,10 @@ org.gradle.jvmargs=-Xmx2g -XX:MaxMetaspaceSize=512m
 Ask Claude:
 
 ```
-/gradle-expert
+"Optimize my Gradle configuration"
 ```
+
+Claude will delegate to the **magic-claude:gradle-expert** agent.
 
 **Output**:
 ```
@@ -467,10 +473,10 @@ spotbugs {
 # (Auto-formatting via hook)
 
 # 2. Review code
-/java-reviewer
+/code-review
 
 # 3. Get build optimization tips
-/maven-expert   # or /gradle-expert
+# Ask: "Optimize my Maven/Gradle configuration"
 
 # 4. Run tests
 ./mvnw test     # or ./gradlew test

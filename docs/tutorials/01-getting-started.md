@@ -124,31 +124,27 @@ You should see all 30 agents:
 
 ## Step 4: Explore Available Skills (2 minutes)
 
-Skills provide domain knowledge. View them in `~/.claude/skills/`:
+Skills provide domain knowledge and workflow automation. Key skills include:
 
-```bash
-ls -la ~/.claude/skills/
-
-# You should see:
-# - python-patterns/
-# - kotlin-patterns/
-# - maven-patterns/
-# - gradle-patterns/
-# - ci-cd-patterns/
-# - backend-patterns/
-# - frontend-patterns/
-# - tdd-workflow/
-# - security-review/
-# ... and more
-```
+- **craft/** - Default quality pipeline for ALL code changes (LITE and FULL modes)
+- **using-magic-claude/** - Meta-skill injected on every session (disposition, governance)
+- **tdd-workflow/** - Multi-ecosystem TDD methodology
+- **coding-standards/** - Multi-ecosystem coding standards
+- **backend-patterns/** - Multi-ecosystem backend patterns
+- **frontend-patterns/** - React, Next.js patterns
+- **security-review/** - Multi-ecosystem security checklist
+- **systematic-debugging/** - 4-phase root-cause investigation
+- **continuous-learning/** - Auto-extract patterns from sessions
+- And 21 more (30 total)
 
 ### Use a Skill
 
 ```bash
-# Ask Claude to use a skill
-"Show me Python best practices from python-patterns skill"
+# Skills are invoked proactively by Claude when context suggests
+# For example, craft activates automatically for code changes
 
-# Claude will load and apply the skill
+# Or invoke explicitly
+"Apply python-patterns skill to improve the user endpoint"
 ```
 
 ---
@@ -208,8 +204,8 @@ cat test.ts
 
 Agents are specialized subagents for specific tasks:
 - **Delegated execution**: Claude spawns an agent to handle a subtask
-- **Limited scope**: Agents focus on one thing
-- **Tool restrictions**: Only have access to certain tools
+- **Focused expertise**: Agents focus on one domain (e.g., TDD, security, build fixes)
+- **Full tool access**: Agents have access to all tools (no restrictions)
 
 **Example**:
 ```
@@ -236,11 +232,12 @@ Hooks run automatically on tool events:
 ### 4. Commands
 
 Commands are shortcuts to trigger agents or workflows:
+- `/craft` - Quality pipeline (TDD, verify, review, simplify)
 - `/plan` - Plan a feature
-- `/tdd` - TDD workflow
-- `/code-review` - Review code
-- `/python-reviewer` - Python-specific review
+- `/tdd` - TDD workflow (craft LITE mode)
+- `/code-review` - Review code (dispatches to language-specific reviewers)
 - `/ci-cd` - Generate CI/CD pipeline
+- `/status` - Show plugin installation status and inventory
 
 ### 5. Rules
 
@@ -256,12 +253,12 @@ Rules are always-follow guidelines:
 
 ### Issue 1: Commands Not Found
 
-**Problem**: `/python-reviewer` command not recognized
+**Problem**: `/code-review` command not recognized
 
 **Solution**:
 ```bash
-# Check if agents installed
-ls ~/.claude/agents/python-reviewer.md
+# Check if commands are installed
+ls ~/.claude/commands/code-review.md
 
 # If missing, reinstall
 /plugin update magic-claude@magic-claude
@@ -329,26 +326,23 @@ Now that you're set up:
 ## Quick Reference Card
 
 ```
+# Quality Pipeline
+/craft             - Full quality pipeline (TDD, verify, review, simplify)
+/tdd               - TDD workflow (craft LITE mode)
+/eval              - Eval-driven development with quality pipeline
+
 # Core Commands
 /plan              - Plan a feature
-/code-review       - Review code quality
-/tdd               - TDD workflow
+/code-review       - Review code quality (dispatches to language-specific reviewers)
 /build-fix         - Fix build errors
-
-# Language-Specific
-/python-reviewer   - Python code review
-/java-reviewer     - Java code review
-/kotlin-reviewer   - Kotlin code review
-
-# Build Tools
-/maven-expert      - Maven optimization
-/gradle-expert     - Gradle optimization
 
 # CI/CD
 /ci-cd <platform> <language>  - Generate CI/CD pipeline
 
-# Package Manager
+# Setup & Diagnostics
+/setup             - Complete automated setup
 /setup-pm          - Configure package manager
+/status            - Show plugin installation status and inventory
 ```
 
 ---

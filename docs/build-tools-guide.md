@@ -14,7 +14,7 @@ This guide explains how to use the Maven and Gradle expert agents, when to choos
 
 ## Overview
 
-The Enterprise Stack Extension provides two specialized agents for Java/Kotlin build tools:
+The magic-claude plugin provides two specialized agents for Java/Kotlin build tools:
 
 - **maven-expert** - Maven build tool specialist
 - **gradle-expert** - Gradle build tool specialist (Gradle 9+ focus)
@@ -23,12 +23,10 @@ Additionally, the `maven-advisor` hook provides automatic recommendations when r
 
 ### Quick Start
 
-```bash
-# Use Maven expert for Maven projects
-/agent maven-expert
-
-# Use Gradle expert for Gradle projects
-/agent gradle-expert
+```
+# Agents are delegated via Task tool with fully-qualified names:
+#   magic-claude:maven-expert   (Maven projects)
+#   magic-claude:gradle-expert  (Gradle projects)
 
 # Maven advisor hook runs automatically on Bash commands
 ./mvnw install  # Hook suggests using ./mvnw verify instead
@@ -47,10 +45,7 @@ The Maven expert agent specializes in:
 
 ### How to Use
 
-**Invoke the agent:**
-```bash
-/agent maven-expert
-```
+**Invoke the agent** (delegated via Task tool as `magic-claude:maven-expert`):
 
 **Example prompts:**
 
@@ -143,10 +138,7 @@ The Gradle expert agent specializes in:
 
 ### How to Use
 
-**Invoke the agent:**
-```bash
-/agent gradle-expert
-```
+**Invoke the agent** (delegated via Task tool as `magic-claude:gradle-expert`):
 
 **Example prompts:**
 
@@ -455,7 +447,7 @@ If you want to disable the hook advice, you can modify `plugin/hooks/hooks.json`
   "matcher": "tool == \"Bash\"",
   "hooks": [{
     "type": "command",
-    "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/maven-advisor.cjs\"",
+    "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/maven-advisor.js\"",
     "enabled": false  // Add this
   }]
 }
@@ -465,14 +457,9 @@ If you want to disable the hook advice, you can modify `plugin/hooks/hooks.json`
 
 Access comprehensive patterns and examples with these skills:
 
-### Maven Patterns Skill
+### Maven Patterns Skill (`magic-claude:maven-patterns`)
 
-**Invoke:**
-```bash
-/skill maven-patterns
-```
-
-**Provides:**
+Invoked automatically when context suggests Maven work. Provides:
 - Parent POM patterns
 - Multi-module project structure
 - Dependency management examples
@@ -480,14 +467,9 @@ Access comprehensive patterns and examples with these skills:
 - Maven wrapper setup
 - Security scanning setup
 
-### Gradle Patterns Skill
+### Gradle Patterns Skill (`magic-claude:gradle-patterns`)
 
-**Invoke:**
-```bash
-/skill gradle-patterns
-```
-
-**Provides:**
+Invoked automatically when context suggests Gradle work. Provides:
 - Version catalogs examples (libs.versions.toml)
 - Kotlin DSL patterns
 - Multi-project build structure
@@ -623,26 +605,18 @@ echo "org.gradle.parallel=true" >> gradle.properties
 
 ## Getting Help
 
-**For Maven questions:**
-```bash
-/agent maven-expert
-```
+**For Maven questions:** Ask Claude to delegate to `magic-claude:maven-expert`
 
-**For Gradle questions:**
-```bash
-/agent gradle-expert
-```
+**For Gradle questions:** Ask Claude to delegate to `magic-claude:gradle-expert`
 
-**For detailed patterns:**
-```bash
-/skill maven-patterns   # Maven examples
-/skill gradle-patterns  # Gradle examples
-```
+**For detailed patterns:** Skills are invoked automatically when context suggests:
+- `magic-claude:maven-patterns` - Maven examples
+- `magic-claude:gradle-patterns` - Gradle examples
 
 **For automatic advice:**
 The `maven-advisor` hook runs automatically on Bash commands in Maven/Gradle projects.
 
 ---
 
-**Last Updated:** 2026-01-25
-**Version:** 1.0.0
+**Last Updated:** 2026-03-06
+**Version:** 2.26.0
