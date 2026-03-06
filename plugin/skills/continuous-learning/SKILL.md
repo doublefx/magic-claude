@@ -63,21 +63,54 @@ Also check: **Is this already in an existing skill or rule?** Run a quick search
 
 ### 3. Draft the skill
 
-Use this structure:
+#### Description (the trigger mechanism)
+
+The `description` field is **the primary mechanism** that determines whether Claude invokes the skill in future sessions. Claude sees name + description in its available skills list and decides based on that alone. Write descriptions that are specific and slightly "pushy" — Claude tends to under-trigger skills, so err on the side of inclusion.
+
+**Good description pattern:** what it does + specific contexts/signals that should trigger it.
+
+```yaml
+# ❌ Too vague — Claude won't know when to trigger
+description: Hook debugging tips
+
+# ✅ Specific triggers — Claude can match against real situations
+description: >
+  WSL environment variable propagation fails in Claude Code hooks.
+  Use when hooks silently fail on WSL, environment variables are
+  missing in hook scripts, or sentinel file workarounds are needed.
+```
+
+#### Skill body (explain the why)
+
+Explain *why* the pattern matters, not just *what* to do. Claude has good theory of mind — when it understands the reasoning, it applies the pattern more flexibly across situations rather than following rigid rules. Avoid heavy-handed MUSTs; explain the reasoning so the model understands why something is important.
+
+```markdown
+# ❌ Rigid instruction without context
+ALWAYS use sentinel files for hook state. NEVER use env vars.
+
+# ✅ Reasoning that transfers to new situations
+WSL2 doesn't propagate custom environment variables from the parent
+shell to child processes spawned by Claude Code hooks. This means
+`process.env.MY_VAR` is always undefined in hook scripts, even when
+set in the terminal. Sentinel files (touch/check a marker file)
+work reliably because the filesystem is shared.
+```
+
+#### Template
 
 ```markdown
 ---
 name: <kebab-case-name>
-description: <one sentence: what it is + when to use it>
+description: <what it does + specific trigger contexts — be generous with triggers>
 ---
 
 # <Title>
 
 ## Context
-<What problem this solves / why it's non-obvious>
+<What problem this solves and WHY it's non-obvious — the reasoning>
 
 ## Pattern / Solution
-<The actual thing to know — specific, actionable>
+<The actual thing to do — specific, actionable, with the "why" behind each step>
 
 ## Example
 <Concrete example from the session if helpful>
@@ -86,7 +119,7 @@ description: <one sentence: what it is + when to use it>
 <Conditions under which this pattern is relevant>
 ```
 
-Keep it under 50 lines. If it needs more, it's probably two skills.
+Keep it under 50 lines. If it needs more, consider creating a `references/` directory with supporting detail that the skill can point to (e.g., "See `references/examples.md` for more cases"). This avoids bloating the SKILL.md that loads into context on every trigger.
 
 ### 4. Confirm with the user
 
