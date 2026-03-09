@@ -1,7 +1,7 @@
 ---
 name: craft
 description: >
-  The default pipeline for ALL code changes — features, bug fixes, TDD, and any implementation work. Invoke whenever code will be written or modified, regardless of perceived complexity. Even "simple" fixes cause regressions, type errors, lint issues, and missed code reuse without the full quality tail. Two modes: LITE (≤2 files, ≤20 lines — TDD → VERIFY → REVIEW) and FULL (multi-file — DISCOVER → PLAN → CRITIC → TDD → VERIFY → REVIEW+HARDEN → SIMPLIFY → DELIVER). NEVER use EnterPlanMode for code work — invoke this skill instead. Also triggers for: adding authentication, integrating services, building APIs, dashboards, background jobs, or any "add/build/create/implement/fix" request.
+  The default pipeline for ALL code changes — features, bug fixes, TDD, and any implementation work. Invoke whenever code will be written or modified, regardless of perceived complexity. Even "simple" fixes cause regressions, type errors, lint issues, and missed code reuse without the full quality tail. Starts with Quick Discover (Phase 0.1) — a lightweight impact scan that determines LITE vs FULL mode based on actual fan-out analysis, not guesswork. LITE (isolated, ≤2 files — TDD → VERIFY → REVIEW) or FULL (wider impact — DISCOVER → PLAN → CRITIC → TDD → VERIFY → REVIEW+HARDEN → SIMPLIFY → DELIVER). NEVER use EnterPlanMode for code work — invoke this skill instead. Also triggers for: adding authentication, integrating services, building APIs, dashboards, background jobs, or any "add/build/create/implement/fix" request.
 
 ---
 
@@ -20,35 +20,45 @@ This skill is the **single entry point** for all code changes. Even small fixes 
 - **CORRECT**: Only use EnterPlanMode for pure research/exploration (no code)
 - **CORRECT**: Use `/code-review` standalone only for reviewing code you didn't write
 
-## Mode Selection (Lightweight Gate)
+## Mode Selection (Impact-Informed Gate)
 
-At the start, assess the scope to select the right mode:
+Mode selection happens **AFTER** the Quick Discover phase (Phase 0.1), not before. You cannot assess scope without first understanding impact.
 
 ```
-┌─────────────────────────────────────────────────┐
-│  Will the change touch ≤2 files AND ≤20 lines?  │
-│                                                  │
-│  YES → LITE mode:                                │
-│    TDD → VERIFY → REVIEW (single pass) → done   │
-│                                                  │
-│  NO → FULL mode:                                 │
-│    DISCOVER → PLAN ↔ CRITIC → [UI DESIGN] →      │
-│    TDD → VERIFY → REVIEW+HARDEN → SIMPLIFY →    │
-│    DELIVER → REPORT                              │
-│                                                  │
-│  USER OVERRIDE:                                  │
-│    /craft --full → force full pipeline           │
-│    /craft --lite → force lite pipeline           │
-│    /tdd → LITE mode (skip planning)              │
-│    /eval → LITE mode + eval define/check         │
-└─────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────┐
+│  Phase 0.1: QUICK DISCOVER (always runs)             │
+│    Impact scan → fan-out analysis → pattern check    │
+│                                                      │
+│  Gate decision (based on Quick Discover results):    │
+│                                                      │
+│  LITE — ALL of these must be true:                   │
+│    • Impact fan-out ≤3 call sites, all tested        │
+│    • No similar patterns elsewhere that need fixing  │
+│    • Change is isolated (no cross-module deps)       │
+│    • ≤2 files modified, ≤20 lines changed            │
+│                                                      │
+│  FULL — ANY of these triggers full pipeline:         │
+│    • Impact fan-out >3 call sites                    │
+│    • Untested callers found                          │
+│    • Similar patterns exist elsewhere                │
+│    • Cross-module dependencies detected              │
+│    • >2 files or >20 lines                           │
+│                                                      │
+│  USER OVERRIDE:                                      │
+│    /craft --full → force full pipeline               │
+│    /craft --lite → force lite (skip Quick Discover)  │
+│    /tdd → LITE mode (skip Quick Discover)            │
+│    /eval → LITE mode + eval define/check             │
+└──────────────────────────────────────────────────────┘
 ```
 
-**LITE mode phases:** TDD (Phase 2) → VERIFY (Phase 3) → REVIEW single pass (Phase 4, no harden loop) → done. No plan, no discovery, no simplify. But verification and review are **never skipped**.
+**LITE mode phases:** TDD (Phase 2) → VERIFY (Phase 3) → REVIEW single pass (Phase 4, no harden loop) → done. No plan, no full discovery, no simplify. But verification and review are **never skipped**.
 
-**FULL mode phases:** All phases below apply.
+**FULL mode phases:** All phases below apply (Phase 0.5 DISCOVER expands on Quick Discover findings).
 
 **When in doubt, use FULL.** The cost of over-processing is low; the cost of a missed regression is high.
+
+**Auto-upgrade:** If LITE mode was selected but VERIFY (Phase 3) reveals failures in files NOT touched by TDD, this confirms a missed impact. STOP and restart from FULL mode Phase 0.5 (DISCOVER).
 
 ## TDD Discipline
 
@@ -72,7 +82,7 @@ If you catch yourself thinking any of these, STOP — you're rationalizing:
 |---------|---------|
 | "This is too simple for the pipeline" | Simple code causes regressions too. At minimum, use LITE mode. |
 | "I'll just write the code and add tests after" | That's not TDD. Write the test first. |
-| "Let me explore the codebase first" | DISCOVER phase handles exploration. Invoke the skill first. |
+| "Let me explore the codebase first" | Quick Discover handles impact scanning. Invoke the skill first. |
 | "I already know how to implement this" | In FULL mode, the plan still needs user approval. |
 | "This doesn't need review" | Every code change needs at minimum VERIFY + REVIEW. No exceptions. |
 | "I'll use EnterPlanMode instead" | EnterPlanMode is for research ONLY. This skill replaces it for code. |
@@ -105,7 +115,7 @@ Active state lives at `.claude/orchestration-state.md` during the pipeline. Upda
 
 ### Lifecycle
 
-1. **Created** — At pipeline start (before Phase 0), write initial state
+1. **Created** — At pipeline start (Phase 0.1 Quick Discover), write initial state with impact brief and gate decision
 2. **Updated — AFTER EVERY PHASE AND SUB-PHASE** — Update the Phase field and phase summary line immediately when a phase completes, BEFORE starting the next phase. This is NOT optional — skipping a state update means compaction kills the pipeline.
 3. **Survives compaction** — After compaction, read `.claude/orchestration-state.md` to restore phase context. The plan is at the path in the state file.
 4. **Archived on completion** — In Phase 5 (REPORT), move to `.claude/plans/<date>-<feature>.state.md` alongside the plan
@@ -138,6 +148,44 @@ In all cases, the plan and state file on disk ensure the pipeline can resume fro
 ## Orchestration Phases
 
 > See [references/pipeline-diagram.md](references/pipeline-diagram.md) for the full phase flow diagram.
+
+### Phase 0.1: QUICK DISCOVER (always runs first)
+
+A lightweight impact scan that runs **before** mode selection. You cannot decide LITE vs FULL without understanding what the change touches.
+
+**Duration:** ~30 seconds, ~5-10k tokens. This is NOT the full DISCOVER phase — it's a fast triage.
+
+**Steps:**
+
+1. **Identify targets** — From the user's request, identify the symbol(s), function(s), or file(s) that will change
+2. **Fan-out analysis** — Use Serena `find_referencing_symbols` (or `Grep` as fallback) on each target to find all callers/consumers
+3. **Test coverage check** — For each caller found, check if it has test coverage (search for test files importing/referencing it)
+4. **Pattern scan** — Use Serena `search_for_pattern` (or `Grep`) to find similar code patterns elsewhere that might need the same fix
+5. **Cross-module check** — Are callers in different modules/packages than the target? If yes, flag cross-module dependency
+6. **claude-mem search** (if available) — One targeted search for prior context about the affected area
+
+**Output: Mini Impact Brief**
+
+```
+## Impact Brief
+- **Target:** <symbol/file being changed>
+- **Fan-out:** <N> call sites (<M> tested, <K> untested)
+- **Similar patterns:** <none | list of locations>
+- **Cross-module:** <yes/no — which modules>
+- **Prior context:** <none | key finding from claude-mem>
+- **Gate decision:** LITE | FULL (with reason)
+```
+
+**Gate logic** (applies the criteria from Mode Selection above):
+- **LITE** if ALL: fan-out ≤3 and all tested, no similar patterns, no cross-module deps, ≤2 files and ≤20 lines
+- **FULL** if ANY condition is violated
+- Log the gate decision and reasoning — this is auditable
+
+**After gate decision:**
+- **LITE →** Skip to Phase 2 (TDD). The Impact Brief serves as sufficient context.
+- **FULL →** Continue to Phase 0 (ARCHITECT, if needed) or Phase 0.5 (DISCOVER). Pass the Impact Brief as seed context — the full discoverer expands on it rather than starting from scratch.
+
+**Update state →** Write initial `.claude/orchestration-state.md` with Phase 0.1 results and gate decision.
 
 ### Phase 0: ARCHITECT (conditional)
 

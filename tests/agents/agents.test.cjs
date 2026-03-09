@@ -33,6 +33,8 @@ const DISCOVERER_PATH = path.join(AGENTS_DIR, 'discoverer.md');
 const PLAN_CRITIC_PATH = path.join(AGENTS_DIR, 'plan-critic.md');
 const PLANNER_PATH = path.join(AGENTS_DIR, 'planner.md');
 const ORCHESTRATOR_PATH = path.join(REPO_ROOT, 'plugin', 'skills', 'craft', 'SKILL.md');
+const PIPELINE_DIAGRAM_PATH = path.join(REPO_ROOT, 'plugin', 'skills', 'craft', 'references', 'pipeline-diagram.md');
+const ORCHESTRATION_STATE_PATH = path.join(REPO_ROOT, 'plugin', 'skills', 'craft', 'references', 'orchestration-state.md');
 const PLAN_CRITIC_PROMPT_PATH = path.join(REPO_ROOT, 'plugin', 'skills', 'craft', 'plan-critic-prompt.md');
 
 // Test suite
@@ -256,6 +258,19 @@ function runTests() {
   const orchestratorContent = fs.existsSync(ORCHESTRATOR_PATH)
     ? fs.readFileSync(ORCHESTRATOR_PATH, 'utf-8')
     : '';
+  const pipelineDiagramContent = fs.existsSync(PIPELINE_DIAGRAM_PATH)
+    ? fs.readFileSync(PIPELINE_DIAGRAM_PATH, 'utf-8')
+    : '';
+  const orchestrationStateContent = fs.existsSync(ORCHESTRATION_STATE_PATH)
+    ? fs.readFileSync(ORCHESTRATION_STATE_PATH, 'utf-8')
+    : '';
+
+  if (test('contains Phase 0.1: QUICK DISCOVER', () => {
+    assert.ok(
+      orchestratorContent.includes('Phase 0.1') && orchestratorContent.includes('QUICK DISCOVER'),
+      'Missing Phase 0.1: QUICK DISCOVER'
+    );
+  })) passed++; else failed++;
 
   if (test('contains Phase 0.5: DISCOVER', () => {
     assert.ok(
@@ -271,52 +286,66 @@ function runTests() {
     );
   })) passed++; else failed++;
 
+  if (test('digraph contains quick_discover node', () => {
+    assert.ok(
+      pipelineDiagramContent.includes('quick_discover [label='),
+      'Missing quick_discover node in digraph'
+    );
+  })) passed++; else failed++;
+
   if (test('digraph contains discover node', () => {
     assert.ok(
-      orchestratorContent.includes('discover [label='),
+      pipelineDiagramContent.includes('discover [label='),
       'Missing discover node in digraph'
     );
   })) passed++; else failed++;
 
   if (test('digraph contains plan_critic node', () => {
     assert.ok(
-      orchestratorContent.includes('plan_critic [label='),
+      pipelineDiagramContent.includes('plan_critic [label='),
       'Missing plan_critic node in digraph'
     );
   })) passed++; else failed++;
 
   if (test('digraph edge: discover -> plan', () => {
     assert.ok(
-      orchestratorContent.includes('discover -> plan'),
+      pipelineDiagramContent.includes('discover -> plan'),
       'Missing discover -> plan edge'
     );
   })) passed++; else failed++;
 
   if (test('digraph edge: plan -> plan_critic', () => {
     assert.ok(
-      orchestratorContent.includes('plan -> plan_critic'),
+      pipelineDiagramContent.includes('plan -> plan_critic'),
       'Missing plan -> plan_critic edge'
     );
   })) passed++; else failed++;
 
   if (test('digraph edge: plan_critic -> critic_gate', () => {
     assert.ok(
-      orchestratorContent.includes('plan_critic -> critic_gate'),
+      pipelineDiagramContent.includes('plan_critic -> critic_gate'),
       'Missing plan_critic -> critic_gate edge'
     );
   })) passed++; else failed++;
 
-  if (test('report template includes DISCOVER line', () => {
+  if (test('state template includes QUICK DISCOVER line', () => {
     assert.ok(
-      orchestratorContent.includes('DISCOVER:'),
-      'Missing DISCOVER line in report template'
+      orchestrationStateContent.includes('QUICK DISCOVER:'),
+      'Missing QUICK DISCOVER line in state template'
     );
   })) passed++; else failed++;
 
-  if (test('report template includes CRITIC line', () => {
+  if (test('state template includes DISCOVER line', () => {
     assert.ok(
-      orchestratorContent.includes('CRITIC:'),
-      'Missing CRITIC line in report template'
+      orchestrationStateContent.includes('DISCOVER:'),
+      'Missing DISCOVER line in state template'
+    );
+  })) passed++; else failed++;
+
+  if (test('state template includes CRITIC line', () => {
+    assert.ok(
+      orchestrationStateContent.includes('CRITIC:'),
+      'Missing CRITIC line in state template'
     );
   })) passed++; else failed++;
 

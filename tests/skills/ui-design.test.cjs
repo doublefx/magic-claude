@@ -34,6 +34,8 @@ const SKILL_PATH = path.join(SKILL_DIR, 'SKILL.md');
 const SCRIPT_PATH = path.join(SKILL_DIR, 'detect-tools.cjs');
 const TOOLS_DIR = path.join(SKILL_DIR, 'tools');
 const ORCHESTRATOR_PATH = path.join(REPO_ROOT, 'plugin', 'skills', 'craft', 'SKILL.md');
+const PIPELINE_DIAGRAM_PATH = path.join(REPO_ROOT, 'plugin', 'skills', 'craft', 'references', 'pipeline-diagram.md');
+const REPORT_TEMPLATE_PATH = path.join(REPO_ROOT, 'plugin', 'skills', 'craft', 'references', 'report-template.md');
 
 const TOOL_REFERENCE_FILES = [
   'figma.md',
@@ -319,26 +321,33 @@ function runTests() {
     );
   })) passed++; else failed++;
 
-  if (test('orchestrator digraph has ui_gate node', () => {
-    assert.ok(orchestratorContent, 'Orchestrator content should be loaded');
+  const pipelineDiagramContent = fs.existsSync(PIPELINE_DIAGRAM_PATH)
+    ? fs.readFileSync(PIPELINE_DIAGRAM_PATH, 'utf8')
+    : '';
+  const reportTemplateContent = fs.existsSync(REPORT_TEMPLATE_PATH)
+    ? fs.readFileSync(REPORT_TEMPLATE_PATH, 'utf8')
+    : '';
+
+  if (test('pipeline digraph has ui_gate node', () => {
+    assert.ok(pipelineDiagramContent, 'Pipeline diagram should be loaded');
     assert.ok(
-      orchestratorContent.includes('ui_gate'),
+      pipelineDiagramContent.includes('ui_gate'),
       'Should contain ui_gate digraph node'
     );
   })) passed++; else failed++;
 
-  if (test('orchestrator digraph has ui_design node', () => {
-    assert.ok(orchestratorContent, 'Orchestrator content should be loaded');
+  if (test('pipeline digraph has ui_design node', () => {
+    assert.ok(pipelineDiagramContent, 'Pipeline diagram should be loaded');
     assert.ok(
-      orchestratorContent.includes('ui_design'),
+      pipelineDiagramContent.includes('ui_design'),
       'Should contain ui_design digraph node'
     );
   })) passed++; else failed++;
 
-  if (test('orchestrator report has UI DESIGN line', () => {
-    assert.ok(orchestratorContent, 'Orchestrator content should be loaded');
+  if (test('report template has UI DESIGN line', () => {
+    assert.ok(reportTemplateContent, 'Report template should be loaded');
     assert.ok(
-      /UI DESIGN:\[/.test(orchestratorContent),
+      /UI DESIGN:\[/.test(reportTemplateContent),
       'Should contain UI DESIGN report line'
     );
   })) passed++; else failed++;

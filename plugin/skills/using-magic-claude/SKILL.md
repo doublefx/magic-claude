@@ -18,7 +18,7 @@ Context, quality, and process over speed. The user will thank you.
 ```dot
 digraph skill_flow {
     "User message received" [shape=doublecircle];
-    "Feature/architecture?" [shape=diamond];
+    "Will code be written or modified?" [shape=diamond];
     "Invoke magic-claude:craft" [shape=box];
     "Exploration/research/debugging?" [shape=diamond];
     "Search claude-mem first" [shape=box];
@@ -28,9 +28,9 @@ digraph skill_flow {
     "Follow skill exactly" [shape=box];
     "Respond" [shape=doublecircle];
 
-    "User message received" -> "Feature/architecture?";
-    "Feature/architecture?" -> "Invoke magic-claude:craft" [label="yes"];
-    "Feature/architecture?" -> "Exploration/research/debugging?" [label="no"];
+    "User message received" -> "Will code be written or modified?";
+    "Will code be written or modified?" -> "Invoke magic-claude:craft" [label="yes — always\n(features, fixes,\nrefactors, configs)"];
+    "Will code be written or modified?" -> "Exploration/research/debugging?" [label="no code changes"];
     "Exploration/research/debugging?" -> "Search claude-mem first" [label="yes"];
     "Exploration/research/debugging?" -> "Might any skill apply?" [label="no"];
     "Search claude-mem first" -> "Might any skill apply?";
@@ -58,15 +58,16 @@ When claude-mem is installed, **MUST search claude-mem BEFORE** using Explore ag
 
 **Skip claude-mem when:** writing brand-new code with no history, working on a fresh project, or claude-mem is not installed.
 
-## Feature Implementation (MANDATORY)
+## Code Changes (MANDATORY — No Exceptions)
 
-For feature requests that involve writing code:
+**ANY code modification** — features, bug fixes, refactors, config changes — MUST go through `magic-claude:craft`:
 
-1. **NEVER** use EnterPlanMode -- invoke `magic-claude:craft` instead
-2. The orchestrator coordinates: DISCOVER -> PLAN <-> PLAN CRITIC (auto-loop, max 3 cycles) -> [UI DESIGN] -> TDD (per-task with spec review) -> VERIFY -> REVIEW -> DELIVER
-3. Each plan task gets an adversarial spec review before moving to the next -- fail fast, fix early
-4. EnterPlanMode is ONLY for pure research/exploration or explicit `magic-claude:plan` commands
-5. Simple bug fixes, single-file edits, documentation, and refactoring do NOT need orchestration
+1. **NEVER** use EnterPlanMode when code will change — invoke `magic-claude:craft` instead
+2. Craft starts with **Quick Discover** (Phase 0.1) — a lightweight impact scan that determines LITE vs FULL mode based on actual fan-out analysis. You do NOT decide the mode — Quick Discover decides.
+3. FULL mode orchestrates: QUICK DISCOVER -> DISCOVER -> PLAN <-> PLAN CRITIC (auto-loop, max 3 cycles) -> [UI DESIGN] -> TDD (per-task with spec review) -> VERIFY -> REVIEW -> DELIVER
+4. LITE mode orchestrates: QUICK DISCOVER -> TDD -> VERIFY -> REVIEW
+5. EnterPlanMode is ONLY for pure research/exploration or explicit `magic-claude:plan` commands
+6. The ONLY exceptions that skip craft: documentation-only changes (README, JSDoc) and pure config with no behavioral impact (tsconfig formatting)
 
 ## Orchestration Recovery (After Compaction or /clear)
 
@@ -91,16 +92,18 @@ These thoughts mean STOP -- you're rationalizing skipping a skill or workflow st
 
 | Thought | Reality |
 |---------|---------|
-| "This is too simple for the full pipeline" | If it touches multiple files, use the pipeline. |
+| "This is too simple for craft" | Quick Discover takes 30 seconds. Let it decide, not you. |
+| "It's just a one-line fix" | One-line fixes break untested callers. Quick Discover catches that. |
 | "I can skip the tests just this once" | No production code without a failing test first. |
 | "Let me just write the code quickly" | Speed is not the goal. Quality is the goal. |
 | "I'll come back and add tests later" | You won't. Write them first. |
 | "The user wants this fast" | The user wants this RIGHT. |
 | "I already know what to do" | Check for skills anyway. They evolve. |
-| "This doesn't need a formal plan" | If it spans multiple files, it needs a plan. |
+| "This doesn't need a formal plan" | You don't decide — Quick Discover decides LITE vs FULL. |
 | "I'll skip the review, the code is fine" | You wrote it -- you can't objectively review it. |
 | "Let me explore first, then check skills" | Skills tell you HOW to explore. Check first. |
-| "This doesn't count as a feature" | If it changes behavior, it's a feature. |
+| "This doesn't count as a feature" | If it changes behavior, it goes through craft. |
+| "I'll just update the docs too while I'm here" | Docs updates after code changes ARE part of craft. |
 
 ## Verification Before Completion
 

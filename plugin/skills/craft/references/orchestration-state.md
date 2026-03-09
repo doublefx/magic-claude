@@ -10,8 +10,9 @@ Base SHA: <git SHA at plan approval>
 Ecosystem: <TypeScript/JVM/Python>
 
 ## Phase Summary
+- QUICK DISCOVER: <completed — fan-out N, M tested, K untested, gate: LITE|FULL>
 - ARCHITECT: <SKIPPED / completed — brief summary>
-- DISCOVER: <completed — N files, M patterns, K risks>
+- DISCOVER: <SKIPPED (LITE) / completed — N files, M patterns, K risks>
 - PLAN: <APPROVED by user / pending>
 - CRITIC: <N cycles, M resolved, R remaining>
 - BASELINE: <X passing, Y failing>

@@ -8,6 +8,10 @@ digraph orchestration {
     // Entry
     start [label="Feature request received", shape=doublecircle];
 
+    // Phase 0.1
+    quick_discover [label="Phase 0.1: QUICK DISCOVER\nImpact scan → fan-out\n→ pattern check"];
+    gate [label="LITE or FULL?", shape=diamond];
+
     // Phase 0
     arch_gate [label="System design\ndecision needed?", shape=diamond];
     architect [label="Phase 0: ARCHITECT\n(magic-claude:architect)"];
@@ -74,8 +78,15 @@ digraph orchestration {
     // Phase 5
     report [label="Phase 5: REPORT\nOrchestration summary", shape=doublecircle];
 
+    // LITE path
+    lite_tdd [label="Phase 2: TDD\n(LITE path)"];
+
     // Edges
-    start -> arch_gate;
+    start -> quick_discover;
+    quick_discover -> gate;
+    gate -> arch_gate [label="FULL"];
+    gate -> lite_tdd [label="LITE\n(≤3 tested call sites\nisolated, ≤2 files)"];
+    lite_tdd -> verify [label="→ VERIFY → REVIEW\n→ done"];
     arch_gate -> architect [label="yes"];
     arch_gate -> discover [label="no"];
     architect -> discover;
