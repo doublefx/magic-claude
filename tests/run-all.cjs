@@ -59,9 +59,9 @@ for (const testFile of testFiles) {
     });
     console.log(output);
 
-    // Parse results from output
-    const passedMatch = output.match(/Passed:\s*(\d+)/);
-    const failedMatch = output.match(/Failed:\s*(\d+)/);
+    // Parse results from output (supports both "Passed: N" and "N passed, N failed" formats)
+    const passedMatch = output.match(/Passed:\s*(\d+)/) || output.match(/(\d+) passed/);
+    const failedMatch = output.match(/Failed:\s*(\d+)/) || output.match(/(\d+) failed/);
 
     if (passedMatch) totalPassed += parseInt(passedMatch[1], 10);
     if (failedMatch) totalFailed += parseInt(failedMatch[1], 10);
@@ -72,8 +72,8 @@ for (const testFile of testFiles) {
 
     // Parse results even on failure
     const output = (err.stdout || '') + (err.stderr || '');
-    const passedMatch = output.match(/Passed:\s*(\d+)/);
-    const failedMatch = output.match(/Failed:\s*(\d+)/);
+    const passedMatch = output.match(/Passed:\s*(\d+)/) || output.match(/(\d+) passed/);
+    const failedMatch = output.match(/Failed:\s*(\d+)/) || output.match(/(\d+) failed/);
 
     if (passedMatch) totalPassed += parseInt(passedMatch[1], 10);
     if (failedMatch) totalFailed += parseInt(failedMatch[1], 10);
