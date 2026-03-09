@@ -34,7 +34,7 @@ const PLAN_CRITIC_PATH = path.join(AGENTS_DIR, 'plan-critic.md');
 const PLANNER_PATH = path.join(AGENTS_DIR, 'planner.md');
 const ORCHESTRATOR_PATH = path.join(REPO_ROOT, 'plugin', 'skills', 'craft', 'SKILL.md');
 const PIPELINE_DIAGRAM_PATH = path.join(REPO_ROOT, 'plugin', 'skills', 'craft', 'references', 'pipeline-diagram.md');
-const ORCHESTRATION_STATE_PATH = path.join(REPO_ROOT, 'plugin', 'skills', 'craft', 'references', 'orchestration-state.md');
+const CRAFT_STATE_PATH = path.join(REPO_ROOT, 'plugin', 'skills', 'craft', 'references', 'craft-state.md');
 const PLAN_CRITIC_PROMPT_PATH = path.join(REPO_ROOT, 'plugin', 'skills', 'craft', 'plan-critic-prompt.md');
 
 // Test suite
@@ -261,8 +261,8 @@ function runTests() {
   const pipelineDiagramContent = fs.existsSync(PIPELINE_DIAGRAM_PATH)
     ? fs.readFileSync(PIPELINE_DIAGRAM_PATH, 'utf-8')
     : '';
-  const orchestrationStateContent = fs.existsSync(ORCHESTRATION_STATE_PATH)
-    ? fs.readFileSync(ORCHESTRATION_STATE_PATH, 'utf-8')
+  const craftStateContent = fs.existsSync(CRAFT_STATE_PATH)
+    ? fs.readFileSync(CRAFT_STATE_PATH, 'utf-8')
     : '';
 
   if (test('contains Phase 0.1: QUICK DISCOVER', () => {
@@ -330,22 +330,85 @@ function runTests() {
 
   if (test('state template includes QUICK DISCOVER line', () => {
     assert.ok(
-      orchestrationStateContent.includes('QUICK DISCOVER:'),
+      craftStateContent.includes('QUICK DISCOVER:'),
       'Missing QUICK DISCOVER line in state template'
     );
   })) passed++; else failed++;
 
   if (test('state template includes DISCOVER line', () => {
     assert.ok(
-      orchestrationStateContent.includes('DISCOVER:'),
+      craftStateContent.includes('DISCOVER:'),
       'Missing DISCOVER line in state template'
     );
   })) passed++; else failed++;
 
   if (test('state template includes CRITIC line', () => {
     assert.ok(
-      orchestrationStateContent.includes('CRITIC:'),
+      craftStateContent.includes('CRITIC:'),
       'Missing CRITIC line in state template'
+    );
+  })) passed++; else failed++;
+
+  if (test('state template includes Mode field', () => {
+    assert.ok(
+      craftStateContent.includes('Mode:'),
+      'Missing Mode field in craft state template'
+    );
+  })) passed++; else failed++;
+
+  if (test('state template includes Resume Directive section', () => {
+    assert.ok(
+      craftStateContent.includes('## Resume Directive'),
+      'Missing Resume Directive section in craft state template'
+    );
+  })) passed++; else failed++;
+
+  if (test('state template includes Pipeline Position section', () => {
+    assert.ok(
+      craftStateContent.includes('## Pipeline Position'),
+      'Missing Pipeline Position section in craft state template'
+    );
+  })) passed++; else failed++;
+
+  if (test('state template includes Boundaries section', () => {
+    assert.ok(
+      craftStateContent.includes('## Boundaries'),
+      'Missing Boundaries section in craft state template'
+    );
+  })) passed++; else failed++;
+
+  if (test('state template includes Deferred Issues section', () => {
+    assert.ok(
+      craftStateContent.includes('## Deferred Issues'),
+      'Missing Deferred Issues section in craft state template'
+    );
+  })) passed++; else failed++;
+
+  if (test('state template includes Key Decisions table headers', () => {
+    assert.ok(
+      craftStateContent.includes('| When | Decision | Rationale |'),
+      'Missing Key Decisions table headers in craft state template'
+    );
+  })) passed++; else failed++;
+
+  if (test('state template Resume Directive has NEXT ACTION field', () => {
+    assert.ok(
+      craftStateContent.includes('NEXT ACTION:'),
+      'Missing NEXT ACTION in Resume Directive'
+    );
+  })) passed++; else failed++;
+
+  if (test('state template Resume Directive has REMAINING field', () => {
+    assert.ok(
+      craftStateContent.includes('REMAINING:'),
+      'Missing REMAINING in Resume Directive'
+    );
+  })) passed++; else failed++;
+
+  if (test('state template Resume Directive has INVOKE field', () => {
+    assert.ok(
+      craftStateContent.includes('INVOKE:'),
+      'Missing INVOKE in Resume Directive'
     );
   })) passed++; else failed++;
 

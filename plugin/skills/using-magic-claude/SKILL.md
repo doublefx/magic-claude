@@ -69,18 +69,20 @@ When claude-mem is installed, **MUST search claude-mem BEFORE** using Explore ag
 5. EnterPlanMode is ONLY for pure research/exploration or explicit `magic-claude:plan` commands
 6. The ONLY exceptions that skip craft: documentation-only changes (README, JSDoc) and pure config with no behavioral impact (tsconfig formatting)
 
-## Orchestration Recovery (After Compaction or /clear)
+## Craft Pipeline Recovery (After Compaction or /clear)
 
-This meta-skill survives compaction and `/clear` because SessionStart re-injects it. Use this to recover an in-progress orchestration pipeline.
+This meta-skill survives compaction and `/clear` because SessionStart re-injects it. Use this to recover an in-progress craft pipeline.
 
 **On every session start, resume, compaction, or /clear — check:**
 
-1. Does `.claude/orchestration-state.md` exist?
-2. If YES: read it. It contains the feature name, current phase, plan path, and key decisions.
+1. Does `.claude/craft-state.md` exist?
+   1a. If not found, also check for legacy `.claude/orchestration-state.md` (renamed from older plugin versions)
+2. If YES: read it. It contains the feature name, current phase, plan path, Resume Directive, and key decisions.
 3. Read the plan from the path recorded in the state file (e.g., `.claude/plans/YYYY-MM-DD-feature.md`).
-4. **Determine recovery mode:**
-   - **Auto-resume (compaction):** If your compressed context mentions the same feature or orchestration work — you were just working on this. **Do NOT ask the user.** Re-read the craft skill (`magic-claude:craft`), restore phase context from the state file, and **continue from the recorded phase immediately.** The user expects you to keep going.
-   - **Ask user (new session or /clear):** If your context has NO memory of this feature — this is a crash or fresh start. Ask: *"Found incomplete orchestration for **<feature>** at Phase <N>. Resume or start fresh?"*
+4. **Follow the Resume Directive** — it contains the exact next action, remaining phases, and instruction to invoke `magic-claude:craft`.
+5. **Determine recovery mode:**
+   - **Auto-resume (compaction):** If your compressed context mentions the same feature or craft pipeline work — you were just working on this. **Do NOT ask the user.** Re-read the craft skill (`magic-claude:craft`), restore phase context from the state file, and **continue from the recorded phase immediately.** The user expects you to keep going.
+   - **Ask user (new session or /clear):** If your context has NO memory of this feature — this is a crash or fresh start. Ask: *"Found incomplete craft pipeline for **<feature>** at Phase <N>. Resume or start fresh?"*
 
 **If NO state file exists:** no recovery needed, proceed normally.
 

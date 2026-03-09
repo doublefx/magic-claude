@@ -104,31 +104,36 @@ This skill runs in the **main context** (no `context: fork`) because it needs mu
 - User may provide feedback between phases
 - Task lifecycle (TaskCreate/TaskUpdate) must be visible in main context
 
-## Orchestration State Persistence
+## Craft State Persistence
 
 The pipeline is designed to **survive context compaction, session crashes, and `/clear`** by persisting state to disk.
 
 ### State File
 
-Active state lives at `.claude/orchestration-state.md` during the pipeline. Update this file after every phase transition.
+Active state lives at `.claude/craft-state.md` during the pipeline. Update this file after every phase transition.
 
-> State file template: see [references/orchestration-state.md](references/orchestration-state.md).
+> State file template: see [references/craft-state.md](references/craft-state.md).
 
 ### Lifecycle
 
 1. **Created** — At pipeline start (Phase 0.1 Quick Discover), write initial state with impact brief and gate decision
 2. **Updated — AFTER EVERY PHASE AND SUB-PHASE** — Update the Phase field and phase summary line immediately when a phase completes, BEFORE starting the next phase. This is NOT optional — skipping a state update means compaction kills the pipeline.
-3. **Survives compaction** — After compaction, read `.claude/orchestration-state.md` to restore phase context. The plan is at the path in the state file.
+3. **Survives compaction** — After compaction, read `.claude/craft-state.md` to restore phase context. The plan is at the path in the state file.
 4. **Archived on completion** — In Phase 5 (REPORT), move to `.claude/plans/<date>-<feature>.state.md` alongside the plan
 5. **Overwritten on next pipeline** — A new orchestration overwrites the active state file
 
 **CRITICAL RULE:** Every phase section below includes an explicit `**Update state →**` step. If you skip it, the next compaction destroys the pipeline. Treat state updates like saving a game — do it before every boss fight.
 
+**Every `**Update state →**` MUST also update these sections in the state file:**
+- **Resume Directive:** Set `NEXT ACTION` (the single next step), `REMAINING` (phases left), `INVOKE: magic-claude:craft to continue the pipeline`
+- **Pipeline Position:** Update the `^ HERE` marker to the current phase
+- These fields are what the PreCompact and SessionStart hooks use to recover the pipeline after compaction
+
 ### Crash Recovery
 
 **At pipeline start or after context recovery, check for an orphaned state file:**
 
-1. If `.claude/orchestration-state.md` exists:
+1. If `.claude/craft-state.md` exists:
    - Read the state file and the plan from the recorded path
    - **After compaction (compressed context references this feature):** Auto-resume from the recorded phase. Do NOT ask the user — they were just working on this and expect you to continue.
    - **New session or /clear (no context about this feature):** Present to user: "Found incomplete orchestration for **<feature>** (Phase <N>, task <X/Y>). Resume or start fresh?"
@@ -176,7 +181,7 @@ Without it, those phases start blind.
 
 **Output: Impact Brief → State File**
 
-Write the Impact Brief section in `.claude/orchestration-state.md` using the template from [references/orchestration-state.md](references/orchestration-state.md). Every field must be filled with data from the steps above — no placeholders, no "N/A", no skipping.
+Write the Impact Brief section in `.claude/craft-state.md` using the template from [references/craft-state.md](references/craft-state.md). Every field must be filled with data from the steps above — no placeholders, no "N/A", no skipping.
 
 **Validation — the state file MUST contain before proceeding:**
 - A real number for fan-out (from step 2)
@@ -248,7 +253,7 @@ Grounds the planning phase in verified codebase facts. Prevents hallucinated fil
 6. **Persist the approved plan** to `.claude/plans/YYYY-MM-DD-<feature-name>.md`
    - This ensures the plan survives session loss, compaction, or exit
    - Record the git SHA at plan approval time for later review context
-7. **Update state →** Set `Phase: PLAN APPROVED`, write plan path, base SHA, critic summary, and user decisions to `.claude/orchestration-state.md`
+7. **Update state →** Set `Phase: PLAN APPROVED`, write plan path, base SHA, critic summary, and user decisions to `.claude/craft-state.md`
 8. **Suggest compact** — Inform the user: *"Planning phase complete. You can run `/compact` to free context for implementation, or continue as-is — the state file ensures recovery if auto-compaction occurs."* Do NOT attempt to run `/compact` programmatically.
 
 ### Phase 1.1: PLAN CRITIC (auto-loop, max 3 cycles)
@@ -536,9 +541,9 @@ Produce a final orchestration report:
 - **NEEDS WORK** - Minor issues found, list specific `magic-claude:<command>` remediation
 - **BLOCKED** - Critical issues (security vulnerabilities, build failures after remediation, review BLOCK)
 
-**Archive orchestration state:**
+**Archive craft state:**
 After producing the report, archive the state file alongside the plan:
-1. Move `.claude/orchestration-state.md` to `.claude/plans/YYYY-MM-DD-<feature-name>.state.md`
+1. Move `.claude/craft-state.md` to `.claude/plans/YYYY-MM-DD-<feature-name>.state.md`
 2. This serves as an audit trail (critic cycles, harden rounds, coverage, timing)
 3. If verdict is NEEDS WORK or BLOCKED, keep the active state file as-is (pipeline is not complete)
 

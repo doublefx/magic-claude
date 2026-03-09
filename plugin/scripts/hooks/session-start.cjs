@@ -37,6 +37,43 @@ const {
 const { detectEcosystem, ECOSYSTEMS } = require('../lib/ecosystems/index.cjs');
 const { logTelemetry } = require('../lib/hook-telemetry.cjs');
 
+const STATE_FILENAME = 'craft-state.md';
+const LEGACY_STATE_FILENAME = 'orchestration-state.md';
+
+/**
+ * Read the Resume Directive from the craft state file.
+ * Checks craft-state.md first, falls back to legacy orchestration-state.md.
+ * Returns the Resume Directive content string or null if not found.
+ */
+function readCraftStateResume() {
+  const claudeDir = path.join(process.cwd(), '.claude');
+  let stateFilePath = path.join(claudeDir, STATE_FILENAME);
+
+  if (!fs.existsSync(stateFilePath)) {
+    stateFilePath = path.join(claudeDir, LEGACY_STATE_FILENAME);
+    if (!fs.existsSync(stateFilePath)) {
+      return null;
+    }
+  }
+
+  try {
+    const rawContent = fs.readFileSync(stateFilePath, 'utf8');
+    // Normalize CRLF -> LF for reliable regex parsing (WSL2)
+    const content = rawContent.replace(/\r\n/g, '\n');
+
+    // Extract ## Resume Directive section
+    const match = content.match(/## Resume Directive\n([\s\S]*?)(?=\n## |$)/);
+    if (!match) return null;
+
+    const resumeContent = match[1].trim();
+    if (!resumeContent) return null;
+
+    return resumeContent;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Read hook input from stdin (JSON format)
  */
@@ -393,7 +430,18 @@ async function main() {
     log('[SessionStart] Meta-skill injected: using-magic-claude');
   }
 
-  // 2. Enumerate learned skills from both directories (frontmatter only)
+  // 2. Inject craft pipeline resume directive (if active pipeline exists)
+  const resumeDirective = readCraftStateResume();
+  if (resumeDirective) {
+    additionalContextParts.push(
+      '## Active Craft Pipeline — Resume Required\n\n' +
+      resumeDirective + '\n\n' +
+      'Read .claude/craft-state.md for full state, then invoke magic-claude:craft to continue.'
+    );
+    log('[SessionStart] Craft pipeline resume directive injected');
+  }
+
+  // 3. Enumerate learned skills from both directories (frontmatter only)
   const projectLearnedDir = getProjectLearnedSkillsDir();
   const userLearnedDir = getUserLearnedSkillsDir();
   const projectSkills = enumerateLearnedSkills(projectLearnedDir);
@@ -413,7 +461,7 @@ async function main() {
     log(`[SessionStart] Learned skills indexed: ${allLearnedSkills.length} (${projectSkills.length} project, ${userSkills.length} user)`);
   }
 
-  // 3. Append environment context summary
+  // 4. Append environment context summary
   if (contextParts.length > 0) {
     additionalContextParts.push(
       '## Session Environment\n\n' + contextParts.map(p => `- ${p}`).join('\n')

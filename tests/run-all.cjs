@@ -25,6 +25,8 @@ const testFiles = [
   'lib/hook-telemetry.test.cjs',
   'hooks/hooks.test.cjs',
   'hooks/serena-hooks.test.cjs',
+  'hooks/pre-compact-enrichment.test.cjs',
+  'hooks/session-start-craft-resume.test.cjs',
   'skills/systematic-debugging.test.cjs',
   'skills/ui-design.test.cjs',
   'lib/status.test.cjs',

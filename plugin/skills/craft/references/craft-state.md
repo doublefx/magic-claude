@@ -1,13 +1,24 @@
-# Orchestration State File Template
+# Craft State File Template
 
 ```markdown
-# Orchestration State
+# Craft State
 Feature: <feature name>
 Started: <ISO timestamp>
+Mode: <LITE | FULL>
 Phase: <current phase number and name>
 Plan: <path to .claude/plans/ file>
 Base SHA: <git SHA at plan approval>
 Ecosystem: <TypeScript/JVM/Python>
+
+## Pipeline Position
+FULL:  QUICK DISCOVER -> DISCOVER -> PLAN -> CRITIC -> TDD -> VERIFY -> REVIEW+HARDEN -> SIMPLIFY -> DELIVER
+                                                        ^ HERE
+LITE:  QUICK DISCOVER -> TDD -> VERIFY -> REVIEW
+
+## Resume Directive
+NEXT ACTION: <exactly one thing to do next>
+REMAINING: <phases left in pipeline>
+INVOKE: magic-claude:craft to continue the pipeline
 
 ## Impact Brief (Phase 0.1 — REQUIRED)
 - **Target:** <symbol/file being changed — MUST be filled>
@@ -36,6 +47,13 @@ Task: <task number/name from plan>
 Status: <in_progress / blocked / pending>
 
 ## Key Decisions
-- <user decision 1>
-- <user decision 2>
+| When | Decision | Rationale |
+|------|----------|-----------|
+
+## Boundaries
+- <file/pattern that must not be modified>
+
+## Deferred Issues
+| Issue | Effort | Why deferred |
+|-------|--------|-------------|
 ```
