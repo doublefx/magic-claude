@@ -55,7 +55,7 @@ Sessions are ephemeral by default. The plugin adds persistence through hooks.
 
 ### claude-mem Integration
 
-If the `claude-mem` MCP is installed, agents with the `claude-mem-context` skill can query cross-session historical context:
+If the `claude-mem` MCP is installed, agents with the `magic-claude-mem:claude-mem-context` skill can query cross-session historical context:
 
 - Past decisions and their rationale
 - Bug patterns and how they were resolved

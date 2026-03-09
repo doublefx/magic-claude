@@ -4,7 +4,7 @@ description: Analyze external git changes and report their impact. Invoke automa
 tools: Read, Grep, Glob, Bash(git *), Bash(cat *)
 model: haiku
 background: true
-skills: claude-mem-context, serena-code-navigation
+skills: magic-claude-mem:claude-mem-context, serena-code-navigation
 ---
 
 # Git Sync - Analyze Changes and Report Impact

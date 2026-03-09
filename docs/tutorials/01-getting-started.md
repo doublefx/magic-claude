@@ -135,7 +135,7 @@ Skills provide domain knowledge and workflow automation. Key skills include:
 - **security-review/** - Multi-ecosystem security checklist
 - **systematic-debugging/** - 4-phase root-cause investigation
 - **continuous-learning/** - Auto-extract patterns from sessions
-- And 21 more (30 total)
+- And 20 more (29 total)
 
 ### Use a Skill
 

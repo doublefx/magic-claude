@@ -78,7 +78,7 @@ function runTests() {
     assert.strictEqual(typeof data.byCategory, 'object');
     // Check known categories exist
     assert.ok(data.byCategory.Meta, 'Should have Meta category');
-    assert.ok(data.byCategory.Proactive, 'Should have Proactive category');
+    assert.ok(data.byCategory.Pipeline, 'Should have Pipeline category');
     assert.ok(data.byCategory.Domain, 'Should have Domain category');
     // using-magic-claude should be in Meta
     assert.ok(
@@ -275,11 +275,11 @@ function runTests() {
 
   if (test('formatSkillsSection shows categories', () => {
     const result = formatter.formatSkillsSection({
-      total: 3, byCategory: { Meta: ['a'], Proactive: ['b', 'c'] }, userInvocable: 1
+      total: 3, byCategory: { Meta: ['a'], Pipeline: ['b', 'c'] }, userInvocable: 1
     });
     assert.ok(result.includes('Skills (3)'), 'Should show total');
     assert.ok(result.includes('Meta:'), 'Should show Meta category');
-    assert.ok(result.includes('Proactive:'), 'Should show Proactive category');
+    assert.ok(result.includes('Pipeline:'), 'Should show Pipeline category');
   })) passed++; else failed++;
 
   if (test('formatHooksSection shows event types', () => {

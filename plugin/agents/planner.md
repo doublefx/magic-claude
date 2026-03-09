@@ -2,7 +2,7 @@
 name: planner
 description: Expert planning specialist for complex features and refactoring. Use PROACTIVELY when users request feature implementation, architectural changes, or complex refactoring. Automatically activated for planning tasks.
 model: opus
-skills: claude-mem-context, serena-code-navigation
+skills: magic-claude-mem:claude-mem-context, serena-code-navigation
 permissionMode: plan
 ---
 

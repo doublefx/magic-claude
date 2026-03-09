@@ -46,7 +46,7 @@ magic-claude/
 |   |   |-- ci-cd-architect.md      # CI/CD pipeline generation
 |   |   |-- git-sync.md             # Git changes impact analysis (background)
 |   |
-|   |-- skills/           # Workflow definitions and domain knowledge (30 total)
+|   |-- skills/           # Workflow definitions and domain knowledge (29 total)
 |   |   |-- using-magic-claude/        # Meta-skill (injected via SessionStart on every startup/resume/compact/clear)
 |   |   |-- craft/                      # Unified workflow skill (DISCOVER->PLAN->TDD->VERIFY->REVIEW->DELIVER)
 |   |   |-- coding-standards/           # Multi-ecosystem coding standards (TS/JS, JVM, Python)
@@ -65,7 +65,6 @@ magic-claude/
 |   |   |-- gradle-patterns/            # Gradle build optimization
 |   |   |-- ci-cd-patterns/             # CI/CD and deployment patterns
 |   |   |-- clickhouse-io/              # ClickHouse database patterns
-|   |   |-- claude-mem-context/         # Cross-session historical context
 |   |   |-- extend/                     # Generate new plugin components
 |   |   |-- project-guidelines-example/ # Template for project-specific guidelines
 |   |   |-- agent-coordination/         # Agent delegation and model tier guide

@@ -3,7 +3,7 @@ name: ts-security-reviewer
 description: TypeScript/JavaScript/Next.js security vulnerability detection and remediation specialist. Use PROACTIVELY after writing TS/JS code that handles user input, authentication, API endpoints, or sensitive data. Flags secrets, SSRF, injection, unsafe crypto, and OWASP Top 10 vulnerabilities. Uses npm audit, eslint-plugin-security, and semgrep.
 tools: Read, Write, Edit, Bash, Grep, Glob
 model: opus
-skills: security-review, claude-mem-context, serena-code-navigation
+skills: security-review, magic-claude-mem:claude-mem-context, serena-code-navigation
 hooks:
   Stop:
     - hooks:

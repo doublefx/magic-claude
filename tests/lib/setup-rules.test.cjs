@@ -104,9 +104,9 @@ function runTests() {
     assert.deepStrictEqual(rules, sorted, 'Rules should be sorted alphabetically');
   })) passed++; else failed++;
 
-  if (test('getPluginRules finds all 13 rules', () => {
+  if (test('getPluginRules finds all 12 rules', () => {
     const rules = getPluginRules();
-    assert.strictEqual(rules.length, 13, `Expected 13 rules, got ${rules.length}`);
+    assert.strictEqual(rules.length, 12, `Expected 12 rules, got ${rules.length}`);
   })) passed++; else failed++;
 
   // isPluginManaged tests

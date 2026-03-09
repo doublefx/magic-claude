@@ -291,7 +291,7 @@ See `plugin/skills/serena-setup/` and `plugin/skills/serena-status/` for configu
 
 ### claude-mem Integration (Optional)
 
-If claude-mem MCP is installed, agents with the `claude-mem-context` skill can query cross-session historical context (past decisions, bug patterns, architecture rationale).
+If the `magic-claude-mem` plugin is installed, agents with the `magic-claude-mem:claude-mem-context` skill can query cross-session historical context (past decisions, bug patterns, architecture rationale).
 
 ## Workspace & Monorepo Support
 

@@ -60,7 +60,7 @@ function formatSkillsSection(data) {
 
   // Fixed category order for consistent output
   const orderedCategories = [
-    'Meta', 'Proactive', 'Domain', 'Debugging', 'Review',
+    'Meta', 'Pipeline', 'Domain', 'Debugging', 'Review',
     'Workflow', 'Branch', 'Serena', 'UI Design', 'Other'
   ];
 

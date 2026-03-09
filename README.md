@@ -56,7 +56,7 @@ A typical workflow after installing the plugin:
 | Feature | Description | Details |
 |---------|-------------|---------|
 | **Polyglot agents** | 30 agents: reviewers, TDD guides, build resolvers, security scanners, E2E runners for each ecosystem | [AGENT-CATALOG](docs/AGENT-CATALOG.md) |
-| **Domain skills** | 30 skills: coding standards, backend patterns, TDD workflows, security checklists, craft quality pipeline per ecosystem | [FEATURES](docs/FEATURES.md) |
+| **Domain skills** | 29 skills: coding standards, backend patterns, TDD workflows, security checklists, craft quality pipeline per ecosystem | [FEATURES](docs/FEATURES.md) |
 | **Auto-formatting** | PostToolUse hooks run Ruff, google-java-format, ktfmt, or Prettier based on project type | [Foundations Guide](docs/guides/foundations.md) |
 | **Security scanning** | Semgrep + pip-audit (Python), SpotBugs + FindSecurityBugs (Java), Gitleaks, Trivy | [FEATURES](docs/FEATURES.md) |
 | **CI/CD templates** | 44 templates: GitHub Actions, GitLab CI, Bitbucket Pipelines, Docker, Kubernetes, Helm | [Tutorial 04](docs/tutorials/04-cicd-generation.md) |

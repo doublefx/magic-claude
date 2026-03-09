@@ -2,7 +2,7 @@
 name: python-e2e-runner
 description: Python end-to-end testing specialist using pytest-playwright and Selenium. Use PROACTIVELY for generating, maintaining, and running E2E tests in Python projects. Manages test journeys, handles flaky tests, captures screenshots/videos/traces, and ensures critical user flows work.
 tools: Read, Write, Edit, Bash, Grep, Glob
-skills: python-patterns, backend-patterns, claude-mem-context, serena-code-navigation
+skills: python-patterns, backend-patterns, magic-claude-mem:claude-mem-context, serena-code-navigation
 model: sonnet
 hooks:
   Stop:

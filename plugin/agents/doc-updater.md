@@ -2,7 +2,7 @@
 name: doc-updater
 description: Documentation sync specialist. Use PROACTIVELY for updating documentation from source-of-truth. Runs /update-docs, updates READMEs and guides.
 tools: Read, Write, Edit, Bash, Grep, Glob
-skills: claude-mem-context, serena-code-navigation
+skills: magic-claude-mem:claude-mem-context, serena-code-navigation
 model: haiku
 permissionMode: acceptEdits
 ---

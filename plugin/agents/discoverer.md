@@ -2,7 +2,7 @@
 name: discoverer
 description: Codebase discovery specialist for pre-plan research. Grounds planning in verified facts by exploring code structure, finding patterns, and mapping affected areas. Use PROACTIVELY before planning to prevent hallucinated file paths, non-existent APIs, and missed existing patterns.
 model: opus
-skills: claude-mem-context, serena-code-navigation
+skills: magic-claude-mem:claude-mem-context, serena-code-navigation
 permissionMode: plan
 ---
 

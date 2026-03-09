@@ -68,7 +68,7 @@ User: /plan [description]
 ```
 
 **Agents:** `planner` (opus)
-**Skills consumed:** `claude-mem-context`, `serena-code-navigation`
+**Skills consumed:** `magic-claude-mem:claude-mem-context`, `serena-code-navigation`
 **Verification:** None. Plan presented for human approval.
 **Gap:** After user confirms, nothing triggers `/tdd` or the next step automatically. The suggestion is only in documentation text.
 
@@ -90,7 +90,7 @@ User: /tdd
 ```
 
 **Agents:** `ts-tdd-guide` | `jvm-tdd-guide` | `python-tdd-guide` (sonnet)
-**Skills consumed:** `tdd-workflow` + `backend-patterns`, `claude-mem-context` (all three are multi-ecosystem — auto-load correct references per project)
+**Skills consumed:** `tdd-workflow` + `backend-patterns`, `magic-claude-mem:claude-mem-context` (all three are multi-ecosystem — auto-load correct references per project)
 **Hooks during:** auto-format, type check, debug detect, security scan (Java/Python/TypeScript)
 **Verification:** Agent self-check only (was TDD cycle followed?). No build/lint/full-test verification.
 **Note:** When invoked via `craft`, verification and review follow automatically as subsequent phases.
@@ -116,7 +116,7 @@ User: /code-review
 ```
 
 **Agents:** `code-reviewer` (opus) + language-specific reviewers + security reviewers as needed
-**Skills consumed:** `coding-standards`, `security-review`, `claude-mem-context`, `serena-code-navigation`
+**Skills consumed:** `coding-standards`, `security-review`, `magic-claude-mem:claude-mem-context`, `serena-code-navigation`
 **Verification:** Agent Stop hook checks completeness (files read, security checked, verdict given).
 **Remediation:** On BLOCK, suggests `/build-fix`, `/tdd`, `/test-coverage`, or specific security fixes.
 

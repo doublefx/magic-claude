@@ -3,7 +3,7 @@ name: ci-cd-architect
 description: Expert CI/CD architect specializing in modern DevOps practices and pipeline design. Use PROACTIVELY when designing deployment pipelines, setting up CI/CD workflows, implementing caching strategies, or configuring GitHub Actions, GitLab CI, or Bitbucket Pipelines.
 tools: Read, Write, Edit, Bash, Grep, Glob
 model: opus
-skills: ci-cd-patterns, claude-mem-context, serena-code-navigation
+skills: ci-cd-patterns, magic-claude-mem:claude-mem-context, serena-code-navigation
 ---
 
 # CI/CD Architect Agent

@@ -1,7 +1,7 @@
 ---
 name: plan-critic
 description: Adversarial plan reviewer that stress-tests implementation plans before user approval. Finds feasibility gaps, missing edge cases, hidden risks, and hallucinated assumptions. Uses BMAD's "must find issues" mandate.
-skills: claude-mem-context, serena-code-navigation
+skills: magic-claude-mem:claude-mem-context, serena-code-navigation
 model: opus
 permissionMode: plan
 ---

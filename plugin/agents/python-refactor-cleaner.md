@@ -3,7 +3,7 @@ name: python-refactor-cleaner
 description: Python dead code cleanup and consolidation specialist. Use PROACTIVELY for removing unused Python code, duplicates, and refactoring. Uses vulture, ruff (F401/F841), and autoflake to identify dead code and safely removes it.
 tools: Read, Write, Edit, Bash, Grep, Glob
 model: haiku
-skills: python-patterns, backend-patterns, claude-mem-context, serena-code-navigation
+skills: python-patterns, backend-patterns, magic-claude-mem:claude-mem-context, serena-code-navigation
 permissionMode: acceptEdits
 hooks:
   Stop:

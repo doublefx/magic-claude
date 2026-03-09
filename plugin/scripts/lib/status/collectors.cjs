@@ -79,7 +79,7 @@ function collectAgents(pluginRoot) {
  */
 const SKILL_CATEGORIES = {
   Meta: name => name === 'using-magic-claude',
-  Proactive: name => name.startsWith('proactive-'),
+  Pipeline: name => name === 'craft',
   Domain: name => /(-(patterns|standards|workflow))$/.test(name),
   Debugging: name => name === 'systematic-debugging',
   Review: name => name.includes('review') && !name.startsWith('proactive-'),

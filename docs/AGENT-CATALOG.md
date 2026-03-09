@@ -3,7 +3,7 @@
 **Version**: 3.2.0
 **Last Updated**: 2026-03-06
 **Total Agents**: 30
-**Total Skills**: 30
+**Total Skills**: 29
 
 ---
 
@@ -203,19 +203,19 @@ Trade-offs:
 #### ts-tdd-guide
 **Command**: `/tdd` (auto-dispatched for TS/JS projects)
 **Model**: Sonnet
-**Skills**: `tdd-workflow`, `backend-patterns`, `claude-mem-context`
+**Skills**: `tdd-workflow`, `backend-patterns`, `magic-claude-mem:claude-mem-context`
 **Description**: TypeScript/JavaScript TDD with Jest/Vitest/Playwright
 
 #### jvm-tdd-guide
 **Command**: `/tdd` (auto-dispatched for JVM projects)
 **Model**: Sonnet
-**Skills**: `tdd-workflow`, `backend-patterns`, `claude-mem-context`
+**Skills**: `tdd-workflow`, `backend-patterns`, `magic-claude-mem:claude-mem-context`
 **Description**: JVM TDD with JUnit 5, Mockito, MockK, AssertJ, JaCoCo
 
 #### python-tdd-guide
 **Command**: `/tdd` (auto-dispatched for Python projects)
 **Model**: Sonnet
-**Skills**: `tdd-workflow`, `backend-patterns`, `claude-mem-context`
+**Skills**: `tdd-workflow`, `backend-patterns`, `magic-claude-mem:claude-mem-context`
 **Description**: Python TDD with pytest, unittest.mock, pytest-cov, hypothesis
 
 **When to Use** (all three):
@@ -275,13 +275,13 @@ Trade-offs:
 #### jvm-build-resolver
 **Command**: `/build-fix` (auto-dispatched)
 **Model**: Sonnet
-**Skills**: `gradle-patterns`, `maven-patterns`, `backend-patterns`, `claude-mem-context`, `serena-code-navigation`
+**Skills**: `gradle-patterns`, `maven-patterns`, `backend-patterns`, `magic-claude-mem:claude-mem-context`, `serena-code-navigation`
 **Description**: JVM build error resolution (Maven/Gradle)
 
 #### python-build-resolver
 **Command**: `/build-fix` (auto-dispatched)
 **Model**: Sonnet
-**Skills**: `python-patterns`, `backend-patterns`, `claude-mem-context`, `serena-code-navigation`
+**Skills**: `python-patterns`, `backend-patterns`, `magic-claude-mem:claude-mem-context`, `serena-code-navigation`
 **Description**: Python build error resolution (pyright/ruff/pytest)
 
 ---
@@ -917,17 +917,6 @@ Gradle Optimization Report
 
 ---
 
-#### claude-mem-context
-**Path**: `plugin/skills/claude-mem-context/SKILL.md`
-**Description**: Cross-session historical context via claude-mem MCP
-
-**Covers**:
-- Query past decisions and architecture rationale
-- Search debugging patterns and resolved issues
-- Bridge context across sessions
-
----
-
 #### clickhouse-io
 **Path**: `plugin/skills/clickhouse-io/SKILL.md`
 **Description**: ClickHouse database patterns and query optimization
@@ -1091,7 +1080,7 @@ pytest
 - 2 utility agents (doc-updater, setup-agent)
 - 1 background agent (git-sync)
 
-**30 Skills**:
+**29 Skills**:
 - 1 meta-skill (using-magic-claude)
 - 1 quality pipeline (craft — absorbs former orchestration, planning, TDD, review)
 - 1 coding standards (multi-ecosystem: TS/JS, JVM, Python)
@@ -1104,7 +1093,7 @@ pytest
 - 2 branch/isolation skills (using-git-worktrees, finishing-feature)
 - 2 review skills (receiving-code-review, agent-coordination)
 - 1 debugging skill (systematic-debugging)
-- 5 coordination/domain skills (agent-teams, claude-mem-context, clickhouse-io, extend, project-guidelines-example)
+- 4 coordination/domain skills (agent-teams, clickhouse-io, extend, project-guidelines-example)
 - 3 workflow skills (continuous-learning, eval-harness, verification-loop)
 
 **Best Practices**:
