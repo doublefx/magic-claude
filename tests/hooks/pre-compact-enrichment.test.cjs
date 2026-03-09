@@ -380,6 +380,37 @@ function runTests() {
     fs.rmSync(tmpDir, { recursive: true, force: true });
   })) passed++; else failed++;
 
+  if (test('handles empty file gracefully with fallback directive', () => {
+    const tmpDir = createTempDir();
+    const stateFile = path.join(tmpDir, 'craft-state.md');
+    fs.writeFileSync(stateFile, '');
+
+    const result = enrichStateFile(stateFile);
+    assert.strictEqual(result.enriched, true);
+    assert.strictEqual(result.phase, null);
+    assert.strictEqual(result.feature, null);
+
+    const content = fs.readFileSync(stateFile, 'utf8');
+    assert.ok(content.includes('Read .claude/craft-state.md and determine current position'));
+
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  })) passed++; else failed++;
+
+  if (test('handles file with no parseable fields gracefully', () => {
+    const tmpDir = createTempDir();
+    const stateFile = path.join(tmpDir, 'craft-state.md');
+    fs.writeFileSync(stateFile, 'Just some random text\nwith no structured fields\n');
+
+    const result = enrichStateFile(stateFile);
+    assert.strictEqual(result.enriched, true);
+    assert.strictEqual(result.phase, null);
+
+    const content = fs.readFileSync(stateFile, 'utf8');
+    assert.ok(content.includes('unknown — read state file'));
+
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  })) passed++; else failed++;
+
   // ─── Summary ───
   console.log(`\n  ${passed} passed, ${failed} failed (${passed + failed} total)`);
   return { passed, failed };
