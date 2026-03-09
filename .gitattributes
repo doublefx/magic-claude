@@ -1,0 +1,5 @@
+# Force LF line endings for shell scripts and git hook templates.
+# Prevents CRLF corruption when cloning on Windows/WSL2 — a #!/bin/bash\r
+# shebang makes hooks fail with "No such file or directory" on Linux.
+*.sh text eol=lf
+plugin/templates/serena/git-hooks/* text eol=lf

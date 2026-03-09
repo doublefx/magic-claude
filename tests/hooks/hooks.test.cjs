@@ -404,6 +404,59 @@ function runTests() {
     }
   })) passed++; else failed++;
 
+  // -- 10. Git Hook Templates --
+  console.log('\nGit Hook Templates:');
+
+  const gitHookTemplatesDir = path.join(REPO_ROOT, 'plugin', 'templates', 'serena', 'git-hooks');
+
+  if (test('git hook templates have LF line endings (no CRLF)', () => {
+    const templates = fs.readdirSync(gitHookTemplatesDir);
+    const crlfFiles = [];
+    for (const file of templates) {
+      const content = fs.readFileSync(path.join(gitHookTemplatesDir, file));
+      if (content.includes('\r\n') || content.includes('\r')) {
+        crlfFiles.push(file);
+      }
+    }
+    assert.strictEqual(crlfFiles.length, 0, `Git hook templates with CRLF: ${crlfFiles.join(', ')}`);
+  })) passed++; else failed++;
+
+  if (test('git hook templates start with valid shebang (no \\r)', () => {
+    const templates = fs.readdirSync(gitHookTemplatesDir);
+    for (const file of templates) {
+      const content = fs.readFileSync(path.join(gitHookTemplatesDir, file), 'utf8');
+      const firstLine = content.split('\n')[0];
+      assert.ok(firstLine.startsWith('#!/'), `${file}: first line should start with #!, got: ${JSON.stringify(firstLine)}`);
+      assert.ok(!firstLine.includes('\r'), `${file}: shebang contains \\r — will fail as "#!/bin/bash\\r" on Linux`);
+    }
+  })) passed++; else failed++;
+
+  if (test('.gitattributes enforces LF for shell scripts and git hook templates', () => {
+    const gitattributes = path.join(REPO_ROOT, '.gitattributes');
+    assert.ok(fs.existsSync(gitattributes), '.gitattributes file should exist at repo root');
+    const content = fs.readFileSync(gitattributes, 'utf8');
+    // Must have a rule for git hook templates
+    assert.ok(
+      content.includes('eol=lf') || content.includes('text eol=lf'),
+      '.gitattributes should enforce LF line endings for shell scripts'
+    );
+    // Specifically cover the templates directory or shell scripts generically
+    assert.ok(
+      content.includes('git-hooks') || content.match(/\*\.sh\b.*eol=lf/) || content.match(/plugin\/templates.*eol=lf/),
+      '.gitattributes should cover git hook template files'
+    );
+  })) passed++; else failed++;
+
+  if (test('serena-setup SKILL.md instructs CRLF stripping when installing hooks', () => {
+    const skillPath = path.join(REPO_ROOT, 'plugin', 'skills', 'serena-setup', 'SKILL.md');
+    const content = fs.readFileSync(skillPath, 'utf8');
+    // Must explicitly reference stripping \r (CRLF) — not just any sed usage
+    assert.ok(
+      content.includes("sed 's/\\r$//'") || content.includes('dos2unix') || content.includes("tr -d '\\r'"),
+      "serena-setup SKILL.md should instruct stripping CRLF (sed 's/\\r$//' or dos2unix) when installing hooks"
+    );
+  })) passed++; else failed++;
+
   // Summary
   console.log('\n=== Test Results ===');
   console.log(`Passed: ${passed}`);

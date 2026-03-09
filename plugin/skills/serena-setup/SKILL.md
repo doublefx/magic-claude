@@ -171,14 +171,17 @@ For each hook type (`post-merge`, `post-rebase`, `post-checkout`, `post-rewrite`
    HOOK_EOF
    ```
 
-3. **If hook doesn't exist**: Copy template from plugin
+3. **If hook doesn't exist**: Copy template from plugin and strip CRLF
    ```bash
-   cp "${CLAUDE_PLUGIN_ROOT}/templates/serena/git-hooks/post-merge" .git/hooks/post-merge
+   # IMPORTANT: Always strip \r to prevent CRLF corruption on Windows/WSL2.
+   # A #!/bin/bash\r shebang makes hooks fail with "No such file or directory" on Linux.
+   sed 's/\r$//' "${CLAUDE_PLUGIN_ROOT}/templates/serena/git-hooks/post-merge" > .git/hooks/post-merge
    chmod +x .git/hooks/post-merge
    ```
 
 4. Repeat for all hook types: `post-rebase`, `post-checkout`, `post-rewrite`
    - Templates are in `${CLAUDE_PLUGIN_ROOT}/templates/serena/git-hooks/`
+   - Always use `sed 's/\r$//'` when copying — never raw `cp`
 
 **Serena section marker** allows future updates/removal without affecting other hooks
 
