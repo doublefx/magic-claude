@@ -36,6 +36,7 @@ const preCompactSource = fs.readFileSync(PRE_COMPACT_PATH, 'utf8');
 // Extract constants and functions via eval in a controlled scope
 const LITE_PHASES = ['QUICK DISCOVER', 'TDD', 'VERIFY', 'REVIEW'];
 const FULL_PHASES = ['QUICK DISCOVER', 'DISCOVER', 'PLAN', 'CRITIC', 'TDD', 'VERIFY', 'REVIEW+HARDEN', 'SIMPLIFY', 'DELIVER'];
+const ALL_PHASES_SORTED = [...new Set([...LITE_PHASES, ...FULL_PHASES])].sort((a, b) => b.length - a.length);
 
 // Re-implement the pure functions for testing (matches pre-compact.cjs exactly)
 function normalizePhase(rawPhase) {
@@ -47,8 +48,7 @@ function normalizePhase(rawPhase) {
 
   const baseName = phase.split(/\s*[—–-]\s*/)[0].trim();
 
-  const allPhases = [...new Set([...LITE_PHASES, ...FULL_PHASES])].sort((a, b) => b.length - a.length);
-  for (const known of allPhases) {
+  for (const known of ALL_PHASES_SORTED) {
     if (baseName === known || baseName.startsWith(known)) return known;
   }
 
@@ -109,17 +109,19 @@ function enrichStateFile(stateFilePath) {
   const rawContent = fs.readFileSync(stateFilePath, 'utf8');
   const content = rawContent.replace(/\r\n/g, '\n');
 
-  if (content.includes('## Resume Directive')) {
-    return false;
-  }
-
   const phaseMatch = content.match(/^Phase:\s*(.+)$/m);
   const modeMatch = content.match(/^Mode:\s*(.+)$/m);
+  const featureMatch = content.match(/^Feature:\s*(.+)$/m);
   const taskMatch = content.match(/^Task:\s*(.+)$/m);
 
   const phase = phaseMatch ? phaseMatch[1].trim() : null;
   const mode = modeMatch ? modeMatch[1].trim() : 'FULL';
+  const feature = featureMatch ? featureMatch[1].trim() : null;
   const currentTask = taskMatch ? taskMatch[1].trim() : null;
+
+  if (content.includes('## Resume Directive')) {
+    return { enriched: false, phase, feature };
+  }
 
   const resumeDirective = computeResumeDirective(phase, mode, currentTask);
   const pipelinePosition = computePipelinePosition(phase, mode);
@@ -130,7 +132,7 @@ function enrichStateFile(stateFilePath) {
   fs.writeFileSync(tmpPath, enrichedContent, 'utf8');
   fs.renameSync(tmpPath, stateFilePath);
 
-  return true;
+  return { enriched: true, phase, feature };
 }
 
 // Create temp directory for test files
@@ -301,7 +303,7 @@ function runTests() {
     fs.writeFileSync(stateFile, '# Craft State\nFeature: test\nMode: FULL\nPhase: TDD\n\n## Current Task\nTask: Task 3/7\nStatus: in_progress\n');
 
     const result = enrichStateFile(stateFile);
-    assert.strictEqual(result, true);
+    assert.strictEqual(result.enriched, true);
 
     const content = fs.readFileSync(stateFile, 'utf8');
     assert.ok(content.includes('## Resume Directive'));
@@ -318,7 +320,7 @@ function runTests() {
     fs.writeFileSync(stateFile, '# Craft State\nPhase: TDD\nMode: FULL\n\n## Resume Directive\nNEXT ACTION: test\n');
 
     const result = enrichStateFile(stateFile);
-    assert.strictEqual(result, false);
+    assert.strictEqual(result.enriched, false);
 
     fs.rmSync(tmpDir, { recursive: true, force: true });
   })) passed++; else failed++;
@@ -329,7 +331,7 @@ function runTests() {
     fs.writeFileSync(stateFile, '# Craft State\r\nFeature: test\r\nMode: FULL\r\nPhase: TDD\r\n');
 
     const result = enrichStateFile(stateFile);
-    assert.strictEqual(result, true);
+    assert.strictEqual(result.enriched, true);
 
     const content = fs.readFileSync(stateFile, 'utf8');
     assert.ok(content.includes('## Resume Directive'));

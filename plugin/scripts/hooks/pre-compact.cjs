@@ -29,6 +29,8 @@ const LEGACY_STATE_FILENAME = 'orchestration-state.md';
 
 const LITE_PHASES = ['QUICK DISCOVER', 'TDD', 'VERIFY', 'REVIEW'];
 const FULL_PHASES = ['QUICK DISCOVER', 'DISCOVER', 'PLAN', 'CRITIC', 'TDD', 'VERIFY', 'REVIEW+HARDEN', 'SIMPLIFY', 'DELIVER'];
+// Precomputed: longest-first for startsWith matching (REVIEW+HARDEN before REVIEW)
+const ALL_PHASES_SORTED = [...new Set([...LITE_PHASES, ...FULL_PHASES])].sort((a, b) => b.length - a.length);
 
 /**
  * Normalize a Phase field value to match a known pipeline phase name.
@@ -45,9 +47,7 @@ function normalizePhase(rawPhase) {
   // Strip detail suffix (e.g., "TDD — baseline verification" -> "TDD")
   const baseName = phase.split(/\s*[—–-]\s*/)[0].trim();
 
-  // Match against known phases (longest first to prevent "REVIEW" matching before "REVIEW+HARDEN")
-  const allPhases = [...new Set([...LITE_PHASES, ...FULL_PHASES])].sort((a, b) => b.length - a.length);
-  for (const known of allPhases) {
+  for (const known of ALL_PHASES_SORTED) {
     if (baseName === known || baseName.startsWith(known)) return known;
   }
 
@@ -113,26 +113,28 @@ function computePipelinePosition(phase, mode) {
 
 /**
  * Enrich the craft state file with Resume Directive and Pipeline Position.
- * Returns true if enrichment was performed.
+ * Returns { enriched, phase, feature } — enriched=false if already has Resume Directive.
  */
 function enrichStateFile(stateFilePath) {
   const rawContent = fs.readFileSync(stateFilePath, 'utf8');
   // Normalize CRLF -> LF for reliable regex parsing (WSL2)
   const content = rawContent.replace(/\r\n/g, '\n');
 
-  // Step 0: Skip if already enriched
-  if (content.includes('## Resume Directive')) {
-    return false;
-  }
-
-  // Step 1: Parse fields
+  // Parse fields (needed for both logging and enrichment)
   const phaseMatch = content.match(/^Phase:\s*(.+)$/m);
   const modeMatch = content.match(/^Mode:\s*(.+)$/m);
+  const featureMatch = content.match(/^Feature:\s*(.+)$/m);
   const taskMatch = content.match(/^Task:\s*(.+)$/m);
 
   const phase = phaseMatch ? phaseMatch[1].trim() : null;
   const mode = modeMatch ? modeMatch[1].trim() : 'FULL';
+  const feature = featureMatch ? featureMatch[1].trim() : null;
   const currentTask = taskMatch ? taskMatch[1].trim() : null;
+
+  // Skip if already enriched
+  if (content.includes('## Resume Directive')) {
+    return { enriched: false, phase, feature };
+  }
 
   // Stale detection: warn if Phase Summary and Phase header are inconsistent
   const phaseSummaryMatch = content.match(/^- VERIFY:\s*completed/m);
@@ -142,19 +144,17 @@ function enrichStateFile(stateFilePath) {
     log('[PreCompact] WARNING: Phase Summary shows VERIFY completed but Phase header is at an earlier stage — state may be stale');
   }
 
-  // Step 4-5: Compute sections
+  // Compute and append sections
   const resumeDirective = computeResumeDirective(phase, mode, currentTask);
   const pipelinePosition = computePipelinePosition(phase, mode);
-
-  // Step 6: Append sections before the end of content
   const enrichedContent = content.trimEnd() + '\n\n' + pipelinePosition + '\n\n' + resumeDirective + '\n';
 
-  // Step 7: Atomic write
+  // Atomic write
   const tmpPath = stateFilePath + '.tmp';
   fs.writeFileSync(tmpPath, enrichedContent, 'utf8');
   fs.renameSync(tmpPath, stateFilePath);
 
-  return true;
+  return { enriched: true, phase, feature };
 }
 
 async function main() {
@@ -197,22 +197,18 @@ async function main() {
     }
   }
 
-  // Check for active craft state and enrich before compaction
+  // Check for active craft state and enrich before compaction (single read)
   if (fs.existsSync(stateFile)) {
-    const stateContent = fs.readFileSync(stateFile, 'utf8');
-    const phaseMatch = stateContent.match(/^Phase:\s*(.+)$/m);
-    const featureMatch = stateContent.match(/^Feature:\s*(.+)$/m);
-    const phase = phaseMatch ? phaseMatch[1].trim() : 'unknown';
-    const feature = featureMatch ? featureMatch[1].trim() : 'unknown';
-
-    log(`[PreCompact] Active craft pipeline detected: "${feature}" at ${phase}`);
-    log(`[PreCompact] State file: .claude/${STATE_FILENAME}`);
-    log('[PreCompact] The approved plan is at the path specified in the state file.');
-
-    // Enrich state file with Resume Directive for post-compaction recovery
     try {
-      const enriched = enrichStateFile(stateFile);
-      if (enriched) {
+      const result = enrichStateFile(stateFile);
+      const feature = result.feature || 'unknown';
+      const phase = result.phase || 'unknown';
+
+      log(`[PreCompact] Active craft pipeline detected: "${feature}" at ${phase}`);
+      log(`[PreCompact] State file: .claude/${STATE_FILENAME}`);
+      log('[PreCompact] The approved plan is at the path specified in the state file.');
+
+      if (result.enriched) {
         log('[PreCompact] State file enriched with Resume Directive and Pipeline Position');
       } else {
         log('[PreCompact] State file already has Resume Directive — skipping enrichment');
