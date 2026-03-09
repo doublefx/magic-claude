@@ -22,6 +22,7 @@ const testFiles = [
   'lib/workspace-commands.test.cjs',
   'lib/serena.test.cjs',
   'lib/setup-rules.test.cjs',
+  'lib/hook-telemetry.test.cjs',
   'hooks/hooks.test.cjs',
   'hooks/serena-hooks.test.cjs',
   'skills/systematic-debugging.test.cjs',
