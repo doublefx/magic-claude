@@ -20,7 +20,7 @@ wrapHookMain('console-log-detector', (input) => {
 
   if (!filePath || !fs.existsSync(filePath)) {
     debugHook('console-log-detector', 'process', 'Skipping — no file path or missing', filePath);
-    process.exit(0);
+    return { outcome: 'skipped', reason: 'no file path or file missing' };
   }
 
   const content = fs.readFileSync(filePath, 'utf8');
@@ -55,9 +55,9 @@ wrapHookMain('console-log-detector', (input) => {
         additionalContext: `[Debug Statements] Found in ${filePath}: ${allFindings.join(', ')}. Remove before committing.`
       }
     }));
-  } else {
-    debugHook('console-log-detector', 'exit', 'No debug statements found');
+    return { outcome: 'fired', reason: `found ${allFindings.join(', ')}` };
   }
 
-  process.exit(0);
+  debugHook('console-log-detector', 'exit', 'No debug statements found');
+  return { outcome: 'skipped', reason: 'no debug statements found' };
 });

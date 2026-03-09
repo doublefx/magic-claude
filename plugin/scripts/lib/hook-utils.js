@@ -20,6 +20,10 @@ import {
 import path from 'path';
 import fs from 'fs';
 import os from 'os';
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
+const { logTelemetry } = require('./hook-telemetry.cjs');
 
 const CLAUDE_CONFIG_DIR = process.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), '.claude');
 const HOOK_DEBUG_MARKER = path.join(CLAUDE_CONFIG_DIR, 'hook-debug.enabled');
@@ -317,6 +321,13 @@ export function logHook(message, level = 'INFO') {
                  '[Hook]';
   console.error(`${prefix} ${message}`);
 }
+
+/**
+ * Log a telemetry event for hook effectiveness tracking.
+ * Always active — writes to $CLAUDE_CONFIG_DIR/hook-telemetry.jsonl.
+ * Re-exported from hook-telemetry.cjs for ESM convenience.
+ */
+export { logTelemetry };
 
 /**
  * Re-export detectProjectType and safe-exec functions for convenience

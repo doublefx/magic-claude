@@ -18,7 +18,8 @@ import {
   logHook,
   commandExists,
   safeExecSync,
-  isValidFilePath
+  isValidFilePath,
+  logTelemetry
 } from '../lib/hook-utils.js';
 
 const require = createRequire(import.meta.url);
@@ -31,29 +32,28 @@ const {
  * Main hook function
  */
 async function main() {
+  const start = Date.now();
   try {
-    // Read tool context from stdin
     const context = await readHookInput();
 
     if (!context) {
       logHook('No context received from stdin', 'WARNING');
+      logTelemetry({ hook: 'smart-formatter', event: 'PostToolUse', outcome: 'skipped', reason: 'no stdin context', duration_ms: Date.now() - start });
       process.exit(0);
     }
 
-    // Extract file path from context
     const filePath = getFilePath(context);
+    const tool = context?.tool_name;
 
-    // If no file path or file doesn't exist, nothing to do
     if (!filePath || !fs.existsSync(filePath) || !isValidFilePath(filePath)) {
       debugHook('smart-formatter', 'process', 'Skipping — no file, missing, or invalid path', filePath);
+      logTelemetry({ hook: 'smart-formatter', event: 'PostToolUse', outcome: 'skipped', reason: 'no file or invalid path', duration_ms: Date.now() - start, file: filePath, tool });
       process.exit(0);
     }
 
-    // Detect ecosystems present in the project
     const detectedEcosystems = detectMultipleEcosystems(process.cwd());
     const ext = path.extname(filePath);
 
-    // Collect formatters from detected ecosystems only
     const formatters = [];
     for (const ecoType of detectedEcosystems) {
       const eco = getEcosystem(ecoType);
@@ -62,7 +62,7 @@ async function main() {
       }
     }
 
-    // Find formatters matching this file's extension and try them in order
+    let formatted = false;
     for (const fmt of formatters) {
       if (!fmt.extensions.includes(ext)) continue;
 
@@ -71,18 +71,24 @@ async function main() {
         try {
           safeExecSync(cmd, fmt.args(filePath), { stdio: 'pipe' });
           logHook(`Formatted ${path.basename(filePath)} with ${fmt.tool}`);
-          break; // Stop after first successful format
+          logTelemetry({ hook: 'smart-formatter', event: 'PostToolUse', outcome: 'fired', reason: `formatted with ${fmt.tool}`, duration_ms: Date.now() - start, file: filePath, tool });
+          formatted = true;
+          break;
         } catch (error) {
           logHook(`Failed to format with ${fmt.tool}: ${error.message}`, 'WARNING');
         }
       }
     }
 
-    // Side-effect only (formatting) — no stdout needed
+    if (!formatted) {
+      logTelemetry({ hook: 'smart-formatter', event: 'PostToolUse', outcome: 'skipped', reason: `no formatter for ${ext}`, duration_ms: Date.now() - start, file: filePath, tool });
+    }
+
     process.exit(0);
 
   } catch (error) {
     logHook(`Unexpected error: ${error.message}`, 'ERROR');
+    logTelemetry({ hook: 'smart-formatter', event: 'PostToolUse', outcome: 'error', reason: error.message, duration_ms: Date.now() - start });
     process.exit(0);
   }
 }

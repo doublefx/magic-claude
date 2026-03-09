@@ -26,7 +26,8 @@ import {
   logHook,
   commandExists,
   safeExecSync,
-  isValidFilePath
+  isValidFilePath,
+  logTelemetry
 } from '../lib/hook-utils.js';
 
 const TS_JS_EXTENSIONS = ['.ts', '.tsx', '.js', '.jsx', '.mjs'];
@@ -279,11 +280,13 @@ function runNpmAudit(cwd) {
  * Main hook function
  */
 async function main() {
+  const start = Date.now();
   try {
     const context = await readHookInput();
 
     if (!context) {
       logHook('No context received from stdin', 'WARNING');
+      logTelemetry({ hook: 'typescript-security', event: 'PostToolUse', outcome: 'skipped', reason: 'no stdin context', duration_ms: Date.now() - start });
       process.exit(0);
     }
 
@@ -293,6 +296,7 @@ async function main() {
     // Only run on Node.js/TypeScript projects
     if (!projectTypes.includes('nodejs') && !projectTypes.includes('typescript')) {
       debugHook('typescript-security', 'process', 'Skipping — not a Node.js/TS project', projectTypes);
+      logTelemetry({ hook: 'typescript-security', event: 'PostToolUse', outcome: 'skipped', reason: `not a nodejs/ts project (${projectTypes.join(',')})`, duration_ms: Date.now() - start });
       process.exit(0);
     }
 
@@ -318,14 +322,22 @@ async function main() {
           writeHookResult('PostToolUse', {
             additionalContext: `[TS/JS Security] ${findings.join('. ')}. Review and fix before committing.`
           });
+          logTelemetry({ hook: 'typescript-security', event: 'PostToolUse', outcome: 'fired', reason: `${findings.length} finding(s)`, duration_ms: Date.now() - start, file: filePath, tool });
+        } else {
+          logTelemetry({ hook: 'typescript-security', event: 'PostToolUse', outcome: 'skipped', reason: 'no security issues', duration_ms: Date.now() - start, file: filePath, tool });
         }
+      } else {
+        logTelemetry({ hook: 'typescript-security', event: 'PostToolUse', outcome: 'skipped', reason: 'file does not exist', duration_ms: Date.now() - start, file: filePath, tool });
       }
+    } else {
+      logTelemetry({ hook: 'typescript-security', event: 'PostToolUse', outcome: 'skipped', reason: `not Edit/Write on ts/js (tool=${tool})`, duration_ms: Date.now() - start, file: filePath, tool });
     }
 
     process.exit(0);
 
   } catch (error) {
     logHook(`Unexpected error: ${error.message}`, 'ERROR');
+    logTelemetry({ hook: 'typescript-security', event: 'PostToolUse', outcome: 'error', reason: error.message, duration_ms: Date.now() - start });
     process.exit(0);
   }
 }

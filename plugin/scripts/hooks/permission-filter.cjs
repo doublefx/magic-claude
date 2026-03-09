@@ -8,9 +8,12 @@
  * Auto-approves known safe bash commands.
  */
 
+const { logTelemetry } = require('../lib/hook-telemetry.cjs');
+
 let data = '';
 process.stdin.on('data', chunk => data += chunk);
 process.stdin.on('end', () => {
+  const start = Date.now();
   try {
     const input = JSON.parse(data);
     const toolName = input.tool_name || '';
@@ -78,11 +81,15 @@ process.stdin.on('end', () => {
         decision: decision,
         additionalContext: reason
       };
+      logTelemetry({ hook: 'permission-filter', event: 'PermissionRequest', outcome: 'fired', reason: reason, duration_ms: Date.now() - start, tool: toolName });
+    } else {
+      logTelemetry({ hook: 'permission-filter', event: 'PermissionRequest', outcome: 'skipped', reason: `no auto-approve for ${toolName}`, duration_ms: Date.now() - start, tool: toolName });
     }
 
     console.log(JSON.stringify(output));
   } catch (error) {
     console.error(`[PermissionFilter] Error: ${error.message}`);
+    logTelemetry({ hook: 'permission-filter', event: 'PermissionRequest', outcome: 'error', reason: error.message, duration_ms: Date.now() - start });
     // Pass through on error
     console.log(data);
   }

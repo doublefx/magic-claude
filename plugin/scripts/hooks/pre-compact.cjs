@@ -20,11 +20,16 @@ const {
   readStdinJson,
   log
 } = require('../lib/utils.cjs');
+const { logTelemetry } = require('../lib/hook-telemetry.cjs');
 
 async function main() {
+  const start = Date.now();
   // Skip advisory hooks inside subagents — only fire for top-level Claude sessions
   const hookInput = await readStdinJson().catch(() => ({}));
-  if (hookInput.agent_id) process.exit(0);
+  if (hookInput.agent_id) {
+    logTelemetry({ hook: 'pre-compact', event: 'PreCompact', outcome: 'skipped', reason: 'subagent', duration_ms: Date.now() - start });
+    process.exit(0);
+  }
   const sessionsDir = getSessionsDir();
   const compactionLog = path.join(sessionsDir, 'compaction-log.txt');
 
@@ -58,6 +63,8 @@ async function main() {
   }
 
   log('[PreCompact] State saved before compaction');
+  const hasOrchestration = fs.existsSync(path.join(process.cwd(), '.claude', 'orchestration-state.md'));
+  logTelemetry({ hook: 'pre-compact', event: 'PreCompact', outcome: 'fired', reason: hasOrchestration ? 'state saved (active orchestration)' : 'state saved', duration_ms: Date.now() - start });
   process.exit(0);
 }
 

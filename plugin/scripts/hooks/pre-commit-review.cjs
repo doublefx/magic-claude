@@ -14,6 +14,7 @@
  */
 
 const { log } = require('../lib/utils.cjs');
+const { logTelemetry } = require('../lib/hook-telemetry.cjs');
 
 /**
  * Read hook input from stdin (JSON format)
@@ -62,10 +63,15 @@ function wasReviewRecentlyDone() {
 }
 
 async function main() {
+  const start = Date.now();
   const input = await readStdin();
 
   // Skip advisory hooks inside subagents — only fire for top-level Claude sessions
-  if (input.agent_id) { console.log(JSON.stringify(input)); process.exit(0); }
+  if (input.agent_id) {
+    logTelemetry({ hook: 'pre-commit-review', event: 'PreToolUse', outcome: 'skipped', reason: 'subagent', duration_ms: Date.now() - start });
+    console.log(JSON.stringify(input));
+    process.exit(0);
+  }
 
   // Get the command being executed
   const command = input.tool_input?.command || '';
@@ -73,6 +79,7 @@ async function main() {
   // Only trigger for actual git commit (not amend, not other git commands)
   if (!/^git\s+commit\b/.test(command) || /--amend/.test(command)) {
     // Not a fresh commit, pass through
+    logTelemetry({ hook: 'pre-commit-review', event: 'PreToolUse', outcome: 'skipped', reason: 'not a git commit', duration_ms: Date.now() - start });
     console.log(JSON.stringify(input));
     process.exit(0);
   }
@@ -83,6 +90,7 @@ async function main() {
   if (stagedFiles.length === 0) {
     // No source files being committed, skip review suggestion
     log('[PreCommit] Commit has no source files staged');
+    logTelemetry({ hook: 'pre-commit-review', event: 'PreToolUse', outcome: 'skipped', reason: 'no staged source files', duration_ms: Date.now() - start });
     console.log(JSON.stringify(input));
     process.exit(0);
   }
@@ -90,6 +98,7 @@ async function main() {
   // Check if review was recently done
   if (wasReviewRecentlyDone()) {
     log('[PreCommit] Code review was recently performed, skipping suggestion');
+    logTelemetry({ hook: 'pre-commit-review', event: 'PreToolUse', outcome: 'skipped', reason: 'review recently done', duration_ms: Date.now() - start });
     console.log(JSON.stringify(input));
     process.exit(0);
   }
@@ -99,6 +108,7 @@ async function main() {
   log(`[PreCommit] ${stagedFiles.length} source file(s) about to be committed`);
   log(`[PreCommit] Files: ${stagedFiles.slice(0, 3).join(', ')}${stagedFiles.length > 3 ? '...' : ''}`);
   log('[PreCommit] Tip: Run code-reviewer agent before commit for quality assurance');
+  logTelemetry({ hook: 'pre-commit-review', event: 'PreToolUse', outcome: 'fired', reason: `${stagedFiles.length} staged source file(s)`, duration_ms: Date.now() - start });
 
   // Pass through unchanged (don't block the commit)
   console.log(JSON.stringify(input));

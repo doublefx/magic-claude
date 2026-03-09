@@ -24,7 +24,8 @@ import {
   getFilePath,
   detectProjectType,
   logHook,
-  commandExists
+  commandExists,
+  logTelemetry
 } from '../lib/hook-utils.js';
 
 /**
@@ -193,43 +194,42 @@ function checkSecurityPluginConfiguration(cwd, projectTypes) {
  * Main hook function
  */
 async function main() {
+  const start = Date.now();
   try {
-    // Read tool context from stdin
     const context = await readHookInput();
 
     if (!context) {
       logHook('No context received from stdin', 'WARNING');
+      logTelemetry({ hook: 'java-security', event: 'PostToolUse', outcome: 'skipped', reason: 'no stdin context', duration_ms: Date.now() - start });
       process.exit(0);
     }
 
-    // Extract file path from context
     const filePath = getFilePath(context);
+    const tool = context?.tool_name;
 
-    // If no file path or not a Java file, exit cleanly
     if (!filePath || !filePath.endsWith('.java')) {
       debugHook('java-security', 'process', 'Skipping — not a .java file', filePath);
+      logTelemetry({ hook: 'java-security', event: 'PostToolUse', outcome: 'skipped', reason: 'not a .java file', duration_ms: Date.now() - start, file: filePath, tool });
       process.exit(0);
     }
 
     if (!fs.existsSync(filePath)) {
       debugHook('java-security', 'process', 'File does not exist', filePath);
       logHook(`File does not exist: ${filePath}`, 'WARNING');
+      logTelemetry({ hook: 'java-security', event: 'PostToolUse', outcome: 'skipped', reason: 'file does not exist', duration_ms: Date.now() - start, file: filePath, tool });
       process.exit(0);
     }
 
-    // Detect project types
     const projectTypes = detectProjectType(process.cwd());
 
-    // Only run for Maven/Gradle projects
     if (!projectTypes.includes('maven') && !projectTypes.includes('gradle')) {
       debugHook('java-security', 'process', 'Skipping — not a Maven/Gradle project', projectTypes);
+      logTelemetry({ hook: 'java-security', event: 'PostToolUse', outcome: 'skipped', reason: `not a maven/gradle project (${projectTypes.join(',')})`, duration_ms: Date.now() - start, file: filePath, tool });
       process.exit(0);
     }
 
-    // Collect all findings
     const findings = [];
 
-    // Run basic security checks on source file (fast)
     const issues = runBasicSecurityChecks(filePath);
     if (issues.length > 0) {
       findings.push(`Security issues in ${path.basename(filePath)}: ${issues.join('; ')}`);
@@ -237,26 +237,26 @@ async function main() {
       issues.forEach(issue => console.error(`  - ${issue}`));
     }
 
-    // Check if security plugins are configured
     checkSecurityPluginConfiguration(process.cwd(), projectTypes);
 
-    // Find compiled classes directory
     const classesDir = findClassesDirectory(process.cwd(), projectTypes);
-
     if (classesDir) {
       runSpotBugs(classesDir);
     }
 
-    // Output findings as additionalContext if any issues found
     if (findings.length > 0) {
       writeHookResult('PostToolUse', {
         additionalContext: `[Java Security] ${findings.join(' | ')}. Review and fix before committing.`
       });
+      logTelemetry({ hook: 'java-security', event: 'PostToolUse', outcome: 'fired', reason: `${findings.length} finding(s)`, duration_ms: Date.now() - start, file: filePath, tool });
+    } else {
+      logTelemetry({ hook: 'java-security', event: 'PostToolUse', outcome: 'skipped', reason: 'no security issues', duration_ms: Date.now() - start, file: filePath, tool });
     }
     process.exit(0);
 
   } catch (error) {
     logHook(`Unexpected error: ${error.message}`, 'ERROR');
+    logTelemetry({ hook: 'java-security', event: 'PostToolUse', outcome: 'error', reason: error.message, duration_ms: Date.now() - start });
     process.exit(0);
   }
 }

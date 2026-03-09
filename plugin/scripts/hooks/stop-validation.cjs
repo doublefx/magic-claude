@@ -12,18 +12,21 @@
 const { execSync } = require('child_process');
 const fs = require('fs');
 const { getAllDebugPatterns } = require('../lib/ecosystems/index.cjs');
+const { logTelemetry } = require('../lib/hook-telemetry.cjs');
 
 const DEBUG_PATTERNS = getAllDebugPatterns();
 
 let data = '';
 process.stdin.on('data', chunk => data += chunk);
 process.stdin.on('end', () => {
+  const start = Date.now();
   try {
     // Check if we're in a git repo
     try {
       execSync('git rev-parse --git-dir', { stdio: 'pipe' });
     } catch {
       // Not a git repo, skip
+      logTelemetry({ hook: 'stop-validation', event: 'Stop', outcome: 'skipped', reason: 'not a git repo', duration_ms: Date.now() - start });
       console.log(data);
       process.exit(0);
     }
@@ -49,15 +52,20 @@ process.stdin.on('end', () => {
 
       if (hasDebugStatements) {
         console.error('[Hook] Remove debug statements before committing');
+        logTelemetry({ hook: 'stop-validation', event: 'Stop', outcome: 'fired', reason: 'debug statements found', duration_ms: Date.now() - start });
+      } else {
+        logTelemetry({ hook: 'stop-validation', event: 'Stop', outcome: 'skipped', reason: `no debug statements (${allFiles.length} files checked)`, duration_ms: Date.now() - start });
       }
     } catch {
       // Git command failed, skip silently
+      logTelemetry({ hook: 'stop-validation', event: 'Stop', outcome: 'skipped', reason: 'git diff failed', duration_ms: Date.now() - start });
     }
 
     // Pass through unchanged
     console.log(data);
   } catch (error) {
     console.error(`[StopValidation] Error: ${error.message}`);
+    logTelemetry({ hook: 'stop-validation', event: 'Stop', outcome: 'error', reason: error.message, duration_ms: Date.now() - start });
     console.log(data);
   }
 });

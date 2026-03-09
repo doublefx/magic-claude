@@ -20,7 +20,7 @@ wrapHookMain('pyright-checker', (input) => {
   // Only process Python files
   if (!filePath || !/\.py$/.test(filePath) || !fs.existsSync(filePath)) {
     debugHook('pyright-checker', 'process', 'Skipping — not a .py file or missing', filePath);
-    process.exit(0);
+    return { outcome: 'skipped', reason: 'not a .py file or file missing' };
   }
 
   // Find pyproject.toml or pyrightconfig.json by walking up directories
@@ -38,7 +38,7 @@ wrapHookMain('pyright-checker', (input) => {
 
   if (!hasPyproject && !hasPyrightConfig) {
     debugHook('pyright-checker', 'process', 'No pyproject.toml or pyrightconfig.json found');
-    process.exit(0);
+    return { outcome: 'skipped', reason: 'no pyproject.toml or pyrightconfig.json' };
   }
 
   // Check if pyright is available
@@ -57,7 +57,7 @@ wrapHookMain('pyright-checker', (input) => {
 
   if (!pyrightAvailable) {
     debugHook('pyright-checker', 'process', 'Pyright not available — skipping');
-    process.exit(0);
+    return { outcome: 'skipped', reason: 'pyright not installed' };
   }
 
   let errorLines = [];
@@ -92,9 +92,9 @@ wrapHookMain('pyright-checker', (input) => {
         additionalContext: `[Pyright] Type errors in ${path.basename(filePath)}:\n${errorLines.join('\n')}`
       }
     }));
-    return;
+    return { outcome: 'fired', reason: `${errorLines.length} type error(s)` };
   }
 
   debugHook('pyright-checker', 'exit', 'No errors — clean exit');
-  process.exit(0);
+  return { outcome: 'skipped', reason: 'no type errors' };
 });

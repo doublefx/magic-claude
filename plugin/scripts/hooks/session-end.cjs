@@ -20,11 +20,16 @@ const {
   readStdinJson,
   log
 } = require('../lib/utils.cjs');
+const { logTelemetry } = require('../lib/hook-telemetry.cjs');
 
 async function main() {
+  const start = Date.now();
   // Skip advisory hooks inside subagents — only fire for top-level Claude sessions
   const hookInput = await readStdinJson().catch(() => ({}));
-  if (hookInput.agent_id) process.exit(0);
+  if (hookInput.agent_id) {
+    logTelemetry({ hook: 'session-end', event: 'SessionEnd', outcome: 'skipped', reason: 'subagent', duration_ms: Date.now() - start });
+    process.exit(0);
+  }
   const sessionsDir = getSessionsDir();
   const today = getDateString();
   const sessionFile = path.join(sessionsDir, `${today}-session.tmp`);
@@ -43,6 +48,7 @@ async function main() {
 
     if (success) {
       log(`[SessionEnd] Updated session file: ${sessionFile}`);
+      logTelemetry({ hook: 'session-end', event: 'SessionEnd', outcome: 'fired', reason: 'updated session file', duration_ms: Date.now() - start });
     }
   } else {
     // Create new session file with template
@@ -74,6 +80,7 @@ async function main() {
 
     writeFile(sessionFile, template);
     log(`[SessionEnd] Created session file: ${sessionFile}`);
+    logTelemetry({ hook: 'session-end', event: 'SessionEnd', outcome: 'fired', reason: 'created session file', duration_ms: Date.now() - start });
   }
 
   process.exit(0);

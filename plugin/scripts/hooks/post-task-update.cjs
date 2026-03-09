@@ -33,7 +33,7 @@ function getModifiedSourceFiles() {
 
 wrapHookMain('post-task-update', (input) => {
   // Skip advisory hooks inside subagents — only fire for top-level Claude sessions
-  if (input.agent_id) return;
+  if (input.agent_id) return { outcome: 'skipped', reason: 'subagent' };
   // Check if this was a task completion
   const toolInput = input.tool_input || {};
   const status = toolInput.status;
@@ -41,7 +41,7 @@ wrapHookMain('post-task-update', (input) => {
   // Only trigger on task completion
   if (status !== 'completed') {
     debugHook('post-task-update', 'process', 'Skipping — status is not completed', status);
-    process.exit(0);
+    return { outcome: 'skipped', reason: `status is ${status || 'unknown'}` };
   }
 
   // Check for modified source files
@@ -49,7 +49,7 @@ wrapHookMain('post-task-update', (input) => {
 
   if (modifiedFiles.length === 0) {
     debugHook('post-task-update', 'process', 'No modified source files');
-    process.exit(0);
+    return { outcome: 'skipped', reason: 'no modified source files' };
   }
 
   // Task completed with source file changes - inject context for Claude
@@ -64,5 +64,5 @@ wrapHookMain('post-task-update', (input) => {
     }
   }));
 
-  process.exit(0);
+  return { outcome: 'fired', reason: `review recommended for ${modifiedFiles.length} file(s)` };
 });

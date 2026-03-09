@@ -13,6 +13,7 @@
  */
 
 const { log } = require('../lib/utils.cjs');
+const { logTelemetry } = require('../lib/hook-telemetry.cjs');
 
 function readStdin() {
   return new Promise((resolve) => {
@@ -155,9 +156,11 @@ function findArrayRemovals(oldArr, newArr) {
 }
 
 async function main() {
+  const start = Date.now();
   const input = await readStdin();
 
   if (!input.hook_event_name || input.hook_event_name !== 'ConfigChange') {
+    logTelemetry({ hook: 'config-change', event: 'ConfigChange', outcome: 'skipped', reason: 'not a ConfigChange event', duration_ms: Date.now() - start });
     process.exit(0);
   }
 
@@ -183,10 +186,12 @@ async function main() {
   };
 
   console.log(JSON.stringify(output));
+  logTelemetry({ hook: 'config-change', event: 'ConfigChange', outcome: 'fired', reason: `${result.category}: ${result.severity}`, duration_ms: Date.now() - start });
   process.exit(0);
 }
 
 main().catch(err => {
   console.error('[ConfigChange] Error:', err.message);
+  logTelemetry({ hook: 'config-change', event: 'ConfigChange', outcome: 'error', reason: err.message });
   process.exit(0); // Never crash on config changes
 });

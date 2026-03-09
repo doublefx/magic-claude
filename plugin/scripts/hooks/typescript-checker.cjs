@@ -19,7 +19,7 @@ wrapHookMain('typescript-checker', (input) => {
   // Only process TypeScript files
   if (!filePath || !/\.(ts|tsx)$/.test(filePath) || !fs.existsSync(filePath)) {
     debugHook('typescript-checker', 'process', 'Skipping — not a TS file or missing', filePath);
-    process.exit(0);
+    return { outcome: 'skipped', reason: 'not a .ts/.tsx file or file missing' };
   }
 
   // Find tsconfig.json by walking up directories
@@ -30,7 +30,7 @@ wrapHookMain('typescript-checker', (input) => {
 
   if (!fs.existsSync(path.join(dir, 'tsconfig.json'))) {
     debugHook('typescript-checker', 'process', 'No tsconfig.json found');
-    process.exit(0);
+    return { outcome: 'skipped', reason: 'no tsconfig.json found' };
   }
 
   let errorLines = [];
@@ -54,16 +54,15 @@ wrapHookMain('typescript-checker', (input) => {
     console.error(errorLines.join('\n'));
 
     debugHook('typescript-checker', 'output', 'Writing type errors', errorLines.length);
-    // Inject errors as context for Claude
     console.log(JSON.stringify({
       hookSpecificOutput: {
         hookEventName: 'PostToolUse',
         additionalContext: `[TypeScript] Type errors in ${path.basename(filePath)}:\n${errorLines.join('\n')}`
       }
     }));
-    return;
+    return { outcome: 'fired', reason: `${errorLines.length} type error(s)` };
   }
 
   debugHook('typescript-checker', 'exit', 'No errors — clean exit');
-  process.exit(0);
+  return { outcome: 'skipped', reason: 'no type errors' };
 });

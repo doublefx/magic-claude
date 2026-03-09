@@ -26,7 +26,8 @@ import {
   logHook,
   commandExists,
   safeExecSync,
-  isValidFilePath
+  isValidFilePath,
+  logTelemetry
 } from '../lib/hook-utils.js';
 
 /**
@@ -216,29 +217,27 @@ function runPipAudit(cwd) {
  * Main hook function
  */
 async function main() {
+  const start = Date.now();
   try {
-    // Read tool context from stdin
     const context = await readHookInput();
 
     if (!context) {
       logHook('No context received from stdin', 'WARNING');
+      logTelemetry({ hook: 'python-security', event: 'PostToolUse', outcome: 'skipped', reason: 'no stdin context', duration_ms: Date.now() - start });
       process.exit(0);
     }
 
-    // Detect project types
     const projectTypes = detectProjectType(process.cwd());
 
-    // Only run on Python projects
     if (!projectTypes.includes('python')) {
       debugHook('python-security', 'process', 'Skipping — not a Python project', projectTypes);
+      logTelemetry({ hook: 'python-security', event: 'PostToolUse', outcome: 'skipped', reason: `not a python project (${projectTypes.join(',')})`, duration_ms: Date.now() - start });
       process.exit(0);
     }
 
-    // Get tool name and file path
     const tool = getToolName(context);
     const filePath = getFilePath(context);
 
-    // Only run on Edit/Write of Python files
     if ((tool === 'Edit' || tool === 'Write') && filePath && filePath.endsWith('.py')) {
       if (fs.existsSync(filePath)) {
         const findings = [];
@@ -253,14 +252,22 @@ async function main() {
           writeHookResult('PostToolUse', {
             additionalContext: `[Python Security] ${findings.join('. ')}. Review and fix before committing.`
           });
+          logTelemetry({ hook: 'python-security', event: 'PostToolUse', outcome: 'fired', reason: `${findings.length} finding(s)`, duration_ms: Date.now() - start, file: filePath, tool });
+        } else {
+          logTelemetry({ hook: 'python-security', event: 'PostToolUse', outcome: 'skipped', reason: 'no security issues', duration_ms: Date.now() - start, file: filePath, tool });
         }
+      } else {
+        logTelemetry({ hook: 'python-security', event: 'PostToolUse', outcome: 'skipped', reason: 'file does not exist', duration_ms: Date.now() - start, file: filePath, tool });
       }
+    } else {
+      logTelemetry({ hook: 'python-security', event: 'PostToolUse', outcome: 'skipped', reason: `not Edit/Write on .py (tool=${tool})`, duration_ms: Date.now() - start, file: filePath, tool });
     }
 
     process.exit(0);
 
   } catch (error) {
     logHook(`Unexpected error: ${error.message}`, 'ERROR');
+    logTelemetry({ hook: 'python-security', event: 'PostToolUse', outcome: 'error', reason: error.message, duration_ms: Date.now() - start });
     process.exit(0);
   }
 }

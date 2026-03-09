@@ -24,6 +24,7 @@ const {
   countInFile,
   log
 } = require('../lib/utils.cjs');
+const { logTelemetry } = require('../lib/hook-telemetry.cjs');
 
 /**
  * Read hook input from stdin (JSON format)
@@ -100,10 +101,15 @@ function detectExtractablePatterns(transcriptPath) {
 }
 
 async function main() {
+  const start = Date.now();
   const input = await readStdin();
+  const hookEvent = 'SessionEnd';
 
   // Skip advisory hooks inside subagents — only fire for top-level Claude sessions
-  if (input.agent_id) process.exit(0);
+  if (input.agent_id) {
+    logTelemetry({ hook: 'evaluate-session', event: hookEvent, outcome: 'skipped', reason: 'subagent', duration_ms: Date.now() - start });
+    process.exit(0);
+  }
 
   // Get script directory to find config
   const scriptDir = __dirname;
@@ -135,6 +141,7 @@ async function main() {
   const transcriptPath = process.env.CLAUDE_TRANSCRIPT_PATH;
 
   if (!transcriptPath || !fs.existsSync(transcriptPath)) {
+    logTelemetry({ hook: 'evaluate-session', event: hookEvent, outcome: 'skipped', reason: 'no transcript path', duration_ms: Date.now() - start });
     console.log(JSON.stringify(input));
     process.exit(0);
   }
@@ -145,6 +152,7 @@ async function main() {
   // Skip short sessions
   if (messageCount < minSessionLength) {
     log(`[ContinuousLearning] Session too short (${messageCount} messages), skipping`);
+    logTelemetry({ hook: 'evaluate-session', event: hookEvent, outcome: 'skipped', reason: `session too short (${messageCount} messages)`, duration_ms: Date.now() - start });
     console.log(JSON.stringify(input));
     process.exit(0);
   }
@@ -164,6 +172,9 @@ async function main() {
       log(`[ContinuousLearning] Project-specific → ${projectLearnedSkillsPath}`);
     }
     log('[ContinuousLearning] ACTION REQUIRED: Run /learn now to extract and save these patterns before the session ends. Patterns will be lost if not extracted.');
+    logTelemetry({ hook: 'evaluate-session', event: hookEvent, outcome: 'fired', reason: `${patterns.length} pattern(s): ${patterns.join(', ')}`, duration_ms: Date.now() - start });
+  } else {
+    logTelemetry({ hook: 'evaluate-session', event: hookEvent, outcome: 'skipped', reason: `no patterns detected (${messageCount} messages)`, duration_ms: Date.now() - start });
   }
 
   // SessionEnd/PreCompact hooks should exit cleanly

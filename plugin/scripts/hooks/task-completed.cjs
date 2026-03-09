@@ -15,6 +15,7 @@
  */
 
 const { log } = require('../lib/utils.cjs');
+const { logTelemetry } = require('../lib/hook-telemetry.cjs');
 
 function readStdin() {
   return new Promise((resolve) => {
@@ -47,6 +48,7 @@ function getModifiedSourceFiles() {
 }
 
 async function main() {
+  const start = Date.now();
   const input = await readStdin();
 
   const taskSubject = input.task_subject || 'unknown';
@@ -62,6 +64,9 @@ async function main() {
 
     log(`[TaskCompleted] ${context}: "${taskSubject}" with ${modifiedFiles.length} modified source file(s)`);
     log('[TaskCompleted] Consider verifying tests pass and running code review');
+    logTelemetry({ hook: 'task-completed', event: 'TaskCompleted', outcome: 'fired', reason: `${modifiedFiles.length} modified file(s)`, duration_ms: Date.now() - start });
+  } else {
+    logTelemetry({ hook: 'task-completed', event: 'TaskCompleted', outcome: 'skipped', reason: 'no modified source files', duration_ms: Date.now() - start });
   }
 
   // Advisory only - always allow completion

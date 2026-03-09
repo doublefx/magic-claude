@@ -12,13 +12,13 @@ const { debugHook, wrapHookMain } = require('../lib/hook-debug.cjs');
 
 wrapHookMain('pr-url-logger', (input) => {
   // Skip advisory hooks inside subagents — only fire for top-level Claude sessions
-  if (input.agent_id) return;
+  if (input.agent_id) return { outcome: 'skipped', reason: 'subagent' };
   const cmd = input.tool_input?.command || '';
 
   // Only process gh pr create commands
   if (!/gh pr create/.test(cmd)) {
     debugHook('pr-url-logger', 'process', 'Skipping — not a gh pr create command');
-    process.exit(0);
+    return { outcome: 'skipped', reason: 'not a gh pr create command' };
   }
 
   const output = input.tool_response?.output || '';
@@ -36,18 +36,16 @@ wrapHookMain('pr-url-logger', (input) => {
       console.error(`[Hook] To review: gh pr review ${prNumber} --repo ${repo}`);
 
       debugHook('pr-url-logger', 'output', 'Writing PR URL context', prUrl);
-      // Inject PR URL as context for Claude
       console.log(JSON.stringify({
         hookSpecificOutput: {
           hookEventName: 'PostToolUse',
           additionalContext: `PR created: ${prUrl}. To review: gh pr review ${prNumber} --repo ${repo}`
         }
       }));
-      return;
+      return { outcome: 'fired', reason: `PR #${prNumber} logged` };
     }
   }
 
   debugHook('pr-url-logger', 'exit', 'No PR URL found — clean exit');
-  // Nothing to report — exit cleanly
-  process.exit(0);
+  return { outcome: 'skipped', reason: 'no PR URL in output' };
 });

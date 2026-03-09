@@ -6,11 +6,13 @@
 
 const { execSync, spawn } = require('child_process');
 const os = require('os');
+const { logTelemetry } = require('../lib/hook-telemetry.cjs');
 
 // Read from stdin (hook input)
 let data = '';
 process.stdin.on('data', chunk => data += chunk);
 process.stdin.on('end', () => {
+  const start = Date.now();
   try {
     const input = JSON.parse(data);
     const title = 'Claude Code';
@@ -27,12 +29,14 @@ process.stdin.on('end', () => {
     }
 
     sendNotification(title, message);
+    logTelemetry({ hook: 'notify', event: 'Notification', outcome: 'fired', reason: notificationType || 'unknown', duration_ms: Date.now() - start });
 
     // Pass through input unchanged
     console.log(data);
   } catch (error) {
     // Don't fail the hook on notification error
     console.error(`[Notify] Error: ${error.message}`);
+    logTelemetry({ hook: 'notify', event: 'Notification', outcome: 'error', reason: error.message, duration_ms: Date.now() - start });
     console.log(data);
   }
 });

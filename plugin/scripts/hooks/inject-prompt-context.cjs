@@ -9,10 +9,12 @@
  */
 
 const { execSync } = require('child_process');
+const { logTelemetry } = require('../lib/hook-telemetry.cjs');
 
 let data = '';
 process.stdin.on('data', chunk => data += chunk);
 process.stdin.on('end', () => {
+  const start = Date.now();
   try {
     const input = JSON.parse(data);
     const contextParts = [];
@@ -63,9 +65,11 @@ process.stdin.on('end', () => {
       }
     };
 
+    logTelemetry({ hook: 'inject-prompt-context', event: 'UserPromptSubmit', outcome: 'fired', reason: `${contextParts.length} context parts`, duration_ms: Date.now() - start });
     console.log(JSON.stringify(output));
   } catch (error) {
     console.error(`[PromptContext] Error: ${error.message}`);
+    logTelemetry({ hook: 'inject-prompt-context', event: 'UserPromptSubmit', outcome: 'error', reason: error.message, duration_ms: Date.now() - start });
     // Pass through on error
     console.log(data);
   }

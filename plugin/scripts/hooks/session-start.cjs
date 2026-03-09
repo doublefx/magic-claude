@@ -35,6 +35,7 @@ const {
   detectLanguages
 } = require('../lib/serena.cjs');
 const { detectEcosystem, ECOSYSTEMS } = require('../lib/ecosystems/index.cjs');
+const { logTelemetry } = require('../lib/hook-telemetry.cjs');
 
 /**
  * Read hook input from stdin (JSON format)
@@ -230,11 +231,15 @@ function detectSetupNeeds() {
 }
 
 async function main() {
+  const start = Date.now();
   // Read stdin (required for hook protocol, though SessionStart may not have data)
   const hookInput = await readStdin();
 
   // Skip advisory hooks inside subagents — only fire for top-level Claude sessions
-  if (hookInput.agent_id) process.exit(0);
+  if (hookInput.agent_id) {
+    logTelemetry({ hook: 'session-start', event: 'SessionStart', outcome: 'skipped', reason: 'subagent', duration_ms: Date.now() - start });
+    process.exit(0);
+  }
   const sessionsDir = getSessionsDir();
   const learnedDir = getProjectLearnedSkillsDir() || getUserLearnedSkillsDir();
 
@@ -427,6 +432,7 @@ async function main() {
     console.log(JSON.stringify(hookOutput));
   }
 
+  logTelemetry({ hook: 'session-start', event: 'SessionStart', outcome: 'fired', reason: `${contextParts.length} context parts, ${allLearnedSkills.length} learned skills`, duration_ms: Date.now() - start });
   process.exit(0);
 }
 
