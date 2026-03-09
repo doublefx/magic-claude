@@ -83,6 +83,7 @@ If you catch yourself thinking any of these, STOP — you're rationalizing:
 | "This is too simple for the pipeline" | Simple code causes regressions too. At minimum, use LITE mode. |
 | "I'll just write the code and add tests after" | That's not TDD. Write the test first. |
 | "Let me explore the codebase first" | Quick Discover handles impact scanning. Invoke the skill first. |
+| "This is clearly FULL, no need for the scan" | The scan produces DATA for DISCOVER/PLAN, not just a mode decision. Run it. |
 | "I already know how to implement this" | In FULL mode, the plan still needs user approval. |
 | "This doesn't need review" | Every code change needs at minimum VERIFY + REVIEW. No exceptions. |
 | "I'll use EnterPlanMode instead" | EnterPlanMode is for research ONLY. This skill replaces it for code. |
@@ -151,30 +152,37 @@ In all cases, the plan and state file on disk ensure the pipeline can resume fro
 
 ### Phase 0.1: QUICK DISCOVER (always runs first)
 
-A lightweight impact scan that runs **before** mode selection. You cannot decide LITE vs FULL without understanding what the change touches.
+A lightweight impact scan that **produces structured data** before mode selection. The Impact Brief is NOT optional — it is the foundation that every subsequent phase builds on.
 
 **Duration:** ~30 seconds, ~5-10k tokens. This is NOT the full DISCOVER phase — it's a fast triage.
 
-**Steps:**
+<HARD-GATE>
+You MUST execute ALL 6 steps below and write the Impact Brief to the state file
+BEFORE proceeding to any subsequent phase. Declaring the mode without running the
+scan is a pipeline violation — even when the answer "seems obvious."
+
+The brief is not just a gate — it is DATA that seeds DISCOVER and PLAN.
+Without it, those phases start blind.
+</HARD-GATE>
+
+**Steps (ALL mandatory — no shortcuts):**
 
 1. **Identify targets** — From the user's request, identify the symbol(s), function(s), or file(s) that will change
-2. **Fan-out analysis** — Use Serena `find_referencing_symbols` (or `Grep` as fallback) on each target to find all callers/consumers
-3. **Test coverage check** — For each caller found, check if it has test coverage (search for test files importing/referencing it)
+2. **Fan-out analysis** — Use Serena `find_referencing_symbols` (or `Grep` as fallback) on each target to count callers/consumers. You MUST report an actual number, not "many" or "significant."
+3. **Test coverage check** — For each caller found, check if it has test coverage (search for test files importing/referencing it). List untested callers by name.
 4. **Pattern scan** — Use Serena `search_for_pattern` (or `Grep`) to find similar code patterns elsewhere that might need the same fix
 5. **Cross-module check** — Are callers in different modules/packages than the target? If yes, flag cross-module dependency
 6. **claude-mem search** (if available) — One targeted search for prior context about the affected area
 
-**Output: Mini Impact Brief**
+**Output: Impact Brief → State File**
 
-```
-## Impact Brief
-- **Target:** <symbol/file being changed>
-- **Fan-out:** <N> call sites (<M> tested, <K> untested)
-- **Similar patterns:** <none | list of locations>
-- **Cross-module:** <yes/no — which modules>
-- **Prior context:** <none | key finding from claude-mem>
-- **Gate decision:** LITE | FULL (with reason)
-```
+Write the Impact Brief section in `.claude/orchestration-state.md` using the template from [references/orchestration-state.md](references/orchestration-state.md). Every field must be filled with data from the steps above — no placeholders, no "N/A", no skipping.
+
+**Validation — the state file MUST contain before proceeding:**
+- A real number for fan-out (from step 2)
+- A real number for tested vs untested callers (from step 3)
+- Specific file/symbol names for untested callers (not "some callers")
+- A gate decision with a reason that references the data
 
 **Gate logic** (applies the criteria from Mode Selection above):
 - **LITE** if ALL: fan-out ≤3 and all tested, no similar patterns, no cross-module deps, ≤2 files and ≤20 lines
@@ -184,8 +192,6 @@ A lightweight impact scan that runs **before** mode selection. You cannot decide
 **After gate decision:**
 - **LITE →** Skip to Phase 2 (TDD). The Impact Brief serves as sufficient context.
 - **FULL →** Continue to Phase 0 (ARCHITECT, if needed) or Phase 0.5 (DISCOVER). Pass the Impact Brief as seed context — the full discoverer expands on it rather than starting from scratch.
-
-**Update state →** Write initial `.claude/orchestration-state.md` with Phase 0.1 results and gate decision.
 
 ### Phase 0: ARCHITECT (conditional)
 

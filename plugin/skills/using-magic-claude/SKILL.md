@@ -100,6 +100,7 @@ These thoughts mean STOP -- you're rationalizing skipping a skill or workflow st
 | "The user wants this fast" | The user wants this RIGHT. |
 | "I already know what to do" | Check for skills anyway. They evolve. |
 | "This doesn't need a formal plan" | You don't decide — Quick Discover decides LITE vs FULL. |
+| "This is obviously FULL/LITE, skip the scan" | The scan produces data, not just a mode. Write the Impact Brief to the state file. |
 | "I'll skip the review, the code is fine" | You wrote it -- you can't objectively review it. |
 | "Let me explore first, then check skills" | Skills tell you HOW to explore. Check first. |
 | "This doesn't count as a feature" | If it changes behavior, it goes through craft. |
