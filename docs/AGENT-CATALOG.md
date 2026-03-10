@@ -35,7 +35,7 @@
 **Description**: Codebase discovery and research before planning
 
 **When to Use**:
-- Before planning any feature (Phase 0.5 in orchestration)
+- Before planning any feature (Phase 3 in orchestration)
 - Need to understand affected files and symbols
 - Want to find existing patterns and reusable code
 - Need to map dependencies and integration points
@@ -59,7 +59,7 @@
 **Description**: Adversarial plan review and stress-testing
 
 **When to Use**:
-- After planner produces a draft (Phase 1.1 in orchestration)
+- After planner produces a draft (Phase 4.2 in orchestration)
 - Need to validate plan feasibility against actual codebase
 - Want to catch missing edge cases and hidden risks before implementation
 
@@ -872,7 +872,7 @@ Gradle Optimization Report
 
 #### ui-design
 **Path**: `plugin/skills/ui-design/SKILL.md`
-**Description**: Conditional UI design context gathering (Phase 1.75 of craft)
+**Description**: Conditional UI design context gathering (Phase 5.2 of craft)
 
 **Gate**: Advisory with user opt-out — triggered when plan tasks touch frontend files (`.tsx`, `.jsx`, `.vue`, `.svelte`, `.html`, `.css`) or mention UI components/layouts.
 

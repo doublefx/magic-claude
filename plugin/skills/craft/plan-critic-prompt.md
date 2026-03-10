@@ -4,7 +4,7 @@ Use this template when dispatching a plan-critic subagent after the planner prod
 
 **Purpose:** Stress-test the implementation plan before user approval — find feasibility gaps, missing edge cases, hallucinated assumptions, and hidden risks.
 
-**When:** After Phase 1 (PLAN) produces a draft, before presenting to the user.
+**When:** After Phase 4.1 (PLAN) produces a draft, before presenting to the user.
 
 **Agent:** `general-purpose` via Task tool (or `magic-claude:plan-critic` directly)
 
@@ -19,7 +19,7 @@ You are reviewing an implementation plan for feasibility, completeness, and risk
 
 ## Discovery Brief
 
-{DISCOVERY_BRIEF — the Discovery Brief from Phase 0.5, if available. If not: "No Discovery Brief available — plan was created without pre-plan codebase research."}
+{DISCOVERY_BRIEF — the Discovery Brief from Phase 3 (DEEP DISCOVER), if available. If not: "No Discovery Brief available — plan was created without pre-plan codebase research."}
 
 ## Prior Cycle Feedback
 
@@ -88,9 +88,9 @@ Include confidence levels so the user can distinguish verified issues from possi
 
 ## Integration
 
-**Called by:** craft Phase 1.1 (after planner output)
+**Called by:** craft Phase 4.2 (after planner output)
 
-**Follows:** Phase 1 (PLAN) draft completion
+**Follows:** Phase 4.1 (PLAN) draft completion
 
 **Precedes:** User plan approval gate
 

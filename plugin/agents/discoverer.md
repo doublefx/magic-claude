@@ -151,7 +151,7 @@ When invoked by the orchestrator, estimate complexity from the feature descripti
 
 ## Architecture Context
 
-When invoked after Phase 0 (ARCHITECT), you may receive architecture context:
+When invoked after Phase 2 (ARCHITECT), you may receive architecture context:
 - Use the architect's component design to focus your exploration on the right areas
 - Verify that the architect's assumptions about existing code are correct
 - If you find discrepancies between the architect's assumptions and the actual codebase, flag them prominently in the Discovery Brief

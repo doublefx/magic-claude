@@ -63,9 +63,9 @@ When claude-mem is installed, **MUST search claude-mem BEFORE** using Explore ag
 **ANY code modification** — features, bug fixes, refactors, config changes — MUST go through `magic-claude:craft`:
 
 1. **NEVER** use EnterPlanMode when code will change — invoke `magic-claude:craft` instead
-2. Craft starts with **Quick Discover** (Phase 0.1) — a lightweight impact scan that determines LITE vs FULL mode based on actual fan-out analysis. You do NOT decide the mode — Quick Discover decides.
-3. FULL mode orchestrates: QUICK DISCOVER -> DISCOVER -> PLAN <-> PLAN CRITIC (auto-loop, max 3 cycles) -> [UI DESIGN] -> TDD (per-task with spec review) -> VERIFY -> REVIEW -> DELIVER
-4. LITE mode orchestrates: QUICK DISCOVER -> TDD -> VERIFY -> REVIEW
+2. Craft starts with **Quick Discover** (Phase 1.1) — a lightweight impact scan that determines LITE vs FULL mode based on actual fan-out analysis. You do NOT decide the mode — Quick Discover decides.
+3. FULL mode orchestrates: QUICK DISCOVER -> TASK LIST -> DEEP DISCOVER -> PLAN <-> PLAN CRITIC (auto-loop, max 3 cycles) -> [UI DESIGN] -> TDD (per-task with spec review) -> VERIFY -> REVIEW+HARDEN -> SIMPLIFY -> DELIVER -> REPORT
+4. LITE mode orchestrates: QUICK DISCOVER -> TASK LIST -> TDD -> VERIFY -> REVIEW -> REPORT
 5. EnterPlanMode is ONLY for pure research/exploration or explicit `magic-claude:plan` commands
 6. The ONLY exceptions that skip craft: documentation-only changes (README, JSDoc) and pure config with no behavioral impact (tsconfig formatting)
 

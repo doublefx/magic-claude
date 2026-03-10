@@ -6,7 +6,7 @@ user-invocable: false
 
 # UI Design Phase
 
-Conditional phase (Phase 1.75) in the craft pipeline. Gathers design context for UI features before TDD begins, ensuring intentional design decisions instead of generic implementations.
+Conditional phase (Phase 5.2) in the craft pipeline. Gathers design context for UI features before TDD begins, ensuring intentional design decisions instead of generic implementations.
 
 ## When to Activate
 
@@ -143,7 +143,7 @@ Include a **confidence indicator** in the spec:
 
 ## Architectural Respect
 
-**Do not override Phase 0/1 decisions.** The plan from Phase 1 already incorporates any architectural decisions from Phase 0. Respect:
+**Do not override Phase 2/4.1 decisions.** The plan from Phase 4.1 already incorporates any architectural decisions from Phase 2. Respect:
 - Component library choices (e.g., "use shadcn/ui" from the plan)
 - Framework decisions (React, Vue, Svelte, etc.)
 - Design system selections already in the plan
@@ -203,12 +203,12 @@ Produce a structured spec:
 
 Persist the spec to `.claude/design-specs/YYYY-MM-DD-<feature-name>.md`:
 - Survives session loss, compaction, or exit
-- Referenced during TDD (Phase 2) and review (Phase 4)
+- Referenced during TDD (Phase 6) and review (Phase 8.1)
 - Includes the design source and confidence indicator
 
 ## Integration with TDD
 
-The design spec becomes input context for Phase 2:
+The design spec becomes input context for Phase 6:
 - Component tests reference the spec's component list
 - Visual assertions use spec's design tokens where possible
 - Accessibility tests verify spec's a11y requirements
@@ -216,7 +216,7 @@ The design spec becomes input context for Phase 2:
 
 ## Related
 
-- `magic-claude:craft` — Parent pipeline (Phase 1.75)
+- `magic-claude:craft` — Parent pipeline (Phase 5.2)
 - `frontend-design:frontend-design` — Anthropic design thinking skill (Layer 4 baseline)
 - `magic-claude:frontend-patterns` — React/Next.js implementation patterns
 - `magic-claude:coding-standards` — TypeScript/JavaScript coding standards

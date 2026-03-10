@@ -4,13 +4,13 @@
 ORCHESTRATION REPORT
 ====================
 
-Pipeline: [ARCHITECT] -> DISCOVER -> PLAN <-> PLAN CRITIC (auto-loop) -> [EVAL DEFINE] -> [UI DESIGN] -> TDD (per-task) -> VERIFY -> REVIEW+HARDEN -> SIMPLIFY -> [EVAL CHECK] -> [DELIVER]
+Pipeline: [ARCHITECT] -> DEEP DISCOVER -> PLAN <-> PLAN CRITIC (auto-loop) -> [EVAL DEFINE] -> [UI DESIGN] -> TDD (per-task) -> VERIFY -> REVIEW+HARDEN -> SIMPLIFY -> [EVAL CHECK] -> [DELIVER]
 Ecosystem: [TypeScript/JVM/Python]
 
 ARCHITECT:[SKIPPED / architecture proposal + ADRs produced]
 DISCOVER: [Discovery Brief produced — N files mapped, M patterns found, K risks identified]
 PLAN:     [APPROVED by user]
-CRITIC:   [N cycles, M findings resolved automatically, R remaining (C critical, H high, M medium, L low)]
+PLAN CRITIC: [N cycles, M findings resolved automatically, R remaining (C critical, H high, M medium, L low)]
 UI DESIGN:[SKIPPED / design spec produced via <tool> + frontend-design]
 BASELINE: [X tests passing, Y failing / clean]
 TDD:      [N tasks completed, X tests written, Y% coverage]

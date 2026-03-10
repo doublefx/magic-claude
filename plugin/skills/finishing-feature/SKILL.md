@@ -12,7 +12,7 @@ Guides the completion of feature work with test verification, structured deliver
 
 ## When to Activate
 
-- After orchestration Phase 4 (REVIEW) completes with SHIP verdict
+- After orchestration Phase 8.1 (REVIEW) completes with SHIP verdict
 - When a feature branch is ready to be delivered
 - When the user explicitly asks to finish/merge/close a feature branch
 - After Agent Teams work completes on a feature branch
@@ -167,7 +167,7 @@ git worktree list
 ## Integration
 
 **Called by:**
-- `magic-claude:craft` Phase 4.7 (DELIVER)
+- `magic-claude:craft` Phase 9.2 (DELIVER)
 - Manual invocation after any feature branch work
 
 **Pairs with:**

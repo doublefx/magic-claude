@@ -22,12 +22,12 @@ Invoke the `magic-claude:craft` skill to run the quality pipeline on code change
 
 ## Mode Selection
 
-Every invocation starts with **Phase 0.1: Quick Discover** — a lightweight impact scan (~30s) that determines the right mode based on actual fan-out analysis.
+Every invocation starts with **Phase 1.1: Quick Discover** — a lightweight impact scan (~30s) that determines the right mode based on actual fan-out analysis.
 
 | Mode | When | Pipeline |
 |------|------|----------|
 | **LITE** | Fan-out ≤3 tested call sites, isolated, ≤2 files | QUICK DISCOVER → TDD → VERIFY → REVIEW (single pass) |
-| **FULL** | Wider impact, untested callers, cross-module | QUICK DISCOVER → DISCOVER → PLAN ↔ CRITIC → [UI DESIGN] → TDD → VERIFY → REVIEW+HARDEN → SIMPLIFY → DELIVER → REPORT |
+| **FULL** | Wider impact, untested callers, cross-module | QUICK DISCOVER → DEEP DISCOVER → PLAN ↔ PLAN CRITIC → [UI DESIGN] → TDD → VERIFY → REVIEW+HARDEN → SIMPLIFY → DELIVER → REPORT |
 | **`--full`** | Force full pipeline | Skip Quick Discover gate, run full |
 | **`--lite`** | Force lite pipeline | Skip Quick Discover, go straight to TDD |
 

@@ -25,7 +25,7 @@ Normal reviews suffer from confirmation bias. You skim the plan, nothing jumps o
 
 You receive:
 1. **The draft implementation plan** — the planner's output
-2. **The Discovery Brief** (if Phase 0.5 ran) — verified codebase facts
+2. **The Discovery Brief** (if Phase 3 ran) — verified codebase facts
 
 If a Discovery Brief is provided, cross-reference the plan against it. The brief contains verified facts — if the plan contradicts them, that's a CRITICAL finding.
 
@@ -65,7 +65,7 @@ Find at least 3 more specific, actionable issues. If after genuine re-analysis y
 ### CRITICAL
 Plan references non-existent artifacts, makes impossible assumptions, or would cause data loss / security vulnerabilities if implemented as written. **Must be fixed before plan approval.**
 - File paths or functions that don't exist (verified against Discovery Brief)
-- Architectural violations (contradicts Phase 0 decisions)
+- Architectural violations (contradicts Phase 2 decisions)
 - Security vulnerabilities baked into the design
 - Data integrity risks
 
@@ -168,7 +168,7 @@ This transparency helps the user filter noise from signal.
 - Propose alternative implementations
 - Add features or scope beyond what the plan covers
 - Evaluate whether the feature itself is a good idea (that's the user's decision)
-- Question architectural decisions from Phase 0 (those are already approved)
+- Question architectural decisions from Phase 2 (those are already approved)
 
 You review the plan as written against the codebase reality. You don't redesign.
 

@@ -10,7 +10,7 @@ You are an expert planning specialist focused on creating comprehensive, actiona
 
 ## Architecture Context
 
-When invoked via the orchestration pipeline (Phase 1), you may receive architecture context from a prior **magic-claude:architect** agent (Phase 0). If architecture context is provided:
+When invoked via the orchestration pipeline (Phase 4.1), you may receive architecture context from a prior **magic-claude:architect** agent (Phase 2). If architecture context is provided:
 - Use the **magic-claude:architect** agent's decisions (ADRs, component design, API contracts) as constraints
 - Do NOT re-evaluate architecture trade-offs — translate them into implementation steps
 - Reference specific ADR numbers when linking steps to design decisions
@@ -19,7 +19,7 @@ If no architecture context is provided, perform your own lightweight architectur
 
 ## Discovery Context
 
-When invoked via the orchestration pipeline (Phase 1), you may receive a **Discovery Brief** from a prior **magic-claude:discoverer** agent (Phase 0.5). If a Discovery Brief is provided:
+When invoked via the orchestration pipeline (Phase 4.1), you may receive a **Discovery Brief** from a prior **magic-claude:discoverer** agent (Phase 3). If a Discovery Brief is provided:
 - Use verified file paths, symbols, and patterns from the brief as **ground truth**
 - Reference specific findings when creating plan steps (e.g., "Modify `UserService.createUser` at `src/services/user.ts:45` — verified in Discovery Brief")
 - Do NOT contradict verified findings from the brief
@@ -69,7 +69,7 @@ Ask the user how they want to handle branching and delivery for this feature:
 - **(c) Feature branch + PR** — create a branch, implement, push and open a pull request
 - **(d) Skip** — user will handle branching themselves
 
-Record the choice in the plan under "Delivery Strategy" so the orchestrator knows what to do after Phase 4 (REVIEW).
+Record the choice in the plan under "Delivery Strategy" so the orchestrator knows what to do after Phase 8.1 (REVIEW).
 
 Skip this step if the user has already stated their preference or if the project has a documented branching convention in CLAUDE.md.
 

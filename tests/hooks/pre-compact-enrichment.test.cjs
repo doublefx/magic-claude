@@ -34,8 +34,8 @@ const PRE_COMPACT_PATH = path.join(REPO_ROOT, 'plugin', 'scripts', 'hooks', 'pre
 const preCompactSource = fs.readFileSync(PRE_COMPACT_PATH, 'utf8');
 
 // Extract constants and functions via eval in a controlled scope
-const LITE_PHASES = ['QUICK DISCOVER', 'TDD', 'VERIFY', 'REVIEW'];
-const FULL_PHASES = ['QUICK DISCOVER', 'DISCOVER', 'PLAN', 'CRITIC', 'TDD', 'VERIFY', 'REVIEW+HARDEN', 'SIMPLIFY', 'DELIVER'];
+const LITE_PHASES = ['QUICK DISCOVER', 'TASK LIST', 'TDD', 'VERIFY', 'REVIEW', 'REPORT'];
+const FULL_PHASES = ['QUICK DISCOVER', 'TASK LIST', 'DEEP DISCOVER', 'PLAN', 'PLAN CRITIC', 'TDD', 'VERIFY', 'REVIEW+HARDEN', 'SIMPLIFY', 'DELIVER', 'REPORT'];
 const ALL_PHASES_SORTED = [...new Set([...LITE_PHASES, ...FULL_PHASES])].sort((a, b) => b.length - a.length);
 
 // Re-implement the pure functions for testing (matches pre-compact.cjs exactly)
@@ -45,6 +45,10 @@ function normalizePhase(rawPhase) {
 
   if (phase.startsWith('PLAN APPROVED')) return 'PLAN';
   if (phase.startsWith('BASELINE')) return 'TDD';
+
+  // Legacy mappings (v2.28.x → v2.29.0 upgrade)
+  if (phase === 'DISCOVER' || phase.startsWith('DISCOVER —') || phase.startsWith('DISCOVER –')) return 'DEEP DISCOVER';
+  if (phase === 'CRITIC' || phase.startsWith('CRITIC —') || phase.startsWith('CRITIC –')) return 'PLAN CRITIC';
 
   const baseName = phase.split(/\s*[—–-]\s*/)[0].trim();
 
@@ -179,8 +183,28 @@ function runTests() {
     assert.strictEqual(normalizePhase('TDD — baseline verification'), 'TDD');
   })) passed++; else failed++;
 
-  if (test('normalizes "CRITIC — cycle 2/3" to CRITIC', () => {
-    assert.strictEqual(normalizePhase('CRITIC — cycle 2/3'), 'CRITIC');
+  if (test('normalizes "CRITIC — cycle 2/3" to PLAN CRITIC (legacy)', () => {
+    assert.strictEqual(normalizePhase('CRITIC — cycle 2/3'), 'PLAN CRITIC');
+  })) passed++; else failed++;
+
+  if (test('normalizes "DISCOVER" to DEEP DISCOVER (legacy)', () => {
+    assert.strictEqual(normalizePhase('DISCOVER'), 'DEEP DISCOVER');
+  })) passed++; else failed++;
+
+  if (test('normalizes "DEEP DISCOVER" to DEEP DISCOVER', () => {
+    assert.strictEqual(normalizePhase('DEEP DISCOVER'), 'DEEP DISCOVER');
+  })) passed++; else failed++;
+
+  if (test('normalizes "PLAN CRITIC" to PLAN CRITIC', () => {
+    assert.strictEqual(normalizePhase('PLAN CRITIC'), 'PLAN CRITIC');
+  })) passed++; else failed++;
+
+  if (test('normalizes "TASK LIST" to TASK LIST', () => {
+    assert.strictEqual(normalizePhase('TASK LIST'), 'TASK LIST');
+  })) passed++; else failed++;
+
+  if (test('normalizes "REPORT" to REPORT', () => {
+    assert.strictEqual(normalizePhase('REPORT'), 'REPORT');
   })) passed++; else failed++;
 
   if (test('normalizes "REVIEW+HARDEN" to REVIEW+HARDEN', () => {
@@ -201,13 +225,13 @@ function runTests() {
   if (test('TDD in FULL mode -> next is VERIFY', () => {
     const result = computeResumeDirective('TDD', 'FULL', null);
     assert.ok(result.includes('Proceed to VERIFY'), `Expected "Proceed to VERIFY", got: ${result}`);
-    assert.ok(result.includes('REMAINING: VERIFY -> REVIEW+HARDEN -> SIMPLIFY -> DELIVER'));
+    assert.ok(result.includes('REMAINING: VERIFY -> REVIEW+HARDEN -> SIMPLIFY -> DELIVER -> REPORT'));
   })) passed++; else failed++;
 
   if (test('TDD in LITE mode -> next is VERIFY', () => {
     const result = computeResumeDirective('TDD', 'LITE', null);
     assert.ok(result.includes('Proceed to VERIFY'));
-    assert.ok(result.includes('REMAINING: VERIFY -> REVIEW'));
+    assert.ok(result.includes('REMAINING: VERIFY -> REVIEW -> REPORT'));
   })) passed++; else failed++;
 
   if (test('TDD with current task includes task context', () => {
@@ -216,15 +240,21 @@ function runTests() {
     assert.ok(result.includes('then proceed to VERIFY'));
   })) passed++; else failed++;
 
-  if (test('DELIVER (last FULL phase) -> "Complete DELIVER"', () => {
+  if (test('DELIVER in FULL mode -> next is REPORT', () => {
     const result = computeResumeDirective('DELIVER', 'FULL', null);
-    assert.ok(result.includes('Complete DELIVER'));
+    assert.ok(result.includes('Proceed to REPORT'), `Expected "Proceed to REPORT", got: ${result}`);
+    assert.ok(result.includes('REMAINING: REPORT'));
+  })) passed++; else failed++;
+
+  if (test('REPORT (last FULL phase) -> "Complete REPORT"', () => {
+    const result = computeResumeDirective('REPORT', 'FULL', null);
+    assert.ok(result.includes('Complete REPORT'));
     assert.ok(result.includes('REMAINING: final phase'));
   })) passed++; else failed++;
 
-  if (test('REVIEW (last LITE phase) -> "Complete REVIEW"', () => {
-    const result = computeResumeDirective('REVIEW', 'LITE', null);
-    assert.ok(result.includes('Complete REVIEW'));
+  if (test('REPORT (last LITE phase) -> "Complete REPORT"', () => {
+    const result = computeResumeDirective('REPORT', 'LITE', null);
+    assert.ok(result.includes('Complete REPORT'));
     assert.ok(result.includes('REMAINING: final phase'));
   })) passed++; else failed++;
 
@@ -244,9 +274,9 @@ function runTests() {
     assert.ok(result.includes('INVOKE: magic-claude:craft to continue the pipeline'));
   })) passed++; else failed++;
 
-  if (test('PLAN APPROVED maps correctly -> next is CRITIC', () => {
+  if (test('PLAN APPROVED maps correctly -> next is PLAN CRITIC', () => {
     const result = computeResumeDirective('PLAN APPROVED', 'FULL', null);
-    assert.ok(result.includes('Proceed to CRITIC'), `Expected next phase CRITIC, got: ${result}`);
+    assert.ok(result.includes('Proceed to PLAN CRITIC'), `Expected next phase PLAN CRITIC, got: ${result}`);
   })) passed++; else failed++;
 
   // ─── computePipelinePosition ───
@@ -349,7 +379,7 @@ function runTests() {
 
     const content = fs.readFileSync(stateFile, 'utf8');
     assert.ok(content.includes('FULL:'), 'Should default to FULL pipeline');
-    assert.ok(content.includes('REMAINING: VERIFY -> REVIEW+HARDEN -> SIMPLIFY -> DELIVER'));
+    assert.ok(content.includes('REMAINING: VERIFY -> REVIEW+HARDEN -> SIMPLIFY -> DELIVER -> REPORT'));
 
     fs.rmSync(tmpDir, { recursive: true, force: true });
   })) passed++; else failed++;
@@ -375,7 +405,7 @@ function runTests() {
     enrichStateFile(stateFile);
 
     const content = fs.readFileSync(stateFile, 'utf8');
-    assert.ok(content.includes('Proceed to CRITIC'), `Should map PLAN APPROVED -> PLAN -> next is CRITIC`);
+    assert.ok(content.includes('Proceed to PLAN CRITIC'), `Should map PLAN APPROVED -> PLAN -> next is PLAN CRITIC`);
 
     fs.rmSync(tmpDir, { recursive: true, force: true });
   })) passed++; else failed++;

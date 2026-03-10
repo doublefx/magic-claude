@@ -8,50 +8,53 @@ digraph orchestration {
     // Entry
     start [label="Feature request received", shape=doublecircle];
 
-    // Phase 0.1
-    quick_discover [label="Phase 0.1: QUICK DISCOVER\nImpact scan → fan-out\n→ pattern check"];
+    // Phase 1.1
+    quick_discover [label="Phase 1.1: QUICK DISCOVER\nImpact scan → fan-out\n→ pattern check"];
     gate [label="LITE or FULL?", shape=diamond];
 
-    // Phase 0
+    // Phase 1.2
+    tasklist [label="Phase 1.2: TASK LIST\nCreate all pipeline tasks\nwith agent assignments"];
+
+    // Phase 2
     arch_gate [label="System design\ndecision needed?", shape=diamond];
-    architect [label="Phase 0: ARCHITECT\n(magic-claude:architect)"];
+    architect [label="Phase 2: ARCHITECT\n(magic-claude:architect)"];
 
-    // Phase 0.5
-    discover [label="Phase 0.5: DISCOVER\n(magic-claude:discoverer)"];
+    // Phase 3
+    discover [label="Phase 3: DEEP DISCOVER\n(magic-claude:discoverer)"];
 
-    // Phase 1
-    plan [label="Phase 1: PLAN\n(magic-claude:planner)"];
+    // Phase 4.1
+    plan [label="Phase 4.1: PLAN\n(magic-claude:planner)"];
 
-    // Phase 1.1 (loop)
-    plan_critic [label="Phase 1.1: PLAN CRITIC\n(adversarial review)"];
+    // Phase 4.2 (loop)
+    plan_critic [label="Phase 4.2: PLAN CRITIC\n(adversarial review)"];
     critic_gate [label="CRITICAL/HIGH\nissues?", shape=diamond];
     plan_revise [label="Revise plan\n(incorporate feedback)"];
     cycle_limit [label="≤ 3 cycles?", shape=diamond];
     user_confirm [label="User confirms plan?", shape=diamond];
 
-    // Phase 1.5
+    // Phase 5.1
     eval_gate [label="--with-evals?", shape=diamond];
-    eval_define [label="Phase 1.5: EVAL DEFINE"];
+    eval_define [label="Phase 5.1: EVAL DEFINE"];
 
-    // Phase 1.75 (advisory gate — FM-2)
+    // Phase 5.2 (advisory gate)
     ui_gate [label="UI work detected?\n(advisory, user can skip)", shape=diamond];
-    ui_design [label="Phase 1.75: UI DESIGN\n(magic-claude:ui-design)"];
+    ui_design [label="Phase 5.2: UI DESIGN\n(magic-claude:ui-design)"];
 
-    // Phase 2
-    baseline [label="Phase 2.0: BASELINE\nRun existing tests"];
-    tdd_loop [label="Phase 2.2: TDD\nRED → GREEN → REFACTOR\n(per-task loop)"];
+    // Phase 6
+    baseline [label="Phase 6.1: BASELINE\nRun existing tests"];
+    tdd_loop [label="Phase 6.2: TDD\nRED → GREEN → REFACTOR\n(per-task loop)"];
     spec_review [label="Spec Review\n(adversarial)"];
     spec_pass [label="Spec passes?", shape=diamond];
-    coverage_gate [label="Phase 2.3: COVERAGE\n≥ 80%?", shape=diamond];
+    coverage_gate [label="Phase 6.3: COVERAGE\n≥ 80%?", shape=diamond];
 
-    // Phase 3
-    verify [label="Phase 3: VERIFY\nBuild → Types → Lint → Tests"];
+    // Phase 7
+    verify [label="Phase 7: VERIFY\nBuild → Types → Lint → Tests"];
     verify_pass [label="Verify passes?", shape=diamond];
     build_fix [label="Build Resolver\n(auto-fix)"];
 
-    // Phase 4
-    review [label="Phase 4.1: REVIEW\n(code-reviewer + security\n+ language reviewers)"];
-    harden [label="Phase 4.2: HARDEN\nFix CRITICAL → HIGH → MEDIUM"];
+    // Phase 8.1
+    review [label="Phase 8.1: REVIEW\n(code-reviewer + security\n+ language reviewers)"];
+    harden [label="Phase 8.1: HARDEN\nFix CRITICAL → HIGH → MEDIUM"];
     reverify [label="Re-verify\nTypes → Lint → Tests"];
     rereview [label="Re-review"];
     converge [label="No MEDIUM+\nissues?", shape=diamond];
@@ -60,32 +63,33 @@ digraph orchestration {
     low_issues [label="Fix LOW issues\n(if low-risk)"];
     final_verify [label="Final re-verify\nTypes → Lint → Tests"];
 
-    // Phase 4.5
-    simplify [label="Phase 4.5: SIMPLIFY\n(/simplify — 3 parallel agents)"];
+    // Phase 8.2
+    simplify [label="Phase 8.2: SIMPLIFY\n(/simplify — 3 parallel agents)"];
     simplify_verify [label="Verify\nsimplification", shape=diamond];
     simplify_fix [label="Attempt fix"];
     simplify_refix [label="Fix succeeded?", shape=diamond];
     simplify_revert [label="Revert\nsimplification"];
 
-    // Phase 4.6
+    // Phase 9.1
     eval_check_gate [label="Evals defined?", shape=diamond];
-    eval_check [label="Phase 4.6: EVAL CHECK"];
+    eval_check [label="Phase 9.1: EVAL CHECK"];
 
-    // Phase 4.7
+    // Phase 9.2
     deliver_gate [label="Delivery strategy?", shape=diamond];
-    deliver [label="Phase 4.7: DELIVER\n(commit/merge/PR)"];
+    deliver [label="Phase 9.2: DELIVER\n(commit/merge/PR)"];
 
-    // Phase 5
-    report [label="Phase 5: REPORT\nOrchestration summary", shape=doublecircle];
+    // Phase 9.3
+    report [label="Phase 9.3: REPORT\nOrchestration summary", shape=doublecircle];
 
     // LITE path
-    lite_tdd [label="Phase 2: TDD\n(LITE path)"];
+    lite_tdd [label="Phase 6: TDD\n(LITE path)"];
 
     // Edges
     start -> quick_discover;
     quick_discover -> gate;
-    gate -> arch_gate [label="FULL"];
-    gate -> lite_tdd [label="LITE\n(≤3 tested call sites\nisolated, ≤2 files)"];
+    gate -> tasklist [label="FULL or LITE"];
+    tasklist -> arch_gate [label="FULL"];
+    tasklist -> lite_tdd [label="LITE\n(≤3 tested call sites\nisolated, ≤2 files)"];
     lite_tdd -> verify [label="→ VERIFY → REVIEW\n→ done"];
     arch_gate -> architect [label="yes"];
     arch_gate -> discover [label="no"];

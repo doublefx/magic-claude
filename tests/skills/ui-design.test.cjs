@@ -305,11 +305,11 @@ function runTests() {
     orchestratorContent = fs.readFileSync(ORCHESTRATOR_PATH, 'utf8');
   })) passed++; else failed++;
 
-  if (test('orchestrator contains "Phase 1.75"', () => {
+  if (test('orchestrator contains "Phase 5.2"', () => {
     assert.ok(orchestratorContent, 'Orchestrator content should be loaded');
     assert.ok(
-      orchestratorContent.includes('Phase 1.75'),
-      'Should contain Phase 1.75'
+      orchestratorContent.includes('Phase 5.2'),
+      'Should contain Phase 5.2'
     );
   })) passed++; else failed++;
 

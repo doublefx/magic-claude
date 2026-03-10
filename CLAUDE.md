@@ -243,8 +243,8 @@ Skills define reusable workflows and domain knowledge in `plugin/skills/` direct
 - **magic-claude:using-magic-claude** - Disposition override (quality over speed), skill governance flowchart, EnterPlanMode intercept, anti-rationalization table, learned skills reminder. Re-injected automatically to survive context loss.
 
 **Proactive Skills** (Claude invokes automatically):
-- **magic-claude:craft** - Default quality pipeline for ALL code changes. LITE mode (≤2 files: TDD → VERIFY → REVIEW) or FULL mode (multi-file: DISCOVER → PLAN ↔ PLAN CRITIC → [UI DESIGN] → TDD → VERIFY → REVIEW+HARDEN → SIMPLIFY → DELIVER → REPORT). Absorbs former proactive-tdd, proactive-planning, and proactive-review.
-- **magic-claude:ui-design** - Conditional UI design context gathering (Phase 1.75). Detects design MCP tools, gathers design context through layered fallback, produces a UI Design Spec that feeds into TDD.
+- **magic-claude:craft** - Default quality pipeline for ALL code changes. LITE mode (≤2 files: TDD → VERIFY → REVIEW) or FULL mode (multi-file: DEEP DISCOVER → PLAN ↔ PLAN CRITIC → [UI DESIGN] → TDD → VERIFY → REVIEW+HARDEN → SIMPLIFY → DELIVER → REPORT). Absorbs former proactive-tdd, proactive-planning, and proactive-review.
+- **magic-claude:ui-design** - Conditional UI design context gathering (Phase 5.2). Detects design MCP tools, gathers design context through layered fallback, produces a UI Design Spec that feeds into TDD.
 
 **Domain Knowledge Skills** (Context reference, all with `context: fork`):
 - **magic-claude:coding-standards** - Multi-ecosystem coding standards (TypeScript/JavaScript, JVM, Python)

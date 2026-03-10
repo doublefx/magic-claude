@@ -27,8 +27,8 @@ const { logTelemetry } = require('../lib/hook-telemetry.cjs');
 const STATE_FILENAME = 'craft-state.md';
 const LEGACY_STATE_FILENAME = 'orchestration-state.md';
 
-const LITE_PHASES = ['QUICK DISCOVER', 'TDD', 'VERIFY', 'REVIEW'];
-const FULL_PHASES = ['QUICK DISCOVER', 'DISCOVER', 'PLAN', 'CRITIC', 'TDD', 'VERIFY', 'REVIEW+HARDEN', 'SIMPLIFY', 'DELIVER'];
+const LITE_PHASES = ['QUICK DISCOVER', 'TASK LIST', 'TDD', 'VERIFY', 'REVIEW', 'REPORT'];
+const FULL_PHASES = ['QUICK DISCOVER', 'TASK LIST', 'DEEP DISCOVER', 'PLAN', 'PLAN CRITIC', 'TDD', 'VERIFY', 'REVIEW+HARDEN', 'SIMPLIFY', 'DELIVER', 'REPORT'];
 // Precomputed: longest-first for startsWith matching (REVIEW+HARDEN before REVIEW)
 const ALL_PHASES_SORTED = [...new Set([...LITE_PHASES, ...FULL_PHASES])].sort((a, b) => b.length - a.length);
 
@@ -43,6 +43,10 @@ function normalizePhase(rawPhase) {
   // Between-phase state mappings
   if (phase.startsWith('PLAN APPROVED')) return 'PLAN';
   if (phase.startsWith('BASELINE')) return 'TDD';
+
+  // Legacy mappings (v2.28.x → v2.29.0 upgrade)
+  if (phase === 'DISCOVER' || phase.startsWith('DISCOVER —') || phase.startsWith('DISCOVER –')) return 'DEEP DISCOVER';
+  if (phase === 'CRITIC' || phase.startsWith('CRITIC —') || phase.startsWith('CRITIC –')) return 'PLAN CRITIC';
 
   // Strip detail suffix (e.g., "TDD — baseline verification" -> "TDD")
   const baseName = phase.split(/\s*[—–-]\s*/)[0].trim();

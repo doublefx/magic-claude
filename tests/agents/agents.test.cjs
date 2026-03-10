@@ -265,24 +265,24 @@ function runTests() {
     ? fs.readFileSync(CRAFT_STATE_PATH, 'utf-8')
     : '';
 
-  if (test('contains Phase 0.1: QUICK DISCOVER', () => {
+  if (test('contains Phase 1.1: QUICK DISCOVER', () => {
     assert.ok(
-      orchestratorContent.includes('Phase 0.1') && orchestratorContent.includes('QUICK DISCOVER'),
-      'Missing Phase 0.1: QUICK DISCOVER'
+      orchestratorContent.includes('Phase 1.1') && orchestratorContent.includes('QUICK DISCOVER'),
+      'Missing Phase 1.1: QUICK DISCOVER'
     );
   })) passed++; else failed++;
 
-  if (test('contains Phase 0.5: DISCOVER', () => {
+  if (test('contains Phase 3: DEEP DISCOVER', () => {
     assert.ok(
-      orchestratorContent.includes('Phase 0.5') && orchestratorContent.includes('DISCOVER'),
-      'Missing Phase 0.5: DISCOVER'
+      orchestratorContent.includes('Phase 3') && orchestratorContent.includes('DEEP DISCOVER'),
+      'Missing Phase 3: DEEP DISCOVER'
     );
   })) passed++; else failed++;
 
-  if (test('contains Phase 1.1: PLAN CRITIC', () => {
+  if (test('contains Phase 4.2: PLAN CRITIC', () => {
     assert.ok(
-      orchestratorContent.includes('Phase 1.1') && orchestratorContent.includes('PLAN CRITIC'),
-      'Missing Phase 1.1: PLAN CRITIC'
+      orchestratorContent.includes('Phase 4.2') && orchestratorContent.includes('PLAN CRITIC'),
+      'Missing Phase 4.2: PLAN CRITIC'
     );
   })) passed++; else failed++;
 
@@ -342,10 +342,10 @@ function runTests() {
     );
   })) passed++; else failed++;
 
-  if (test('state template includes CRITIC line', () => {
+  if (test('state template includes PLAN CRITIC line', () => {
     assert.ok(
-      craftStateContent.includes('CRITIC:'),
-      'Missing CRITIC line in state template'
+      craftStateContent.includes('PLAN CRITIC:'),
+      'Missing PLAN CRITIC line in state template'
     );
   })) passed++; else failed++;
 

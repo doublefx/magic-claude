@@ -84,7 +84,7 @@ function runTests() {
       '',
       '## Resume Directive',
       'NEXT ACTION: Proceed to VERIFY',
-      'REMAINING: VERIFY -> REVIEW+HARDEN -> SIMPLIFY -> DELIVER',
+      'REMAINING: VERIFY -> REVIEW+HARDEN -> SIMPLIFY -> DELIVER -> REPORT',
       'INVOKE: magic-claude:craft to continue the pipeline',
       '',
       '## Key Decisions',
@@ -127,15 +127,15 @@ function runTests() {
       'Phase: PLAN',
       '',
       '## Resume Directive',
-      'NEXT ACTION: Proceed to CRITIC',
-      'REMAINING: CRITIC -> TDD -> VERIFY',
+      'NEXT ACTION: Proceed to PLAN CRITIC',
+      'REMAINING: PLAN CRITIC -> TDD -> VERIFY',
       'INVOKE: magic-claude:craft to continue the pipeline',
       ''
     ].join('\n'));
 
     const result = readCraftStateResume(tmpDir);
     assert.ok(result, 'Should fall back to legacy file');
-    assert.ok(result.includes('NEXT ACTION: Proceed to CRITIC'));
+    assert.ok(result.includes('NEXT ACTION: Proceed to PLAN CRITIC'));
 
     fs.rmSync(tmpDir, { recursive: true, force: true });
   })) passed++; else failed++;

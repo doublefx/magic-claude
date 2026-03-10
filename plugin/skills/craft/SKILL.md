@@ -1,7 +1,7 @@
 ---
 name: craft
 description: >
-  The default pipeline for ALL code changes — features, bug fixes, TDD, and any implementation work. Invoke whenever code will be written or modified, regardless of perceived complexity. Even "simple" fixes cause regressions, type errors, lint issues, and missed code reuse without the full quality tail. Starts with Quick Discover (Phase 0.1) — a lightweight impact scan that determines LITE vs FULL mode based on actual fan-out analysis, not guesswork. LITE (isolated, ≤2 files — TDD → VERIFY → REVIEW) or FULL (wider impact — DISCOVER → PLAN → CRITIC → TDD → VERIFY → REVIEW+HARDEN → SIMPLIFY → DELIVER). NEVER use EnterPlanMode for code work — invoke this skill instead. Also triggers for: adding authentication, integrating services, building APIs, dashboards, background jobs, or any "add/build/create/implement/fix" request.
+  The default pipeline for ALL code changes — features, bug fixes, TDD, and any implementation work. Invoke whenever code will be written or modified, regardless of perceived complexity. Even "simple" fixes cause regressions, type errors, lint issues, and missed code reuse without the full quality tail. Starts with Quick Discover (Phase 1.1) — a lightweight impact scan that determines LITE vs FULL mode based on actual fan-out analysis, not guesswork. LITE (isolated, ≤2 files — TDD → VERIFY → REVIEW) or FULL (wider impact — DEEP DISCOVER → PLAN → PLAN CRITIC → TDD → VERIFY → REVIEW+HARDEN → SIMPLIFY → DELIVER). NEVER use EnterPlanMode for code work — invoke this skill instead. Also triggers for: adding authentication, integrating services, building APIs, dashboards, background jobs, or any "add/build/create/implement/fix" request.
 
 ---
 
@@ -22,11 +22,11 @@ This skill is the **single entry point** for all code changes. Even small fixes 
 
 ## Mode Selection (Impact-Informed Gate)
 
-Mode selection happens **AFTER** the Quick Discover phase (Phase 0.1), not before. You cannot assess scope without first understanding impact.
+Mode selection happens **AFTER** the Quick Discover phase (Phase 1.1), not before. You cannot assess scope without first understanding impact.
 
 ```
 ┌──────────────────────────────────────────────────────┐
-│  Phase 0.1: QUICK DISCOVER (always runs)             │
+│  Phase 1.1: QUICK DISCOVER (always runs)              │
 │    Impact scan → fan-out analysis → pattern check    │
 │                                                      │
 │  Gate decision (based on Quick Discover results):    │
@@ -52,13 +52,13 @@ Mode selection happens **AFTER** the Quick Discover phase (Phase 0.1), not befor
 └──────────────────────────────────────────────────────┘
 ```
 
-**LITE mode phases:** TDD (Phase 2) → VERIFY (Phase 3) → REVIEW single pass (Phase 4, no harden loop) → done. No plan, no full discovery, no simplify. But verification and review are **never skipped**.
+**LITE mode phases:** TDD (Phase 6) → VERIFY (Phase 7) → REVIEW single pass (Phase 8.1, no harden loop) → done. No plan, no full discovery, no simplify. But verification and review are **never skipped**.
 
-**FULL mode phases:** All phases below apply (Phase 0.5 DISCOVER expands on Quick Discover findings).
+**FULL mode phases:** All phases below apply (Phase 3 DEEP DISCOVER expands on Quick Discover findings).
 
 **When in doubt, use FULL.** The cost of over-processing is low; the cost of a missed regression is high.
 
-**Auto-upgrade:** If LITE mode was selected but VERIFY (Phase 3) reveals failures in files NOT touched by TDD, this confirms a missed impact. STOP and restart from FULL mode Phase 0.5 (DISCOVER).
+**Auto-upgrade:** If LITE mode was selected but VERIFY (Phase 7) reveals failures in files NOT touched by TDD, this confirms a missed impact. STOP and restart from FULL mode Phase 3 (DEEP DISCOVER).
 
 ## TDD Discipline
 
@@ -116,10 +116,10 @@ Active state lives at `.claude/craft-state.md` during the pipeline. Update this 
 
 ### Lifecycle
 
-1. **Created** — At pipeline start (Phase 0.1 Quick Discover), write initial state with impact brief and gate decision
+1. **Created** — At pipeline start (Phase 1.1 Quick Discover), write initial state with impact brief and gate decision
 2. **Updated — AFTER EVERY PHASE AND SUB-PHASE** — Update the Phase field and phase summary line immediately when a phase completes, BEFORE starting the next phase. This is NOT optional — skipping a state update means compaction kills the pipeline.
 3. **Survives compaction** — After compaction, read `.claude/craft-state.md` to restore phase context. The plan is at the path in the state file.
-4. **Archived on completion** — In Phase 5 (REPORT), move to `.claude/plans/<date>-<feature>.state.md` alongside the plan
+4. **Archived on completion** — In Phase 9.3 (REPORT), move to `.claude/plans/<date>-<feature>.state.md` alongside the plan
 5. **Overwritten on next pipeline** — A new orchestration overwrites the active state file
 
 **CRITICAL RULE:** Every phase section below includes an explicit `**Update state →**` step. If you skip it, the next compaction destroys the pipeline. Treat state updates like saving a game — do it before every boss fight.
@@ -155,7 +155,7 @@ In all cases, the plan and state file on disk ensure the pipeline can resume fro
 
 > See [references/pipeline-diagram.md](references/pipeline-diagram.md) for the full phase flow diagram.
 
-### Phase 0.1: QUICK DISCOVER (always runs first)
+### Phase 1.1: QUICK DISCOVER (always runs first)
 
 A lightweight impact scan that **produces structured data** before mode selection. The Impact Brief is NOT optional — it is the foundation that every subsequent phase builds on.
 
@@ -195,10 +195,62 @@ Write the Impact Brief section in `.claude/craft-state.md` using the template fr
 - Log the gate decision and reasoning — this is auditable
 
 **After gate decision:**
-- **LITE →** Skip to Phase 2 (TDD). The Impact Brief serves as sufficient context.
-- **FULL →** Continue to Phase 0 (ARCHITECT, if needed) or Phase 0.5 (DISCOVER). Pass the Impact Brief as seed context — the full discoverer expands on it rather than starting from scratch.
+- **LITE →** Skip to Phase 6 (TDD). The Impact Brief serves as sufficient context.
+- **FULL →** Continue to Phase 2 (ARCHITECT, if needed) or Phase 3 (DEEP DISCOVER). Pass the Impact Brief as seed context — the full discoverer expands on it rather than starting from scratch.
 
-### Phase 0: ARCHITECT (conditional)
+### Phase 1.2: TASK LIST (mandatory, immediately after Quick Discover)
+
+After the Quick Discover gate decision, **before any work begins**, create the full pipeline task list using TaskCreate. This is the visible enforcement contract — every phase is pre-declared with its exact agent assignment.
+
+<HARD-GATE>
+You MUST create ALL tasks below (FULL or LITE set) BEFORE proceeding to any
+subsequent phase. The task list is the pipeline's audit trail and survives
+context compaction. Skipping task list creation is a pipeline violation.
+</HARD-GATE>
+
+**FULL mode — create these tasks in order:**
+
+| # | Task | Agent | Gate |
+|---|------|-------|------|
+| 1 | Phase 2: ARCHITECT (if needed) | `magic-claude:architect` (opus) | Architecture proposal produced |
+| 2 | Phase 3: DEEP DISCOVER | `magic-claude:discoverer` (opus) | Discovery Brief written |
+| 3 | Phase 4.1: PLAN | `magic-claude:planner` (opus) | Plan file persisted |
+| 4 | Phase 4.2: PLAN CRITIC (max 3 cycles) | `general-purpose` via plan-critic-prompt.md | ≤ MEDIUM findings |
+| 5 | Phase 4.3: PLAN APPROVAL | — (human gate) | User confirms plan |
+| 6 | Phase 5.1: EVAL DEFINE (if --with-evals) | `magic-claude:eval` | Eval criteria stored |
+| 7 | Phase 5.2: UI DESIGN (if UI work) | `magic-claude:ui-design` | Design spec produced |
+| 8 | Phase 6.1: TDD BASELINE | — (inline) | Baseline test counts recorded |
+| 9 | Phase 6.2: TDD IMPLEMENTATION | `magic-claude:*-tdd-guide` (sonnet) | All plan tasks implemented + tests pass |
+| 10 | Phase 6.3: COVERAGE GATE | — (inline) | ≥ 80% coverage |
+| 11 | Phase 7: VERIFY | — (inline, build-resolver if needed) | Build + types + lint + tests pass |
+| 12 | Phase 8.1: REVIEW + HARDEN | `magic-claude:code-reviewer` (opus) + security/language reviewers | APPROVE verdict, no MEDIUM+ issues |
+| 13 | Phase 8.2: SIMPLIFY | `/simplify` (3 parallel agents) | Verified clean |
+| 14 | Phase 9.1: EVAL CHECK (if evals defined) | `magic-claude:eval` | Metrics recorded |
+| 15 | Phase 9.2: DELIVER | — (inline) | Committed/pushed/PR created |
+| 16 | Phase 9.3: REPORT | — (inline) | Orchestration summary produced |
+
+**LITE mode — create these tasks in order:**
+
+| # | Task | Agent | Gate |
+|---|------|-------|------|
+| 1 | Phase 6.1: TDD BASELINE | — (inline) | Baseline test counts recorded |
+| 2 | Phase 6.2: TDD IMPLEMENTATION | `magic-claude:*-tdd-guide` (sonnet) | Tests pass |
+| 3 | Phase 7: VERIFY | — (inline, build-resolver if needed) | Build + types + lint + tests pass |
+| 4 | Phase 8.1: REVIEW (single pass) | `magic-claude:code-reviewer` (opus) | Review complete |
+| 5 | Phase 9.3: REPORT | — (inline) | Summary produced |
+
+**Conditional tasks:** Mark tasks as `blocked` (not `in_progress`) if their gate condition isn't yet met (e.g., ARCHITECT is `blocked` until the gate check determines it's needed; set to `skipped` if not needed). Skip EVAL and UI DESIGN tasks (set to `skipped`) if their opt-in conditions aren't met.
+
+**Lifecycle:**
+- Create all tasks at once with status `pending`
+- Set each task to `in_progress` when starting the phase
+- Set to `completed` when the gate condition is objectively met
+- Set to `skipped` when the conditional gate determines the phase doesn't apply
+- **NEVER set a task to `completed` without meeting its gate condition**
+
+**Update state →** Set `Phase: TASK LIST — N tasks created`, record task count in state file.
+
+### Phase 2: ARCHITECT (conditional)
 
 **Gate:** Only invoke when the request involves **system design decisions**:
 - New services, modules, or major components
@@ -213,14 +265,14 @@ Write the Impact Brief section in `.claude/craft-state.md` using the template fr
 1. Invoke the **magic-claude:architect** agent (opus) via Task tool
 2. The architect produces: architecture proposal, trade-off analysis, and ADRs for key decisions
 3. **Update state →** Set `Phase: ARCHITECT completed`, update ARCHITECT summary line
-4. Pass the architect's output as context to Phase 0.5
+4. Pass the architect's output as context to Phase 3
 
-### Phase 0.5: DISCOVER (always runs)
+### Phase 3: DEEP DISCOVER (always runs in FULL)
 
 Grounds the planning phase in verified codebase facts. Prevents hallucinated file paths, non-existent APIs, and missed existing patterns.
 
 1. Invoke the **magic-claude:discoverer** agent (opus) via Task tool
-   - If Phase 0 ran: include the architect's output so the discoverer knows what areas to focus on
+   - If Phase 2 ran: include the architect's output so the discoverer knows what areas to focus on
    - The discoverer searches claude-mem for prior decisions about this feature area
    - Uses Serena to explore affected symbols, find similar implementations, map dependencies
 2. The discoverer produces a **Discovery Brief** with verified facts:
@@ -230,24 +282,24 @@ Grounds the planning phase in verified codebase facts. Prevents hallucinated fil
    - Dependencies and integration points
    - Risks and constraints (with confidence levels)
 3. **Update state →** Set `Phase: DISCOVER completed`, update DISCOVER summary line with file/pattern/risk counts
-4. Pass the Discovery Brief as input context to Phase 1 (PLAN)
+4. Pass the Discovery Brief as input context to Phase 4.1 (PLAN)
 
 **Lightweight by default:** For simple features, discovery takes ~30s (quick claude-mem search + targeted Serena lookup). For complex features touching many files, discovery scales up naturally as more symbols need exploration.
 
-### Phase 1: PLAN
+### Phase 4.1: PLAN
 
 1. Invoke the **magic-claude:planner** agent (opus) via Task tool to analyze the request
-   - If Phase 0 ran: include the architect's output as input context for the planner
-   - If Phase 0.5 ran: include the Discovery Brief as input context — the planner uses verified facts to ground file paths, symbol references, and pattern decisions
+   - If Phase 2 ran: include the architect's output as input context for the planner
+   - If Phase 3 ran: include the Discovery Brief as input context — the planner uses verified facts to ground file paths, symbol references, and pattern decisions
    - The planner translates architecture decisions into actionable implementation steps
    - **If requirements are vague:** the planner will refine them through one-question-at-a-time dialogue before planning
    - **If multiple approaches exist:** the planner will propose 2-3 options with trade-offs and a recommendation
 2. **Update state →** Set `Phase: PLAN — draft produced, entering critic auto-loop`, update PLAN summary line
-3. Pass the draft plan to Phase 1.1 (PLAN CRITIC auto-loop) for iterative refinement
+3. Pass the draft plan to Phase 4.2 (PLAN CRITIC auto-loop) for iterative refinement
 4. After the auto-loop converges (or exhausts 3 cycles), present the **refined plan** AND final critic findings to the user
 5. **WAIT for user confirmation** before proceeding
-   - If user confirms: proceed to Phase 1.5/2
-   - If user says "just do it" or similar: skip plan review, proceed to Phase 1.5/2
+   - If user confirms: proceed to Phase 5/6
+   - If user says "just do it" or similar: skip plan review, proceed to Phase 5/6
    - If user requests further changes: loop back to step 1 with user feedback, then re-enter the critic auto-loop
    - If user modifies the plan: incorporate feedback, re-present if needed
 6. **Persist the approved plan** to `.claude/plans/YYYY-MM-DD-<feature-name>.md`
@@ -256,7 +308,7 @@ Grounds the planning phase in verified codebase facts. Prevents hallucinated fil
 7. **Update state →** Set `Phase: PLAN APPROVED`, write plan path, base SHA, critic summary, and user decisions to `.claude/craft-state.md`
 8. **Suggest compact** — Inform the user: *"Planning phase complete. You can run `/compact` to free context for implementation, or continue as-is — the state file ensures recovery if auto-compaction occurs."* Do NOT attempt to run `/compact` programmatically.
 
-### Phase 1.1: PLAN CRITIC (auto-loop, max 3 cycles)
+### Phase 4.2: PLAN CRITIC (auto-loop, max 3 cycles)
 
 Iteratively stress-tests and refines the draft plan before user approval. Uses BMAD's adversarial mandate: "Must find issues. Zero findings triggers re-analysis."
 
@@ -313,11 +365,11 @@ The planner and critic iterate automatically to produce a refined plan. The user
 - CRITICAL findings still unresolved (if any): highlight prominently — may require user intervention
 - HIGH findings still unresolved (if any): present for user judgment
 - MEDIUM/LOW findings: present as advisory notes
-- The user can still request manual revision, which loops back to Phase 1 with user feedback
+- The user can still request manual revision, which loops back to Phase 4.1 with user feedback
 
 **Human filtering required:** The critic is instructed to find problems, so it will find problems — including false positives. The auto-loop handles clear-cut CRITICAL/HIGH issues automatically; ambiguous findings and MEDIUM/LOW items are left for the user.
 
-### Phase 1.5: EVAL DEFINE (opt-in)
+### Phase 5.1: EVAL DEFINE (opt-in)
 
 When the user includes `--with-evals <name>` or explicitly requests eval-driven development:
 
@@ -328,7 +380,7 @@ When the user includes `--with-evals <name>` or explicitly requests eval-driven 
 
 **Skip this phase** unless the user explicitly requests evals.
 
-### Phase 1.75: UI DESIGN (conditional)
+### Phase 5.2: UI DESIGN (conditional)
 
 **Gate:** Advisory with user opt-out. Claude evaluates:
 - Plan tasks touch `.tsx`, `.jsx`, `.vue`, `.svelte`, `.html`, or `.css` files
@@ -336,7 +388,7 @@ When the user includes `--with-evals <name>` or explicitly requests eval-driven 
 - Feature description includes "design", "mockup", "wireframe", "UI", "layout"
 
 If triggered, present a one-line advisory: "This feature involves UI work. Running UI Design phase. Say 'skip' to skip."
-Default action = proceed. User says "skip" → go directly to Phase 2.
+Default action = proceed. User says "skip" → go directly to Phase 6.
 
 **Skip when:** The feature is purely backend, CLI, infrastructure, or DevOps.
 
@@ -346,14 +398,14 @@ Default action = proceed. User says "skip" → go directly to Phase 2.
 4. If no design tools are installed, present installation options (user decides whether to install or proceed without)
 5. Gather design context through layered fallback (MCP errors treated as "unavailable", fall to next layer):
    - Design MCP → Component Library MCP → Screenshot analysis → `frontend-design:frontend-design` plugin skill (if installed) → Claude built-in design knowledge (final fallback)
-6. Respect architectural decisions from Phase 0/1. Do not override component library choices, framework, or design system selections already in the plan
+6. Respect architectural decisions from Phase 2/4.1. Do not override component library choices, framework, or design system selections already in the plan
 7. Produce a **UI Design Spec** with confidence indicator `[MCP/screenshot/inference-only]`
 8. **Persist spec** to `.claude/design-specs/YYYY-MM-DD-<feature-name>.md`
-9. Pass the spec as context to Phase 2 (TDD). No separate user approval for the spec — it flows directly into TDD
+9. Pass the spec as context to Phase 6 (TDD). No separate user approval for the spec — it flows directly into TDD
 
-### Phase 2: TDD (Per-Task Loop)
+### Phase 6: TDD (Per-Task Loop)
 
-#### 2.0 Baseline Verification
+#### 6.1 Baseline Verification
 
 Before starting any implementation:
 1. **Update state →** Set `Phase: TDD — baseline verification`
@@ -363,14 +415,14 @@ Before starting any implementation:
 
 This prevents confusion between pre-existing and newly introduced failures.
 
-#### 2.1 Ecosystem Detection
+#### 6.1.1 Ecosystem Detection
 
 Detect ecosystem from project markers:
 - `package.json` / `tsconfig.json` -> TypeScript/JavaScript -> **magic-claude:ts-tdd-guide**
 - `pom.xml` / `build.gradle*` -> JVM -> **magic-claude:jvm-tdd-guide**
 - `pyproject.toml` / `setup.py` -> Python -> **magic-claude:python-tdd-guide**
 
-#### 2.2 Per-Task Implementation Loop
+#### 6.2 Per-Task Implementation Loop
 
 For **each task** in the approved plan, execute this cycle:
 
@@ -406,11 +458,11 @@ For **each task** in the approved plan, execute this cycle:
 
 **Mid-point review checkpoint**: If the plan has more than 5 tasks, invoke a lightweight **magic-claude:code-reviewer** check after task ~3 to catch cross-task drift early. Fix issues before continuing.
 
-#### 2.3 Coverage Gate
+#### 6.3 Coverage Gate
 
-After all tasks complete, verify 80%+ overall coverage before proceeding to Phase 3.
+After all tasks complete, verify 80%+ overall coverage before proceeding to Phase 7.
 
-### Phase 3: VERIFY
+### Phase 7: VERIFY
 
 1. **Update state →** Set `Phase: VERIFY`
 2. Run verification following the `magic-claude:verify full` workflow:
@@ -424,7 +476,7 @@ After all tasks complete, verify 80%+ overall coverage before proceeding to Phas
    - Re-run verification after fixes
 4. If tests fail: report failures and suggest fixes before proceeding
 
-### Phase 4: REVIEW + HARDEN (iterative)
+### Phase 8.1: REVIEW + HARDEN (iterative)
 
 This phase runs an iterative loop until no MEDIUM+ issues remain.
 
@@ -449,12 +501,12 @@ This phase runs an iterative loop until no MEDIUM+ issues remain.
 └──────────────────────────────────────────────────────┘
 ```
 
-#### 4.1 Initial Review
+#### 8.1.1 Initial Review
 
 1. **Update state →** Set `Phase: REVIEW+HARDEN`
 2. Invoke **magic-claude:code-reviewer** agent (opus) via Task tool for comprehensive review
-   - **Pass plan context**: Include the approved plan from Phase 1 (or read from `.claude/plans/` file) so the reviewer can check plan alignment
-   - **Pass git range**: Provide `BASE_SHA..HEAD_SHA` for the changes being reviewed (BASE_SHA recorded at Phase 1 approval)
+   - **Pass plan context**: Include the approved plan from Phase 4.1 (or read from `.claude/plans/` file) so the reviewer can check plan alignment
+   - **Pass git range**: Provide `BASE_SHA..HEAD_SHA` for the changes being reviewed (BASE_SHA recorded at Phase 4.3 approval)
 3. For security-sensitive changes, also invoke the ecosystem-specific security reviewer:
    - **magic-claude:ts-security-reviewer** for TypeScript/JavaScript
    - **magic-claude:jvm-security-reviewer** for JVM
@@ -464,7 +516,7 @@ This phase runs an iterative loop until no MEDIUM+ issues remain.
    - **magic-claude:kotlin-reviewer** for `.kt` files
    - **magic-claude:python-reviewer** for `.py` files
 
-#### 4.2 Harden Loop
+#### 8.1.2 Harden Loop
 
 Process review feedback using the **`magic-claude:receiving-code-review`** skill — verify before implementing, push back when wrong, YAGNI check suggestions.
 
@@ -488,7 +540,7 @@ Process review feedback using the **`magic-claude:receiving-code-review`** skill
 6. **LOW issues** — Review remaining LOW severity findings. Fix those that are low-risk and clearly beneficial (naming, minor style). Skip those that would require significant refactoring or are subjective.
 7. **Final re-verify** — Run types → lint → tests one last time to confirm the hardened codebase is clean.
 
-### Phase 4.5: SIMPLIFY
+### Phase 8.2: SIMPLIFY
 
 After hardening, run a structured simplification audit on the changed files across 3 dimensions: reuse, quality, and efficiency.
 
@@ -505,17 +557,17 @@ After hardening, run a structured simplification audit on the changed files acro
    - If fix succeeds → proceed to next phase
    - If fix fails → **revert** the simplification changes (`git checkout -- <files>`) and report what broke. The pre-simplification code was already hardened and clean — losing simplification is acceptable, losing correctness is not.
 
-### Phase 4.6: EVAL CHECK (opt-in)
+### Phase 9.1: EVAL CHECK (opt-in)
 
-When evals were defined in Phase 1.5:
+When evals were defined in Phase 5.1:
 
 1. Run `magic-claude:eval check <name>` to verify implementation meets criteria
 2. Record pass@3 (capability) and pass^3 (regression) metrics
-3. Include results in Phase 5 report
+3. Include results in Phase 9.3 report
 
-**Skip this phase** unless Phase 1.5 was executed.
+**Skip this phase** unless Phase 5.1 was executed.
 
-### Phase 4.7: DELIVER (conditional)
+### Phase 9.2: DELIVER (conditional)
 
 1. **Update state →** Set `Phase: DELIVER`
 
@@ -530,7 +582,7 @@ If the approved plan includes a **Delivery Strategy** (from the planner's step 3
 
 **Skip this phase** if no delivery strategy was recorded or the user said they'd handle it.
 
-### Phase 5: REPORT
+### Phase 9.3: REPORT
 
 Produce a final orchestration report:
 
@@ -567,18 +619,18 @@ These commands operate independently — they don't invoke the craft pipeline:
 - `magic-claude:code-review` command - Standalone code review (not part of craft)
 - `magic-claude:verify` command - Standalone verification
 - `magic-claude:build-fix` command - Build error resolution
-- `magic-claude:architect` agent - System design decisions (Phase 0, conditional)
-- `magic-claude:discoverer` agent - Codebase discovery and research (Phase 0.5)
-- `magic-claude:planner` agent - Implementation planning (Phase 1)
-- `magic-claude:plan-critic` agent - Adversarial plan review (Phase 1.1, via plan-critic-prompt.md)
-- `plan-critic-prompt.md` - Adversarial plan review template (Phase 1.1)
+- `magic-claude:architect` agent - System design decisions (Phase 2, conditional)
+- `magic-claude:discoverer` agent - Codebase discovery and research (Phase 3)
+- `magic-claude:planner` agent - Implementation planning (Phase 4.1)
+- `magic-claude:plan-critic` agent - Adversarial plan review (Phase 4.2, via plan-critic-prompt.md)
+- `plan-critic-prompt.md` - Adversarial plan review template (Phase 4.2)
 - `magic-claude:code-reviewer` agent - Quality and security review
 - `magic-claude:*-tdd-guide` agents - Ecosystem-specific TDD specialists
 - `magic-claude:*-build-resolver` agents - Ecosystem-specific build error resolution
 - `magic-claude:*-security-reviewer` agents - Ecosystem-specific security analysis
-- `/simplify` skill (built-in) - 3-agent parallel audit: reuse, quality, efficiency (Phase 4.5)
-- `spec-reviewer-prompt.md` - Adversarial spec compliance review template (Phase 2, per-task)
-- `magic-claude:ui-design` skill - UI design context gathering (Phase 1.75, conditional)
+- `/simplify` skill (built-in) - 3-agent parallel audit: reuse, quality, efficiency (Phase 8.2)
+- `spec-reviewer-prompt.md` - Adversarial spec compliance review template (Phase 6.2, per-task)
+- `magic-claude:ui-design` skill - UI design context gathering (Phase 5.2, conditional)
 - `frontend-design:frontend-design` plugin skill - Design thinking framework (invoked by ui-design)
 - [references/tdd-discipline.md](references/tdd-discipline.md) - TDD Iron Law and anti-rationalization
 - [references/planning-process.md](references/planning-process.md) - Requirements refinement and plan template

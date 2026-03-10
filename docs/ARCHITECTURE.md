@@ -54,7 +54,7 @@ magic-claude/
 |   |   |-- frontend-patterns/          # React, Next.js patterns
 |   |   |-- tdd-workflow/               # Multi-ecosystem TDD methodology (TS/JS, JVM, Python)
 |   |   |-- security-review/            # Multi-ecosystem security checklist (TS/JS, JVM, Python)
-|   |   |-- ui-design/                  # UI design context gathering (Phase 1.75, conditional)
+|   |   |-- ui-design/                  # UI design context gathering (Phase 5.2, conditional)
 |   |   |-- continuous-learning/        # Auto-extract patterns from sessions
 |   |   |-- eval-harness/               # Verification loop evaluation
 |   |   |-- verification-loop/          # Continuous verification

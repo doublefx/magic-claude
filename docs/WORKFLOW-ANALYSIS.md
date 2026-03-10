@@ -314,8 +314,8 @@ User: "Add a health check endpoint to the API"
 | Gap | Resolution |
 |-----|-----------|
 | **Plan -> TDD handoff** | `craft` coordinates Discover -> Plan -> Plan Critic -> [UI Design] -> TDD -> Verify -> Review as sequential phases |
-| **TDD -> Verify** | `craft` Phase 3 runs verification after TDD completes |
-| **TDD -> Review** | `craft` Phase 4 runs code review; task lifecycle managed via TaskCreate/TaskUpdate |
+| **TDD -> Verify** | `craft` Phase 7 runs verification after TDD completes |
+| **TDD -> Review** | `craft` Phase 8.1 runs code review; task lifecycle managed via TaskCreate/TaskUpdate |
 | **Review -> Fix** | `/code-review` now includes remediation suggestions mapping issues to specific commands |
 | **Verify -> Fix** | `/verify` now includes remediation suggestions mapping failures to specific commands |
 | **Orchestrate -> Verify** | `/craft feature` now includes verification phase between TDD and Review |
@@ -340,7 +340,7 @@ User: "Add a health check endpoint to the API"
 
 | Gap | Resolution |
 |-----|-----------|
-| **Orchestrate -> Eval** | Opt-in `--with-evals <name>` flag on `/craft feature` and the `craft` skill. Phase 1.5 runs `/eval define`, Phase 4.5 runs `/eval check`. Results included in REPORT verdict. |
+| **Orchestrate -> Eval** | Opt-in `--with-evals <name>` flag on `/craft feature` and the `craft` skill. Phase 5.1 runs `/eval define`, Phase 9.1 runs `/eval check`. Results included in REPORT verdict. |
 
 ### Resolved (v2.5.0)
 
