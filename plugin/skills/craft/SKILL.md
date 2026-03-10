@@ -577,10 +577,41 @@ Process review feedback using the **`magic-claude:receiving-code-review`** skill
      - If user approves another round → reset cycle counter, loop back to step 1
      - If user accepts remaining issues → exit loop and proceed
 
+**After each cycle, report to the user using this format:**
+
+```
+### Review+Harden — Cycle N/3
+
+**Review agent findings:** N issues (C critical, H high, M medium, L low)
+
+| # | Severity | Issue | Action |
+|---|----------|-------|--------|
+| 1 | HIGH | <description> | Fixed — <what was done> |
+| 2 | MEDIUM | <description> | Deferred — <why> |
+| … | … | … | … |
+
+**Re-verify:** types ✓/✗ | lint ✓/✗ | tests ✓/✗ (N passing, M failing)
+**Convergence:** <MEDIUM+ remain → next cycle | Clean → exiting loop>
+```
+
 **After loop exits:**
 
 6. **LOW issues** — Review remaining LOW severity findings. Fix those that are low-risk and clearly beneficial (naming, minor style). Skip those that would require significant refactoring or are subjective.
 7. **Final re-verify** — Run types → lint → tests one last time to confirm the hardened codebase is clean.
+8. **Update state →** Set `Phase: REVIEW+HARDEN — N cycles, M fixed, K deferred`. Write the Review+Harden Report section to the state file.
+
+#### Review+Harden Report (state file section)
+
+Write this section to `.claude/craft/craft-state.md` after the loop exits:
+
+```
+## Review+Harden Report
+- **Cycles:** N
+- **Verdict:** <APPROVE | APPROVE with caveats>
+- **Fixed:** N issues (list: <short description of each fix>)
+- **Deferred:** N issues (list: <issue — reason deferred>)
+- **Final verify:** types ✓ | lint ✓ | tests ✓ (N passing)
+```
 
 ### Phase 8.2: SIMPLIFY
 
@@ -605,6 +636,36 @@ After hardening, run a structured simplification audit on the changed files acro
    - If verification fails → **attempt to fix** the issues (invoke appropriate build-resolver agent or fix manually). Re-verify after fixes.
    - If fix succeeds → proceed to next phase
    - If fix fails → **revert** the simplification changes (`git checkout -- <files>`) and report what broke. The pre-simplification code was already hardened and clean — losing simplification is acceptable, losing correctness is not.
+6. **Report to user and state file** — Present findings using this format:
+
+```
+### Simplify Report
+
+**Agents dispatched:** reuse, quality, efficiency
+
+| # | Dimension | Finding | Action |
+|---|-----------|---------|--------|
+| 1 | Reuse | <description> | Fixed — <what was done> |
+| 2 | Quality | <description> | Skipped — <rationale> |
+| 3 | Efficiency | <description> | Fixed — <what was done> |
+| … | … | … | … |
+
+**Fixed:** N findings | **Skipped:** M findings
+**Post-simplify verify:** types ✓/✗ | lint ✓/✗ | tests ✓/✗ (N passing)
+```
+
+7. **Update state →** Set `Phase: SIMPLIFY — N fixed, M skipped`. Write the Simplify Report section to the state file.
+
+#### Simplify Report (state file section)
+
+Write this section to `.claude/craft/craft-state.md`:
+
+```
+## Simplify Report
+- **Fixed:** N findings (list: <short description of each>)
+- **Skipped:** M findings (list: <finding — reason skipped>)
+- **Post-verify:** types ✓ | lint ✓ | tests ✓ (N passing)
+```
 
 ### Phase 9.1: EVAL CHECK (opt-in)
 

@@ -39,8 +39,8 @@ INVOKE: magic-claude:craft to continue the pipeline
 - 6.1 BASELINE: <X passing, Y failing>
 - 6.2 TDD: <N/M tasks completed, X tests, Y% coverage>
 - 7 VERIFY: <status>
-- 8.1 REVIEW: <status>
-- 8.2 SIMPLIFY: <status>
+- 8.1 REVIEW: <N cycles, M fixed, K deferred — see Review+Harden Report>
+- 8.2 SIMPLIFY: <N fixed, M skipped — see Simplify Report>
 - 9.2 DELIVER: <status>
 - 9.3 REPORT: <status>
 
