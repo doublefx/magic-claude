@@ -151,6 +151,23 @@ Claude cannot programmatically invoke `/compact` or `/clear` — these are user-
 
 In all cases, the plan and state file on disk ensure the pipeline can resume from the correct phase.
 
+## Process IS the Product
+
+Following this pipeline exactly — including steps that feel unnecessary — is what separates consistent success from coin-flip results. Every "shortcut" you take is a gamble you didn't need to make.
+
+**Observed failure modes from production runs:**
+
+| What was skipped | What happened |
+|------------------|---------------|
+| TASK LIST not created | Lost track after compaction, restarted from scratch, wasted 50k+ tokens |
+| "It's simple, I'll skip planning" | Missed 3 untested callers, broke production code |
+| State file not updated between phases | Compaction killed the pipeline, no recovery possible |
+| Review skipped ("the code is fine") | Shipped a regression the tests didn't cover |
+| Quick Discover skipped ("obviously LITE") | Fan-out was 12, not 2 — needed FULL mode |
+| Decided to "just write the code" | Forgot TDD, wrote tests after, tests tested implementation not behavior |
+
+**The inverse is also true:** When the pipeline is followed exactly, the success rate is dramatically higher. The process isn't overhead — it's the mechanism that catches the things you can't see.
+
 ## Orchestration Phases
 
 > See [references/pipeline-diagram.md](references/pipeline-diagram.md) for the full phase flow diagram.
@@ -204,8 +221,16 @@ After the Quick Discover gate decision, **before any work begins**, create the f
 
 <HARD-GATE>
 You MUST create ALL tasks below (FULL or LITE set) BEFORE proceeding to any
-subsequent phase. The task list is the pipeline's audit trail and survives
-context compaction. Skipping task list creation is a pipeline violation.
+subsequent phase. NO EXCEPTIONS. Not "I'll create them as I go." Not "the task
+is simple enough to track mentally." Not "I already know the phases."
+
+The task list is NOT bureaucracy — it is your MEMORY. When compaction occurs,
+the task list is the ONLY thing that tells you where you are. Without it, you
+restart from scratch and waste the user's entire context investment.
+
+FAILURE TO CREATE THE TASK LIST = PIPELINE FAILURE.
+A pipeline without a task list has a ~50% chance of derailing on compaction.
+A pipeline WITH a task list survives every time.
 </HARD-GATE>
 
 **FULL mode — create these tasks in order:**

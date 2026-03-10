@@ -107,6 +107,9 @@ These thoughts mean STOP -- you're rationalizing skipping a skill or workflow st
 | "Let me explore first, then check skills" | Skills tell you HOW to explore. Check first. |
 | "This doesn't count as a feature" | If it changes behavior, it goes through craft. |
 | "I'll just update the docs too while I'm here" | Docs updates after code changes ARE part of craft. |
+| "I don't need a task list for this" | The task list IS compaction insurance. Skip it = lose everything on compact. |
+| "I'll create tasks as I go" | No. Create ALL tasks upfront. That's the contract. |
+| "I can track the phases mentally" | You can't — compaction erases your memory. The task list survives. |
 
 ## Verification Before Completion
 
