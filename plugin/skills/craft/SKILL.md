@@ -167,6 +167,8 @@ Following this pipeline exactly — including steps that feel unnecessary — is
 | Quick Discover skipped ("obviously LITE") | Fan-out was 12, not 2 — needed FULL mode |
 | Decided to "just write the code" | Forgot TDD, wrote tests after, tests tested implementation not behavior |
 | Did the review/discovery inline instead of dispatching agent | No independence — confirmed own assumptions, missed what a fresh eye would catch |
+| Review was single-pass, skipped re-verify loop | Left MEDIUM issues in code — the loop exists because first-pass fixes introduce new issues |
+| Did SIMPLIFY manually instead of dispatching `/simplify` | Missed reuse opportunities and efficiency issues that 3 parallel agents would catch |
 
 **The inverse is also true:** When the pipeline is followed exactly, the success rate is dramatically higher. The process isn't overhead — it's the mechanism that catches the things you can't see.
 
@@ -509,6 +511,15 @@ After all tasks complete, verify 80%+ overall coverage before proceeding to Phas
 
 ### Phase 8.1: REVIEW + HARDEN (iterative)
 
+<HARD-GATE>
+This phase MUST be dispatched to the code-reviewer agent. Do NOT review your
+own code inline — you wrote it, you are blind to its flaws.
+
+This is an ITERATIVE LOOP, not a single pass. After fixing issues, you MUST
+re-verify (types → lint → tests) AND re-review. Stopping after one pass leaves
+MEDIUM issues undetected. The loop runs until convergence or 3 cycles.
+</HARD-GATE>
+
 This phase runs an iterative loop until no MEDIUM+ issues remain.
 
 ```
@@ -572,6 +583,13 @@ Process review feedback using the **`magic-claude:receiving-code-review`** skill
 7. **Final re-verify** — Run types → lint → tests one last time to confirm the hardened codebase is clean.
 
 ### Phase 8.2: SIMPLIFY
+
+<HARD-GATE>
+SIMPLIFY is NOT "you simplify the code yourself." It is dispatching the
+`/simplify` skill, which launches 3 PARALLEL AGENTS (reuse, quality,
+efficiency) that analyze the diff independently. You triage their findings —
+you do NOT replace them with your own inline simplification pass.
+</HARD-GATE>
 
 After hardening, run a structured simplification audit on the changed files across 3 dimensions: reuse, quality, and efficiency.
 
