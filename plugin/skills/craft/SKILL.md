@@ -239,40 +239,42 @@ A pipeline WITH a task list survives every time.
 
 **FULL mode — create these tasks in order:**
 
-| # | Task | Agent | BG | Gate |
-|---|------|-------|----|------|
-| 1 | Phase 2: ARCHITECT (if needed) | `magic-claude:architect` (opus) | ✓ | Architecture proposal produced |
-| 2 | Phase 3: DEEP DISCOVER | `magic-claude:discoverer` (opus) | ✓ | Discovery Brief written |
-| 3 | Phase 4.1: PLAN | `magic-claude:planner` (opus) | ✓ | Plan file persisted |
-| 4 | Phase 4.2: PLAN CRITIC (max 3 cycles) | `general-purpose` via plan-critic-prompt.md | ✓ | ≤ MEDIUM findings |
-| 5 | Phase 4.3: PLAN APPROVAL | — (human gate) | | User confirms plan |
-| 6 | Phase 5.1: EVAL DEFINE (if --with-evals) | `magic-claude:eval` | ✓ | Eval criteria stored |
-| 7 | Phase 5.2: UI DESIGN (if UI work) | `magic-claude:ui-design` | ✓ | Design spec produced |
-| 8 | Phase 6.1: TDD BASELINE | — (inline) | | Baseline test counts recorded |
-| 9 | Phase 6.2: TDD IMPLEMENTATION | `magic-claude:*-tdd-guide` (sonnet) | ✓ | All plan tasks implemented + tests pass |
-| 10 | Phase 6.3: COVERAGE GATE | — (inline) | | ≥ 80% coverage |
-| 11 | Phase 7: VERIFY | — (inline, build-resolver if needed) | | Build + types + lint + tests pass |
-| 12 | Phase 8.1: REVIEW + HARDEN | `magic-claude:code-reviewer` (opus) + security/language reviewers | ✓ | APPROVE verdict, no MEDIUM+ issues |
-| 13 | Phase 8.2: SIMPLIFY | `/simplify` (3 parallel agents) | ✓ | Verified clean |
-| 14 | Phase 9.1: EVAL CHECK (if evals defined) | `magic-claude:eval` | ✓ | Metrics recorded |
-| 15 | Phase 9.2: DELIVER | — (inline) | | Committed/pushed/PR created |
-| 16 | Phase 9.3: REPORT | — (inline) | | Orchestration summary produced |
+| # | Task | Agent | BG | Blocked by | Gate |
+|---|------|-------|----|------------|------|
+| 1 | Phase 2: ARCHITECT (if needed) | `magic-claude:architect` (opus) | ✓ | — | Architecture proposal produced |
+| 2 | Phase 3: DEEP DISCOVER | `magic-claude:discoverer` (opus) | ✓ | #1 | Discovery Brief written |
+| 3 | Phase 4.1: PLAN | `magic-claude:planner` (opus) | ✓ | #2 | Plan file persisted |
+| 4 | Phase 4.2: PLAN CRITIC (max 3 cycles) | `general-purpose` via plan-critic-prompt.md | ✓ | #3 | ≤ MEDIUM findings |
+| 5 | Phase 4.3: PLAN APPROVAL | — (human gate) | | #4 | User confirms plan |
+| 6 | Phase 5.1: EVAL DEFINE (if --with-evals) | `magic-claude:eval` | ✓ | #5 | Eval criteria stored |
+| 7 | Phase 5.2: UI DESIGN (if UI work) | `magic-claude:ui-design` | ✓ | #5 | Design spec produced |
+| 8 | Phase 6.1: TDD BASELINE | — (inline) | | #5, #6?, #7? | Baseline test counts recorded |
+| 9 | Phase 6.2: TDD IMPLEMENTATION | `magic-claude:*-tdd-guide` (sonnet) | ✓ | #8 | All plan tasks implemented + tests pass |
+| 10 | Phase 6.3: COVERAGE GATE | — (inline) | | #9 | ≥ 80% coverage |
+| 11 | Phase 7: VERIFY | — (inline, build-resolver if needed) | | #10 | Build + types + lint + tests pass |
+| 12 | Phase 8.1: REVIEW + HARDEN | `magic-claude:code-reviewer` (opus) + security/language reviewers | ✓ | #11 | APPROVE verdict, no MEDIUM+ issues |
+| 13 | Phase 8.2: SIMPLIFY | `/simplify` (3 parallel agents) | ✓ | #12 | Verified clean |
+| 14 | Phase 9.1: EVAL CHECK (if evals defined) | `magic-claude:eval` | ✓ | #13 | Metrics recorded |
+| 15 | Phase 9.2: DELIVER | — (inline) | | #13, #14? | Committed/pushed/PR created |
+| 16 | Phase 9.3: REPORT | — (inline) | | #15 | Orchestration summary produced |
 
 **LITE mode — create these tasks in order:**
 
-| # | Task | Agent | BG | Gate |
-|---|------|-------|----|------|
-| 1 | Phase 6.1: TDD BASELINE | — (inline) | | Baseline test counts recorded |
-| 2 | Phase 6.2: TDD IMPLEMENTATION | `magic-claude:*-tdd-guide` (sonnet) | ✓ | Tests pass |
-| 3 | Phase 7: VERIFY | — (inline, build-resolver if needed) | | Build + types + lint + tests pass |
-| 4 | Phase 8.1: REVIEW (single pass) | `magic-claude:code-reviewer` (opus) | ✓ | Review complete |
-| 5 | Phase 9.3: REPORT | — (inline) | | Summary produced |
+| # | Task | Agent | BG | Blocked by | Gate |
+|---|------|-------|----|------------|------|
+| 1 | Phase 6.1: TDD BASELINE | — (inline) | | — | Baseline test counts recorded |
+| 2 | Phase 6.2: TDD IMPLEMENTATION | `magic-claude:*-tdd-guide` (sonnet) | ✓ | #1 | Tests pass |
+| 3 | Phase 7: VERIFY | — (inline, build-resolver if needed) | | #2 | Build + types + lint + tests pass |
+| 4 | Phase 8.1: REVIEW (single pass) | `magic-claude:code-reviewer` (opus) | ✓ | #3 | Review complete |
+| 5 | Phase 9.3: REPORT | — (inline) | | #4 | Summary produced |
+
+**Dependencies are mandatory.** When creating tasks with TaskCreate, use `addBlockedBy` to wire dependencies as shown in the "Blocked by" column. Tasks with `?` suffix are conditional — only add the dependency if that task was created (not skipped). A task CANNOT start (`in_progress`) until all its blockers are `completed` or `skipped`.
 
 **Conditional tasks:** Mark tasks as `blocked` (not `in_progress`) if their gate condition isn't yet met (e.g., ARCHITECT is `blocked` until the gate check determines it's needed; set to `skipped` if not needed). Skip EVAL and UI DESIGN tasks (set to `skipped`) if their opt-in conditions aren't met.
 
 **Lifecycle:**
-- Create all tasks at once with status `pending`
-- Set each task to `in_progress` when starting the phase
+- Create all tasks at once with status `pending` and dependencies wired via `addBlockedBy`
+- Set each task to `in_progress` when starting the phase (only if all blockers are `completed` or `skipped`)
 - Set to `completed` when the gate condition is objectively met
 - Set to `skipped` when the conditional gate determines the phase doesn't apply
 - **NEVER set a task to `completed` without meeting its gate condition**
