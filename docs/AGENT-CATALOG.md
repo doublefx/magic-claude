@@ -882,7 +882,7 @@ Gradle Optimization Report
 3. Screenshot Analysis (Claude native multimodal)
 4. `frontend-design:frontend-design` plugin skill (baseline)
 
-**Output**: UI Design Spec persisted to `.claude/design-specs/`, feeds into TDD phase.
+**Output**: UI Design Spec persisted to `.claude/craft/design-spec.md`, feeds into TDD phase.
 
 **Utilities**: `detect-tools.cjs` scans MCP config and plugin status at 3 levels (global, project, local).
 

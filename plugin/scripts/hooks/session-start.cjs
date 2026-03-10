@@ -42,17 +42,23 @@ const LEGACY_STATE_FILENAME = 'orchestration-state.md';
 
 /**
  * Read the Resume Directive from the craft state file.
- * Checks craft-state.md first, falls back to legacy orchestration-state.md.
+ * Checks .claude/craft/craft-state.md first, falls back to legacy locations.
  * Returns the Resume Directive content string or null if not found.
  */
 function readCraftStateResume() {
   const claudeDir = path.join(process.cwd(), '.claude');
-  let stateFilePath = path.join(claudeDir, STATE_FILENAME);
+  const craftDir = path.join(claudeDir, 'craft');
+
+  // Check current location first, then legacy locations
+  let stateFilePath = path.join(craftDir, STATE_FILENAME);
 
   if (!fs.existsSync(stateFilePath)) {
-    stateFilePath = path.join(claudeDir, LEGACY_STATE_FILENAME);
+    stateFilePath = path.join(claudeDir, STATE_FILENAME);
     if (!fs.existsSync(stateFilePath)) {
-      return null;
+      stateFilePath = path.join(claudeDir, LEGACY_STATE_FILENAME);
+      if (!fs.existsSync(stateFilePath)) {
+        return null;
+      }
     }
   }
 
@@ -436,7 +442,7 @@ async function main() {
     additionalContextParts.push(
       '## Active Craft Pipeline — Resume Required\n\n' +
       resumeDirective + '\n\n' +
-      'Read .claude/craft-state.md for full state, then invoke magic-claude:craft to continue.'
+      'Read .claude/craft/craft-state.md for full state, then invoke magic-claude:craft to continue.'
     );
     log('[SessionStart] Craft pipeline resume directive injected');
   }

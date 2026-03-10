@@ -110,7 +110,7 @@ The pipeline is designed to **survive context compaction, session crashes, and `
 
 ### State File
 
-Active state lives at `.claude/craft-state.md` during the pipeline. Update this file after every phase transition.
+Active state lives at `.claude/craft/craft-state.md` during the pipeline. Update this file after every phase transition.
 
 > State file template: see [references/craft-state.md](references/craft-state.md).
 
@@ -118,7 +118,7 @@ Active state lives at `.claude/craft-state.md` during the pipeline. Update this 
 
 1. **Created** — At pipeline start (Phase 1.1 Quick Discover), write initial state with impact brief and gate decision
 2. **Updated — AFTER EVERY PHASE AND SUB-PHASE** — Update the Phase field and phase summary line immediately when a phase completes, BEFORE starting the next phase. This is NOT optional — skipping a state update means compaction kills the pipeline.
-3. **Survives compaction** — After compaction, read `.claude/craft-state.md` to restore phase context. The plan is at the path in the state file.
+3. **Survives compaction** — After compaction, read `.claude/craft/craft-state.md` to restore phase context. The plan is at the path in the state file.
 4. **Archived on completion** — In Phase 9.3 (REPORT), move to `.claude/plans/<date>-<feature>.state.md` alongside the plan
 5. **Overwritten on next pipeline** — A new orchestration overwrites the active state file
 
@@ -133,7 +133,7 @@ Active state lives at `.claude/craft-state.md` during the pipeline. Update this 
 
 **At pipeline start or after context recovery, check for an orphaned state file:**
 
-1. If `.claude/craft-state.md` exists:
+1. If `.claude/craft/craft-state.md` exists:
    - Read the state file and the plan from the recorded path
    - **After compaction (compressed context references this feature):** Auto-resume from the recorded phase. Do NOT ask the user — they were just working on this and expect you to continue.
    - **New session or /clear (no context about this feature):** Present to user: "Found incomplete orchestration for **<feature>** (Phase <N>, task <X/Y>). Resume or start fresh?"
@@ -181,7 +181,7 @@ Without it, those phases start blind.
 
 **Output: Impact Brief → State File**
 
-Write the Impact Brief section in `.claude/craft-state.md` using the template from [references/craft-state.md](references/craft-state.md). Every field must be filled with data from the steps above — no placeholders, no "N/A", no skipping.
+Write the Impact Brief section in `.claude/craft/craft-state.md` using the template from [references/craft-state.md](references/craft-state.md). Every field must be filled with data from the steps above — no placeholders, no "N/A", no skipping.
 
 **Validation — the state file MUST contain before proceeding:**
 - A real number for fan-out (from step 2)
@@ -307,7 +307,7 @@ Grounds the planning phase in verified codebase facts. Prevents hallucinated fil
 6. **Persist the approved plan** to `.claude/plans/YYYY-MM-DD-<feature-name>.md`
    - This ensures the plan survives session loss, compaction, or exit
    - Record the git SHA at plan approval time for later review context
-7. **Update state →** Set `Phase: PLAN APPROVED`, write plan path, base SHA, critic summary, and user decisions to `.claude/craft-state.md`
+7. **Update state →** Set `Phase: PLAN APPROVED`, write plan path, base SHA, critic summary, and user decisions to `.claude/craft/craft-state.md`
 8. **Suggest compact** — Inform the user: *"Planning phase complete. You can run `/compact` to free context for implementation, or continue as-is — the state file ensures recovery if auto-compaction occurs."* Do NOT attempt to run `/compact` programmatically.
 
 ### Phase 4.2: PLAN CRITIC (auto-loop, max 3 cycles)
@@ -402,7 +402,7 @@ Default action = proceed. User says "skip" → go directly to Phase 6.
    - Design MCP → Component Library MCP → Screenshot analysis → `frontend-design:frontend-design` plugin skill (if installed) → Claude built-in design knowledge (final fallback)
 6. Respect architectural decisions from Phase 2/4.1. Do not override component library choices, framework, or design system selections already in the plan
 7. Produce a **UI Design Spec** with confidence indicator `[MCP/screenshot/inference-only]`
-8. **Persist spec** to `.claude/design-specs/YYYY-MM-DD-<feature-name>.md`
+8. **Persist spec** to `.claude/craft/design-spec.md`
 9. Pass the spec as context to Phase 6 (TDD). No separate user approval for the spec — it flows directly into TDD
 
 ### Phase 6: TDD (Per-Task Loop)
@@ -597,7 +597,7 @@ Produce a final orchestration report:
 
 **Archive craft state:**
 After producing the report, archive the state file alongside the plan:
-1. Move `.claude/craft-state.md` to `.claude/plans/YYYY-MM-DD-<feature-name>.state.md`
+1. Move `.claude/craft/craft-state.md` to `.claude/plans/YYYY-MM-DD-<feature-name>.state.md`
 2. This serves as an audit trail (critic cycles, harden rounds, coverage, timing)
 3. If verdict is NEEDS WORK or BLOCKED, keep the active state file as-is (pipeline is not complete)
 

@@ -201,7 +201,7 @@ Produce a structured spec:
 
 ## Design Spec Persistence
 
-Persist the spec to `.claude/design-specs/YYYY-MM-DD-<feature-name>.md`:
+Persist the spec to `.claude/craft/design-spec.md`:
 - Survives session loss, compaction, or exit
 - Referenced during TDD (Phase 6) and review (Phase 8.1)
 - Includes the design source and confidence indicator

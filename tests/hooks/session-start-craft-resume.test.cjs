@@ -31,15 +31,21 @@ const LEGACY_STATE_FILENAME = 'orchestration-state.md';
 /**
  * Re-implementation of readCraftStateResume from session-start.cjs for testing.
  * Takes an explicit base directory instead of using process.cwd().
+ * Checks .claude/craft/craft-state.md first, falls back to legacy locations.
  */
 function readCraftStateResume(baseDir) {
   const claudeDir = path.join(baseDir, '.claude');
-  let stateFilePath = path.join(claudeDir, STATE_FILENAME);
+  const craftDir = path.join(claudeDir, 'craft');
+
+  let stateFilePath = path.join(craftDir, STATE_FILENAME);
 
   if (!fs.existsSync(stateFilePath)) {
-    stateFilePath = path.join(claudeDir, LEGACY_STATE_FILENAME);
+    stateFilePath = path.join(claudeDir, STATE_FILENAME);
     if (!fs.existsSync(stateFilePath)) {
-      return null;
+      stateFilePath = path.join(claudeDir, LEGACY_STATE_FILENAME);
+      if (!fs.existsSync(stateFilePath)) {
+        return null;
+      }
     }
   }
 
@@ -62,7 +68,8 @@ function readCraftStateResume(baseDir) {
 function createTempProject() {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'session-start-test-'));
   const claudeDir = path.join(tmpDir, '.claude');
-  fs.mkdirSync(claudeDir, { recursive: true });
+  const craftDir = path.join(claudeDir, 'craft');
+  fs.mkdirSync(craftDir, { recursive: true });
   return tmpDir;
 }
 
@@ -73,9 +80,9 @@ function runTests() {
   // ─── readCraftStateResume ───
   console.log('\n  readCraftStateResume');
 
-  if (test('returns Resume Directive content from craft-state.md', () => {
+  if (test('returns Resume Directive content from .claude/craft/craft-state.md', () => {
     const tmpDir = createTempProject();
-    const stateFile = path.join(tmpDir, '.claude', STATE_FILENAME);
+    const stateFile = path.join(tmpDir, '.claude', 'craft', STATE_FILENAME);
     fs.writeFileSync(stateFile, [
       '# Craft State',
       'Feature: test feature',
@@ -110,7 +117,7 @@ function runTests() {
 
   if (test('returns null when state file has no Resume Directive section', () => {
     const tmpDir = createTempProject();
-    const stateFile = path.join(tmpDir, '.claude', STATE_FILENAME);
+    const stateFile = path.join(tmpDir, '.claude', 'craft', STATE_FILENAME);
     fs.writeFileSync(stateFile, '# Craft State\nFeature: test\nPhase: TDD\n');
 
     const result = readCraftStateResume(tmpDir);
@@ -140,23 +147,33 @@ function runTests() {
     fs.rmSync(tmpDir, { recursive: true, force: true });
   })) passed++; else failed++;
 
-  if (test('prefers craft-state.md over orchestration-state.md', () => {
+  if (test('falls back to legacy .claude/craft-state.md', () => {
     const tmpDir = createTempProject();
-    const craftFile = path.join(tmpDir, '.claude', STATE_FILENAME);
-    const legacyFile = path.join(tmpDir, '.claude', LEGACY_STATE_FILENAME);
+    // Write to legacy .claude/craft-state.md (not .claude/craft/)
+    const legacyCraftFile = path.join(tmpDir, '.claude', STATE_FILENAME);
+    fs.writeFileSync(legacyCraftFile, '# State\n\n## Resume Directive\nNEXT ACTION: From legacy craft\nREMAINING: test\nINVOKE: craft\n');
 
-    fs.writeFileSync(craftFile, '# Craft State\n\n## Resume Directive\nNEXT ACTION: From craft\nREMAINING: test\nINVOKE: craft\n');
+    const result = readCraftStateResume(tmpDir);
+    assert.ok(result.includes('From legacy craft'), 'Should fall back to .claude/craft-state.md');
+  })) passed++; else failed++;
+
+  if (test('prefers .claude/craft/craft-state.md over legacy locations', () => {
+    const tmpDir = createTempProject();
+    const craftFile = path.join(tmpDir, '.claude', 'craft', STATE_FILENAME);
+    const legacyFile = path.join(tmpDir, '.claude', STATE_FILENAME);
+
+    fs.writeFileSync(craftFile, '# Craft State\n\n## Resume Directive\nNEXT ACTION: From craft dir\nREMAINING: test\nINVOKE: craft\n');
     fs.writeFileSync(legacyFile, '# State\n\n## Resume Directive\nNEXT ACTION: From legacy\nREMAINING: test\nINVOKE: craft\n');
 
     const result = readCraftStateResume(tmpDir);
-    assert.ok(result.includes('From craft'), 'Should prefer craft-state.md');
+    assert.ok(result.includes('From craft dir'), 'Should prefer .claude/craft/craft-state.md');
 
     fs.rmSync(tmpDir, { recursive: true, force: true });
   })) passed++; else failed++;
 
   if (test('handles CRLF line endings', () => {
     const tmpDir = createTempProject();
-    const stateFile = path.join(tmpDir, '.claude', STATE_FILENAME);
+    const stateFile = path.join(tmpDir, '.claude', 'craft', STATE_FILENAME);
     fs.writeFileSync(stateFile, '# Craft State\r\nPhase: TDD\r\n\r\n## Resume Directive\r\nNEXT ACTION: Proceed to VERIFY\r\nREMAINING: VERIFY\r\nINVOKE: magic-claude:craft\r\n');
 
     const result = readCraftStateResume(tmpDir);
@@ -176,7 +193,7 @@ function runTests() {
 
   if (test('extracts only Resume Directive section (stops at next ##)', () => {
     const tmpDir = createTempProject();
-    const stateFile = path.join(tmpDir, '.claude', STATE_FILENAME);
+    const stateFile = path.join(tmpDir, '.claude', 'craft', STATE_FILENAME);
     fs.writeFileSync(stateFile, [
       '# Craft State',
       '',

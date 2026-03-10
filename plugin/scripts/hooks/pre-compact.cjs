@@ -6,7 +6,7 @@
  *
  * Runs before Claude compacts context:
  * 1. Logs compaction event
- * 2. Migrates legacy orchestration-state.md -> craft-state.md
+ * 2. Migrates legacy state files -> .claude/craft/craft-state.md
  * 3. Enriches craft-state.md with Resume Directive for post-compaction recovery
  */
 
@@ -80,11 +80,11 @@ function computeResumeDirective(phase, mode, currentTask) {
       nextAction = `Complete ${normalizedPhase}`;
       remaining = 'final phase';
     } else {
-      nextAction = 'Read .claude/craft-state.md and determine current position';
+      nextAction = 'Read .claude/craft/craft-state.md and determine current position';
       remaining = 'unknown — read state file';
     }
   } else {
-    nextAction = 'Read .claude/craft-state.md and determine current position';
+    nextAction = 'Read .claude/craft/craft-state.md and determine current position';
     remaining = 'unknown — read state file';
   }
 
@@ -187,17 +187,29 @@ async function main() {
     appendFile(activeSession, `\n---\n**[Compaction occurred at ${timeStr}]** - Context was summarized\n`);
   }
 
-  // Migration: rename legacy orchestration-state.md -> craft-state.md
+  // Migration: move legacy state files -> .claude/craft/craft-state.md
   const claudeDir = path.join(process.cwd(), '.claude');
-  const stateFile = path.join(claudeDir, STATE_FILENAME);
-  const legacyStateFile = path.join(claudeDir, LEGACY_STATE_FILENAME);
+  const craftDir = path.join(claudeDir, 'craft');
+  const stateFile = path.join(craftDir, STATE_FILENAME);
 
-  if (!fs.existsSync(stateFile) && fs.existsSync(legacyStateFile)) {
-    try {
-      fs.renameSync(legacyStateFile, stateFile);
-      log(`[PreCompact] Migrated ${LEGACY_STATE_FILENAME} -> ${STATE_FILENAME}`);
-    } catch (err) {
-      log(`[PreCompact] Migration failed: ${err.message}`);
+  // Legacy locations (oldest to newest)
+  const legacyOrchestration = path.join(claudeDir, LEGACY_STATE_FILENAME);
+  const legacyCraftState = path.join(claudeDir, STATE_FILENAME);
+
+  if (!fs.existsSync(stateFile)) {
+    // Try migrating from legacy locations (newest legacy first)
+    const legacySource = fs.existsSync(legacyCraftState) ? legacyCraftState
+      : fs.existsSync(legacyOrchestration) ? legacyOrchestration
+      : null;
+
+    if (legacySource) {
+      try {
+        ensureDir(craftDir);
+        fs.renameSync(legacySource, stateFile);
+        log(`[PreCompact] Migrated ${path.basename(legacySource)} -> craft/${STATE_FILENAME}`);
+      } catch (err) {
+        log(`[PreCompact] Migration failed: ${err.message}`);
+      }
     }
   }
 
@@ -209,7 +221,7 @@ async function main() {
       const phase = result.phase || 'unknown';
 
       log(`[PreCompact] Active craft pipeline detected: "${feature}" at ${phase}`);
-      log(`[PreCompact] State file: .claude/${STATE_FILENAME}`);
+      log(`[PreCompact] State file: .claude/craft/${STATE_FILENAME}`);
       log('[PreCompact] The approved plan is at the path specified in the state file.');
 
       if (result.enriched) {

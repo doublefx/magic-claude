@@ -75,8 +75,8 @@ This meta-skill survives compaction and `/clear` because SessionStart re-injects
 
 **On every session start, resume, compaction, or /clear — check:**
 
-1. Does `.claude/craft-state.md` exist?
-   1a. If not found, also check for legacy `.claude/orchestration-state.md` (renamed from older plugin versions)
+1. Does `.claude/craft/craft-state.md` exist?
+   1a. If not found, also check legacy locations: `.claude/craft-state.md` or `.claude/orchestration-state.md` (from older plugin versions)
 2. If YES: read it. It contains the feature name, current phase, plan path, Resume Directive, and key decisions.
 3. Read the plan from the path recorded in the state file (e.g., `.claude/plans/YYYY-MM-DD-feature.md`).
 4. **Follow the Resume Directive** — it contains the exact next action, remaining phases, and instruction to invoke `magic-claude:craft`.

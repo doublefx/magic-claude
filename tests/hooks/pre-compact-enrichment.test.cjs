@@ -78,11 +78,11 @@ function computeResumeDirective(phase, mode, currentTask) {
       nextAction = `Complete ${normalizedPhase}`;
       remaining = 'final phase';
     } else {
-      nextAction = 'Read .claude/craft-state.md and determine current position';
+      nextAction = 'Read .claude/craft/craft-state.md and determine current position';
       remaining = 'unknown — read state file';
     }
   } else {
-    nextAction = 'Read .claude/craft-state.md and determine current position';
+    nextAction = 'Read .claude/craft/craft-state.md and determine current position';
     remaining = 'unknown — read state file';
   }
 
@@ -260,13 +260,13 @@ function runTests() {
 
   if (test('unknown phase -> fallback directive', () => {
     const result = computeResumeDirective('UNKNOWN', 'FULL', null);
-    assert.ok(result.includes('Read .claude/craft-state.md and determine current position'));
+    assert.ok(result.includes('Read .claude/craft/craft-state.md and determine current position'));
     assert.ok(result.includes('unknown — read state file'));
   })) passed++; else failed++;
 
   if (test('null phase -> fallback directive', () => {
     const result = computeResumeDirective(null, 'FULL', null);
-    assert.ok(result.includes('Read .claude/craft-state.md'));
+    assert.ok(result.includes('Read .claude/craft/craft-state.md'));
   })) passed++; else failed++;
 
   if (test('always includes INVOKE line', () => {
@@ -421,7 +421,7 @@ function runTests() {
     assert.strictEqual(result.feature, null);
 
     const content = fs.readFileSync(stateFile, 'utf8');
-    assert.ok(content.includes('Read .claude/craft-state.md and determine current position'));
+    assert.ok(content.includes('Read .claude/craft/craft-state.md and determine current position'));
 
     fs.rmSync(tmpDir, { recursive: true, force: true });
   })) passed++; else failed++;
