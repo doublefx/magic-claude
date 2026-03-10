@@ -110,6 +110,8 @@ These thoughts mean STOP -- you're rationalizing skipping a skill or workflow st
 | "I don't need a task list for this" | The task list IS compaction insurance. Skip it = lose everything on compact. |
 | "I'll create tasks as I go" | No. Create ALL tasks upfront. That's the contract. |
 | "I can track the phases mentally" | You can't — compaction erases your memory. The task list survives. |
+| "I'll just do the review/discovery myself" | You wrote the code — you can't review it objectively. Dispatch the agent. |
+| "Dispatching an agent is overkill here" | The agent brings fresh context without your implementation bias. That's the point. |
 
 ## Verification Before Completion
 

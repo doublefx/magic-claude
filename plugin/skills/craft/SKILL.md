@@ -135,6 +135,7 @@ Active state lives at `.claude/craft/craft-state.md` during the pipeline. Update
 
 1. If `.claude/craft/craft-state.md` exists:
    - Read the state file and the plan from the recorded path
+   - **Re-read the TASK LIST.** Each task specifies its agent assignment. Resume the current phase by **dispatching to the assigned agent** — do NOT do the work inline just because you recovered the context. The agent column is the contract, not a suggestion.
    - **After compaction (compressed context references this feature):** Auto-resume from the recorded phase. Do NOT ask the user — they were just working on this and expect you to continue.
    - **New session or /clear (no context about this feature):** Present to user: "Found incomplete orchestration for **<feature>** (Phase <N>, task <X/Y>). Resume or start fresh?"
      - If resume: restore phase context, continue from the recorded phase
@@ -165,6 +166,7 @@ Following this pipeline exactly — including steps that feel unnecessary — is
 | Review skipped ("the code is fine") | Shipped a regression the tests didn't cover |
 | Quick Discover skipped ("obviously LITE") | Fan-out was 12, not 2 — needed FULL mode |
 | Decided to "just write the code" | Forgot TDD, wrote tests after, tests tested implementation not behavior |
+| Did the review/discovery inline instead of dispatching agent | No independence — confirmed own assumptions, missed what a fresh eye would catch |
 
 **The inverse is also true:** When the pipeline is followed exactly, the success rate is dramatically higher. The process isn't overhead — it's the mechanism that catches the things you can't see.
 
@@ -274,6 +276,8 @@ A pipeline WITH a task list survives every time.
 - **NEVER set a task to `completed` without meeting its gate condition**
 
 **Background (BG column):** Tasks marked ✓ should use `run_in_background: true` when dispatching their agent. This frees the user to interact with Claude while agents work. Foreground tasks (no ✓) are either inline operations, human gates, or require immediate result inspection before proceeding.
+
+**Agent dispatch is NOT optional.** When the Agent column specifies an agent, you MUST dispatch via the Agent tool — do NOT do the work yourself inline. This is not about capability; it's about **independence**. You wrote the code, so you cannot objectively discover risks in it, review it, or critique your own plan. The agent sees everything fresh, without your implementation bias. Phases marked `— (inline)` are the ONLY ones you execute directly.
 
 **Update state →** Set `Phase: TASK LIST — N tasks created`, record task count in state file.
 
