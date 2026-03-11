@@ -112,6 +112,9 @@ These thoughts mean STOP -- you're rationalizing skipping a skill or workflow st
 | "I can track the phases mentally" | You can't — compaction erases your memory. The task list survives. |
 | "I'll just do the review/discovery myself" | You wrote the code — you can't review it objectively. Dispatch the agent. |
 | "Dispatching an agent is overkill here" | The agent brings fresh context without your implementation bias. That's the point. |
+| "The plan is obvious, no need to ask the user" | Plan approval is mandatory. The user validates the approach. Check CRAFT_AUTO_APPROVE_PLAN env var. |
+| "I'll clean up the state/plan files" | NEVER delete them. Move state to .claude/plans/ on completion. They're permanent audit artifacts. |
+| "One review pass is enough, it's clean" | Write the loop exit reason in the state file. Prove WHY cycle 1 was sufficient. |
 
 ## Verification Before Completion
 

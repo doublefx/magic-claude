@@ -169,6 +169,8 @@ Following this pipeline exactly — including steps that feel unnecessary — is
 | Did the review/discovery inline instead of dispatching agent | No independence — confirmed own assumptions, missed what a fresh eye would catch |
 | Review was single-pass, skipped re-verify loop | Left MEDIUM issues in code — the loop exists because first-pass fixes introduce new issues |
 | Did SIMPLIFY manually instead of dispatching `/simplify` | Missed reuse opportunities and efficiency issues that 3 parallel agents would catch |
+| Skipped plan approval, went straight to TDD | User never validated the approach — built the wrong thing, wasted entire pipeline |
+| Deleted state file and plan file at end | Destroyed audit trail — no record of decisions, critic cycles, or review findings |
 
 **The inverse is also true:** When the pipeline is followed exactly, the success rate is dramatically higher. The process isn't overhead — it's the mechanism that catches the things you can't see.
 
@@ -332,9 +334,17 @@ Grounds the planning phase in verified codebase facts. Prevents hallucinated fil
 2. **Update state →** Set `Phase: PLAN — draft produced, entering critic auto-loop`, update PLAN summary line
 3. Pass the draft plan to Phase 4.2 (PLAN CRITIC auto-loop) for iterative refinement
 4. After the auto-loop converges (or exhausts 3 cycles), present the **refined plan** AND final critic findings to the user
-5. **WAIT for user confirmation** before proceeding
+
+<HARD-GATE>
+5. **WAIT for user confirmation** before proceeding to ANY subsequent phase.
+   Plan approval is MANDATORY. You MUST present the plan and WAIT for an explicit
+   user response. Do NOT auto-approve. Do NOT proceed silently.
+   The ONLY way to skip this gate is if `CRAFT_AUTO_APPROVE_PLAN=true` is set
+   in the environment — check with: process.env.CRAFT_AUTO_APPROVE_PLAN.
+</HARD-GATE>
+
    - If user confirms: proceed to Phase 5/6
-   - If user says "just do it" or similar: skip plan review, proceed to Phase 5/6
+   - If user says "just do it" or similar: this IS confirmation, proceed to Phase 5/6
    - If user requests further changes: loop back to step 1 with user feedback, then re-enter the critic auto-loop
    - If user modifies the plan: incorporate feedback, re-present if needed
 6. **Persist the approved plan** to `.claude/plans/YYYY-MM-DD-<feature-name>.md`
@@ -568,8 +578,8 @@ Process review feedback using the **`magic-claude:receiving-code-review`** skill
 
 1. **Fix CRITICAL and HIGH issues** — These are mandatory. No exceptions.
 2. **Fix MEDIUM issues** — Fix all that are genuine improvements. Push back on false positives.
-3. **Re-verify** — Run types → lint → tests. All must pass before continuing.
-4. **Re-review** — Invoke code-reviewer again on the changes made during fixes.
+3. **Re-verify** — Run types → lint → tests. All three. All must pass before continuing.
+4. **Re-review** — Invoke code-reviewer agent again on the changes made during fixes. Single-pass is NOT sufficient — the fixes themselves can introduce new issues.
 5. **Convergence check:**
    - No MEDIUM+ issues remain → **exit loop**
    - MEDIUM+ issues still present → **loop back to step 1**
@@ -579,12 +589,13 @@ Process review feedback using the **`magic-claude:receiving-code-review`** skill
      - If user approves another round → reset cycle counter, loop back to step 1
      - If user accepts remaining issues → exit loop and proceed
 
-**After each cycle, report to the user using this format:**
+**After EVERY cycle, report to the user AND write to the state file:**
 
 ```
 ### Review+Harden — Cycle N/3
 
-**Review agent findings:** N issues (C critical, H high, M medium, L low)
+**Review agent:** <agent name dispatched> (confirm agent was used, not inline review)
+**Findings:** N issues (C critical, H high, M medium, L low)
 
 | # | Severity | Issue | Action |
 |---|----------|-------|--------|
@@ -594,7 +605,15 @@ Process review feedback using the **`magic-claude:receiving-code-review`** skill
 
 **Re-verify:** types ✓/✗ | lint ✓/✗ | tests ✓/✗ (N passing, M failing)
 **Convergence:** <MEDIUM+ remain → next cycle | Clean → exiting loop>
+**Loop exit reason:** <all clean | max cycles reached | user accepted remaining>
 ```
+
+<HARD-GATE>
+You MUST write the cycle report above to BOTH the user AND the state file
+BEFORE proceeding. If the loop exits after cycle 1, you MUST still write
+the report explaining WHY cycle 1 was sufficient (e.g., "0 MEDIUM+ issues
+after fixes → clean exit"). A missing loop exit reason = pipeline violation.
+</HARD-GATE>
 
 **After loop exits:**
 
@@ -608,7 +627,8 @@ Write this section to `.claude/craft/craft-state.md` after the loop exits:
 
 ```
 ## Review+Harden Report
-- **Cycles:** N
+- **Cycles:** N (exit reason: <all clean | max cycles | user accepted>)
+- **Agent used:** <agent name> (confirm dispatch, not inline)
 - **Verdict:** <APPROVE | APPROVE with caveats>
 - **Fixed:** N issues (list: <short description of each fix>)
 - **Deferred:** N issues (list: <issue — reason deferred>)
@@ -643,7 +663,8 @@ After hardening, run a structured simplification audit on the changed files acro
 ```
 ### Simplify Report
 
-**Agents dispatched:** reuse, quality, efficiency
+**Dispatched via:** `/simplify` skill (confirm skill was invoked, not inline simplification)
+**Agents:** reuse ✓, quality ✓, efficiency ✓ (confirm all 3 ran)
 
 | # | Dimension | Finding | Action |
 |---|-----------|---------|--------|
@@ -652,9 +673,15 @@ After hardening, run a structured simplification audit on the changed files acro
 | 3 | Efficiency | <description> | Fixed — <what was done> |
 | … | … | … | … |
 
-**Fixed:** N findings | **Skipped:** M findings
+**Fixed:** N findings | **Skipped:** M findings (with reasons)
 **Post-simplify verify:** types ✓/✗ | lint ✓/✗ | tests ✓/✗ (N passing)
 ```
+
+<HARD-GATE>
+You MUST write this report to BOTH the user AND the state file. If /simplify
+found 0 issues, you MUST still report "0 findings across 3 agents" — the
+absence of findings is itself a finding that proves the agents ran.
+</HARD-GATE>
 
 7. **Update state →** Set `Phase: SIMPLIFY — N fixed, M skipped`. Write the Simplify Report section to the state file.
 
@@ -664,6 +691,8 @@ Write this section to `.claude/craft/craft-state.md`:
 
 ```
 ## Simplify Report
+- **Dispatched via:** /simplify (confirm skill used)
+- **Agents ran:** reuse ✓, quality ✓, efficiency ✓
 - **Fixed:** N findings (list: <short description of each>)
 - **Skipped:** M findings (list: <finding — reason skipped>)
 - **Post-verify:** types ✓ | lint ✓ | tests ✓ (N passing)
@@ -705,11 +734,20 @@ Produce a final orchestration report:
 - **NEEDS WORK** - Minor issues found, list specific `magic-claude:<command>` remediation
 - **BLOCKED** - Critical issues (security vulnerabilities, build failures after remediation, review BLOCK)
 
-**Archive craft state:**
-After producing the report, archive the state file alongside the plan:
-1. Move `.claude/craft/craft-state.md` to `.claude/plans/YYYY-MM-DD-<feature-name>.state.md`
+**Archive craft state (MOVE, never delete):**
+
+<HARD-GATE>
+NEVER delete the craft state file or the plan file. They are audit artifacts.
+- `rm`, `unlink`, or any deletion of `.claude/craft/craft-state.md` or
+  `.claude/plans/*.md` is a PIPELINE VIOLATION.
+- The state file is MOVED (renamed), not deleted.
+- The plan file stays in `.claude/plans/` permanently.
+</HARD-GATE>
+
+1. **Move** `.claude/craft/craft-state.md` to `.claude/plans/YYYY-MM-DD-<feature-name>.state.md`
 2. This serves as an audit trail (critic cycles, harden rounds, coverage, timing)
 3. If verdict is NEEDS WORK or BLOCKED, keep the active state file as-is (pipeline is not complete)
+4. The plan file at `.claude/plans/YYYY-MM-DD-<feature-name>.md` stays — it is a permanent record
 
 ## Standalone Commands (Not Part of Craft)
 
