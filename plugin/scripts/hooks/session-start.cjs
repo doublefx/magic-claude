@@ -181,7 +181,7 @@ function isClaudeMemInstalled() {
     const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
     const enabledPlugins = settings.enabledPlugins || {};
     return Object.keys(enabledPlugins).some(
-      key => key.startsWith('claude-mem') && enabledPlugins[key] === true
+      key => key.includes('claude-mem') && enabledPlugins[key] === true
     );
   } catch {
     return false;
